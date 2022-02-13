@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Discord.OAuth2\Discord.OAuth2.csproj" />
+  </ItemGroup>
+
 </Project>

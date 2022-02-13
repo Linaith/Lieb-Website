@@ -5,4 +5,5 @@
     Layout = "_Layout";
 }
 
-<component type="typeof(App)" render-mode="ServerPrerendered" />
+@(await Html.RenderComponentAsync<App>(RenderMode.Server))
+<!--<component type="typeof(App)" render-mode="ServerPrerendered" />-->

@@ -68,7 +68,12 @@
     {
         public int RaidRoleId { get; set; }
         public string RoleName { get; set; } = String.Empty;
-        public ICollection<Role> Boons { get; set; } = new List<Role>();
+
+        public short Might { get; set; }
+        public short Quickness { get; set; }
+        public short Alacrity { get; set; }
+        public short Heal { get; set; }
+
         public GuildWars2Class Class { get; set; }
         public EliteSpecialization EliteSpecialization { get; set; }
         public ICollection<Equipped> EquippedRoles { get; set; } = new List<Equipped>();

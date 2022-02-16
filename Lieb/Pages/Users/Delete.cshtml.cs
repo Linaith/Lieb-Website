@@ -21,7 +21,7 @@ namespace Lieb.Pages.Users
         }
 
         [BindProperty]
-        public User User { get; set; }
+        public LiebUser User { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {

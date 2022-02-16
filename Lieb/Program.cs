@@ -1,10 +1,11 @@
-﻿using Discord.OAuth2;
+using Discord.OAuth2;
 using Lieb.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,10 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<LiebContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("LiebContext")));
+/*
+builder.Services.AddDefaultIdentity<LiebUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<Lieb2Context>();builder.Services.AddDbContext<Lieb2Context>(options =>
+    options.UseSqlServer(connectionString));*/
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

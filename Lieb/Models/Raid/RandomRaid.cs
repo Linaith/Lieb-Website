@@ -6,7 +6,7 @@
         public short Quickness { get; set; }
         public short Alacrity { get; set; }
         public short Heal { get; set; }
-        public User Tank { get; set; } = new User();
+        public LiebUser Tank { get; set; } = new LiebUser();
 
         public bool RandomClass { get; set; }
         public bool RandomEliteSpecialization { get; set; }

@@ -6,17 +6,18 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Lieb.Models;
 using Lieb.Models.Raid;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Lieb.Data
 {
-    public class LiebContext : DbContext
-    {
-        public LiebContext (DbContextOptions<LiebContext> options)
+    public class LiebContext : IdentityDbContext<LiebUser>
+{
+    public LiebContext (DbContextOptions<LiebContext> options)
             : base(options)
         {
         }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<LiebUser> Users { get; set; }
         public DbSet<GuildWars2Account> GuildWars2Account { get; set; }
         public DbSet<Equipped> Equipped { get; set; }
         public DbSet<RaidRole> RaidRoles { get; set; }
@@ -31,7 +32,8 @@ namespace Lieb.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>().ToTable("User");
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<LiebUser>().ToTable("User");
             modelBuilder.Entity<GuildWars2Account>().ToTable("GuildWars2Account");
             modelBuilder.Entity<Equipped>().ToTable("Equipped");
             modelBuilder.Entity<RaidRole>().ToTable("RaidRole");

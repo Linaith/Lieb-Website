@@ -31,7 +31,7 @@ namespace Lieb.Pages.Users
                 return NotFound();
             }
 
-            User = await _context.Users.FirstOrDefaultAsync(m => m.UserId == id);
+            User = await _context.Users.FirstOrDefaultAsync(m => m.LiebUserId == id);
 
             if (User == null)
             {
@@ -57,7 +57,7 @@ namespace Lieb.Pages.Users
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserExists(User.UserId))
+                if (!UserExists(User.LiebUserId))
                 {
                     return NotFound();
                 }
@@ -72,7 +72,7 @@ namespace Lieb.Pages.Users
 
         private bool UserExists(int id)
         {
-            return _context.Users.Any(e => e.UserId == id);
+            return _context.Users.Any(e => e.LiebUserId == id);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Lieb.Pages.Users
                 return NotFound();
             }
 
-            User = await _context.Users.FirstOrDefaultAsync(m => m.UserId == id);
+            User = await _context.Users.FirstOrDefaultAsync(m => m.LiebUserId == id);
 
             if (User == null)
             {

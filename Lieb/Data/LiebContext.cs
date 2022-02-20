@@ -16,7 +16,7 @@ namespace Lieb.Data
         {
         }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<LiebUser> Users { get; set; }
         public DbSet<GuildWars2Account> GuildWars2Account { get; set; }
         public DbSet<Equipped> Equipped { get; set; }
         public DbSet<RaidRole> RaidRoles { get; set; }
@@ -31,7 +31,7 @@ namespace Lieb.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>().ToTable("User");
+            modelBuilder.Entity<LiebUser>().ToTable("User");
             modelBuilder.Entity<GuildWars2Account>().ToTable("GuildWars2Account");
             modelBuilder.Entity<Equipped>().ToTable("Equipped");
             modelBuilder.Entity<RaidRole>().ToTable("RaidRole");

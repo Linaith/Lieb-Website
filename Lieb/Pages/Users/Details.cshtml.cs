@@ -20,7 +20,7 @@ namespace Lieb.Pages.Users
             _context = context;
         }
 
-        public LiebUser User { get; set; }
+        public User User { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {

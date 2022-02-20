@@ -21,7 +21,7 @@
         public SignUpType SignUpType { get; set; }
 
         public Raid Raid { get; set; }
-        public LiebUser User { get; set; } = new LiebUser();
+        public User User { get; set; } = new User();
         public GuildWars2Account GuildWars2Account { get; set; } = new GuildWars2Account();
         public PlannedRaidRole PlannedRaidRole { get; set; } = new PlannedRaidRole();
     }

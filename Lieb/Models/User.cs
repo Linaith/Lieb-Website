@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Lieb.Models
+﻿namespace Lieb.Models
 {
-    public class LiebUser : IdentityUser
+    public class User
     {
-        public int LiebUserId { get; set; }
+        public int UserId { get; set; }
         public ulong DiscordUserId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Pronouns { get; set; } = string.Empty;

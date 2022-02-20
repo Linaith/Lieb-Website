@@ -26,7 +26,7 @@ namespace Lieb.Pages.Users
         }
 
         [BindProperty]
-        public LiebUser User { get; set; }
+        public User User { get; set; }
 
         // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
         public async Task<IActionResult> OnPostAsync()

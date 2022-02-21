@@ -1,4 +1,4 @@
-﻿namespace Lieb.Models
+﻿namespace Lieb.Models.GuildWars2
 {
     public enum Role
     {
@@ -64,10 +64,10 @@
         Bladesworn = 36,
     }
 
-    public class RaidRole
+    public class GuildWars2Build
     {
-        public int RaidRoleId { get; set; }
-        public string RoleName { get; set; } = String.Empty;
+        public int GuildWars2BuildId { get; set; }
+        public string BuildName { get; set; } = String.Empty;
 
         public short Might { get; set; }
         public short Quickness { get; set; }

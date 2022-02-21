@@ -1,4 +1,6 @@
-﻿namespace Lieb.Models
+﻿using Lieb.Models.GuildWars2;
+
+namespace Lieb.Models
 {
     public class LiebUser
     {

@@ -1,5 +1,13 @@
-﻿namespace Lieb.Models.Raid
+﻿namespace Lieb.Models.GuildWars2.Raid
 {
+    public enum RaidType
+    {
+        Planned = 1,
+        RandomWithBoons = 2,
+        RandomClasses = 3,
+        RandomEliteSpecialization = 4,
+    }
+
     public abstract class Raid
     {
         public int RaidId { get; private set; }
@@ -19,6 +27,11 @@
         public string VoiceChat { get; set; } = String.Empty;
 
         public int Frequency { get; set; }
+
+        public RaidType RaidType { get; set; }
+
+        //role name, number of spots
+        public ICollection<PlannedRaidRole> Roles { get; set; } = new HashSet<PlannedRaidRole>();
 
         public ICollection<RaidReminder> Reminders { get; set; } = new List<RaidReminder>();
 

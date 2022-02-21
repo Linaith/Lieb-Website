@@ -1,4 +1,4 @@
-﻿namespace Lieb.Models
+﻿namespace Lieb.Models.GuildWars2
 {
     public class Equipped
     {
@@ -9,6 +9,6 @@
         public int GuildWars2AccountId { get; set; }
         public int RaidRoleId { get; set; }
         public GuildWars2Account GuildWars2Account { get; set; } = new GuildWars2Account();
-        public RaidRole RaidRole { get; set; } = new RaidRole();
+        public GuildWars2Build RaidRole { get; set; } = new GuildWars2Build();
     }
 }

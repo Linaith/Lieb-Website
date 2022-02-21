@@ -1,4 +1,4 @@
-﻿namespace Lieb.Models
+﻿namespace Lieb.Models.GuildWars2
 {
     public class GuildWars2Account
     {

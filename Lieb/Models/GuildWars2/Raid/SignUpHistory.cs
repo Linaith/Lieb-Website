@@ -1,4 +1,4 @@
-﻿namespace Lieb.Models.Raid
+﻿namespace Lieb.Models.GuildWars2.Raid
 {
     public class SignUpHistory
     {

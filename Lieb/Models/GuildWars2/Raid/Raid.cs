@@ -8,7 +8,7 @@
         RandomEliteSpecialization = 4,
     }
 
-    public abstract class Raid
+    public class Raid
     {
         public int RaidId { get; private set; }
 

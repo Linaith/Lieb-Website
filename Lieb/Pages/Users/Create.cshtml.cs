@@ -36,7 +36,7 @@ namespace Lieb.Pages.Users
                 return Page();
             }
 
-            _context.Users.Add(User);
+            _context.LiebUsers.Add(User);
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");

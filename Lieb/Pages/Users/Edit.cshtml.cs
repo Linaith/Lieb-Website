@@ -31,7 +31,7 @@ namespace Lieb.Pages.Users
                 return NotFound();
             }
 
-            User = await _context.Users.FirstOrDefaultAsync(m => m.LiebUserId == id);
+            User = await _context.LiebUsers.FirstOrDefaultAsync(m => m.LiebUserId == id);
 
             if (User == null)
             {
@@ -72,7 +72,7 @@ namespace Lieb.Pages.Users
 
         private bool UserExists(int id)
         {
-            return _context.Users.Any(e => e.LiebUserId == id);
+            return _context.LiebUsers.Any(e => e.LiebUserId == id);
         }
     }
 }

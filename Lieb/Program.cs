@@ -1,10 +1,7 @@
 ﻿using Discord.OAuth2;
 using Lieb.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +28,15 @@ builder.Services.AddAuthentication(opt =>
 
         x.SaveTokens = true;
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    foreach(string role in Constants.Roles.GetAllRoles())
+    {
+        options.AddPolicy(role, policy => policy.RequireClaim(Constants.ClaimType, role));
+    }
+});
+
 
 var app = builder.Build();
 
@@ -62,6 +68,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseEndpoints(endpoints =>
 {

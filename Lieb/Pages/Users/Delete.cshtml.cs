@@ -30,7 +30,7 @@ namespace Lieb.Pages.Users
                 return NotFound();
             }
 
-            User = await _context.Users.FirstOrDefaultAsync(m => m.LiebUserId == id);
+            User = await _context.LiebUsers.FirstOrDefaultAsync(m => m.LiebUserId == id);
 
             if (User == null)
             {
@@ -46,11 +46,11 @@ namespace Lieb.Pages.Users
                 return NotFound();
             }
 
-            User = await _context.Users.FindAsync(id);
+            User = await _context.LiebUsers.FindAsync(id);
 
             if (User != null)
             {
-                _context.Users.Remove(User);
+                _context.LiebUsers.Remove(User);
                 await _context.SaveChangesAsync();
             }
 

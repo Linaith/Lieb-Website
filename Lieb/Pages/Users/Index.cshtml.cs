@@ -24,7 +24,7 @@ namespace Lieb.Pages.Users
 
         public async Task OnGetAsync()
         {
-            User = await _context.Users.ToListAsync();
+            User = await _context.LiebUsers.ToListAsync();
         }
     }
 }

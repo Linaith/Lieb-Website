@@ -10,5 +10,6 @@ namespace Lieb.Models
         public string Pronouns { get; set; } = string.Empty;
         public DateTime? Birthday { get; set; }
         public ICollection<GuildWars2Account> GuildWars2Accounts { get; set; } = new List<GuildWars2Account>();
+        public ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
     }
 }

@@ -14,15 +14,15 @@
         public int RaidSignUpId { get; set; }
 
         public int RaidId { get; set; }
-        public int UserId { get; set; }
+        public int LiebUserId { get; set; }
         public int GuildWars2AccountId { get; set; }
         public int PlannedRaidRoleId { get; set; }
 
         public SignUpType SignUpType { get; set; }
 
         public Raid Raid { get; set; }
-        public LiebUser User { get; set; } = new LiebUser();
-        public GuildWars2Account GuildWars2Account { get; set; } = new GuildWars2Account();
-        public PlannedRaidRole PlannedRaidRole { get; set; } = new PlannedRaidRole();
+        public LiebUser LiebUser { get; set; }
+        public GuildWars2Account GuildWars2Account { get; set; }
+        public PlannedRaidRole PlannedRaidRole { get; set; }
     }
 }

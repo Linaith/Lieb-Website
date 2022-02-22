@@ -37,16 +37,46 @@ namespace Discord.OAuth2
 
             await Events.CreatingTicket(context);
 
-            LiebUser? user = await _LiebDbcontext.LiebUsers.Include(u => u.Roles).FirstOrDefaultAsync(m => m.DiscordUserId == 1);
-            if (user != null)
-            {
-                foreach (UserRole role in user.Roles)
-                {
-                    context.Identity.AddClaim(new Claim(Constants.ClaimType, role.RoleName));
-                }
-            }
+            //debug
+            //context.Identity.AddClaim(new Claim(Constants.ClaimType, Constants.Roles.User));
+
+            context = await ManageUserRights(context);
 
             return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+        }
+
+        private async Task<OAuthCreatingTicketContext> ManageUserRights(OAuthCreatingTicketContext context)
+        {
+            ulong discordId = ulong.Parse(context.Identity.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault().Value);
+            LiebUser? user = await _LiebDbcontext.LiebUsers.Include(u => u.RoleAssignments).ThenInclude(r => r.LiebRole).FirstOrDefaultAsync(m => m.DiscordUserId == discordId);
+            if (user != null)
+            {
+                if (user.BannedUntil == null || user.BannedUntil < DateTime.UtcNow)
+                {
+                    foreach (RoleAssignment role in user.RoleAssignments)
+                    {
+                        context.Identity.AddClaim(new Claim(Constants.ClaimType, role.LiebRole.RoleName));
+                    }
+                }
+            }
+            else
+            {
+                LiebRole standardRole = await _LiebDbcontext.LiebRoles.FirstOrDefaultAsync(m => m.RoleName == Constants.Roles.User);
+                LiebUser newUser = new LiebUser();
+                newUser.DiscordUserId = discordId;
+                _LiebDbcontext.LiebUsers.Add(newUser);
+                await _LiebDbcontext.SaveChangesAsync();
+                RoleAssignment roleAssignment = new RoleAssignment()
+                {
+                    LiebRoleId = standardRole.LiebRoleId,
+                    LiebUserId = newUser.LiebUserId
+                };
+                _LiebDbcontext.RoleAssignments.Add(roleAssignment);
+                await _LiebDbcontext.SaveChangesAsync();
+
+                context.Identity.AddClaim(new Claim(Constants.ClaimType, Constants.Roles.User));
+            }
+            return context;
         }
     }
 }

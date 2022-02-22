@@ -7,8 +7,8 @@
         public bool CanTank { get; set; }
 
         public int GuildWars2AccountId { get; set; }
-        public int RaidRoleId { get; set; }
-        public GuildWars2Account GuildWars2Account { get; set; } = new GuildWars2Account();
-        public GuildWars2Build RaidRole { get; set; } = new GuildWars2Build();
+        public int GuildWars2BuildId { get; set; }
+        public GuildWars2Account GuildWars2Account { get; set; }
+        public GuildWars2Build GuildWars2Build { get; set; }
     }
 }

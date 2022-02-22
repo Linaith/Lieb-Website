@@ -1,4 +1,5 @@
 ﻿using Lieb.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
 {
@@ -6,25 +7,28 @@ namespace Lieb.Data
     {
         public static void Initialize(LiebContext context)
         {
-            // Look for any students.
+            //add new Roles
+            List<LiebRole> roles = new List<LiebRole>();
+            foreach (string roleName in Constants.Roles.GetAllRoles())
+            {
+                if (context.LiebRoles.FirstOrDefault(r => r.RoleName == roleName) == null)
+                {
+                    roles.Add(new LiebRole()
+                    {
+                        RoleName = roleName
+                    });
+                }
+            }
+            context.LiebRoles.AddRange(roles);
+            context.SaveChanges();
+
+
+            // Look for any LiebUsers.
             if (context.LiebUsers.Any())
             {
                 return;   // DB has been seeded
             }
 
-
-            List<LiebRole> roles = new List<LiebRole>();
-            foreach (string roleName in Constants.Roles.GetAllRoles())
-            {
-                LiebRole role = new LiebRole()
-                {
-                    RoleName = roleName
-                };
-                roles.Add(role);
-            }
-
-            context.LiebRoles.AddRange(roles);
-            context.SaveChanges();
 
             var users = new LiebUser[]
             {
@@ -37,24 +41,28 @@ namespace Lieb.Data
             context.SaveChanges();
 
 
+            int AdminRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.Admin).LiebRoleId;
+            int GuildLeadRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.GuildLead).LiebRoleId;
+            int RaidLeadRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.RaidLead).LiebRoleId;
+            int UserRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.User).LiebRoleId;
+
             var assignments = new RoleAssignment[]
             {
-                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.Admin).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.GuildLead).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.RaidLead).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.User).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.Admin).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.GuildLead).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.RaidLead).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.User).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.GuildLead).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.RaidLead).LiebRoleId },
-                new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = roles.FirstOrDefault(x => x.RoleName == Constants.Roles.User).LiebRoleId }
+                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = AdminRoleId },
+                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = GuildLeadRoleId },
+                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = RaidLeadRoleId },
+                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = UserRoleId },
+                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = AdminRoleId },
+                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = GuildLeadRoleId },
+                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = RaidLeadRoleId },
+                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = UserRoleId },
+                new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = GuildLeadRoleId },
+                new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = RaidLeadRoleId },
+                new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = UserRoleId }
             };
 
             context.RoleAssignments.AddRange(assignments);
             context.SaveChanges();
-
         }
     }
 }

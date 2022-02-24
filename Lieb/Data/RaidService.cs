@@ -96,19 +96,20 @@ namespace Lieb.Data
 
         public async Task SignUp(int raidId, int liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)
         {
-            if ((await GetFreeRoles(raidId)).Where(r => r.PlannedRaidRoleId == plannedRoleId).Any() || signUpType == SignUpType.Backup || signUpType == SignUpType.Flex)
+            if (!IsSignUpAllowed(liebUserId, plannedRoleId, signUpType))
             {
-                using var context = _contextFactory.CreateDbContext();
-                context.RaidSignUps.Add(new RaidSignUp()
-                {
-                    GuildWars2AccountId = guildWars2AccountId,
-                    RaidId = raidId,
-                    LiebUserId = liebUserId,
-                    PlannedRaidRoleId = plannedRoleId,
-                    SignUpType = signUpType
-                });
-                await context.SaveChangesAsync();
+                return;
             }
+            using var context = _contextFactory.CreateDbContext();
+            context.RaidSignUps.Add(new RaidSignUp()
+            {
+                GuildWars2AccountId = guildWars2AccountId,
+                RaidId = raidId,
+                LiebUserId = liebUserId,
+                PlannedRaidRoleId = plannedRoleId,
+                SignUpType = signUpType
+            });
+            await context.SaveChangesAsync();
         }
 
         public async Task SignOff(int raidId, int liebUserId)
@@ -132,26 +133,12 @@ namespace Lieb.Data
 
         public async Task ChangeSignUpType(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType)
         {
-            bool roleIsAvailable = (await GetFreeRoles(raidId)).Where(r => r.PlannedRaidRoleId == plannedRoleId).Any();
-            if (!roleIsAvailable && signUpType == SignUpType.SignedUp)
+            if (!IsSignUpAllowed(liebUserId, plannedRoleId, signUpType))
             {
                 return;
             }
 
             using var context = _contextFactory.CreateDbContext();
-
-            //allow changing to Maybe if already signed up
-            if (!roleIsAvailable && signUpType == SignUpType.Maybe)
-            {
-                Raid raid = await context.Raids
-                .Include(r => r.SignUps)
-                .FirstOrDefaultAsync(r => r.RaidId != raidId);
-                RaidSignUp sign = raid.SignUps.FirstOrDefault(s => s.LiebUserId == liebUserId && s.SignUpType != SignUpType.Flex && s.SignUpType != SignUpType.SignedOff);
-                if(!(sign.SignUpType == SignUpType.SignedUp && sign.PlannedRaidRoleId == plannedRoleId))
-                {
-                    return;
-                }
-            }
 
             RaidSignUp signUp = await context.RaidSignUps.FirstOrDefaultAsync(x => x.RaidId == raidId && x.LiebUserId == liebUserId && x.SignUpType != SignUpType.SignedOff && x.SignUpType != SignUpType.Flex);
             signUp.PlannedRaidRoleId = plannedRoleId;
@@ -159,5 +146,27 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
+        public bool IsSignUpAllowed(int liebUserId, int plannedRoleId, SignUpType signUpType)
+        {
+            if(signUpType == SignUpType.Backup || signUpType == SignUpType.Flex || signUpType == SignUpType.SignedOff)
+            {
+                return true;
+            }
+
+            using var context = _contextFactory.CreateDbContext();
+
+            List<RaidSignUp> signUps = context.RaidSignUps.Where(s => s.PlannedRaidRoleId == plannedRoleId).ToList();
+
+            PlannedRaidRole role = context.PlannedRaidRoles
+            .FirstOrDefault(r => r.PlannedRaidRoleId == plannedRoleId);
+
+            if (role == null)
+                return false;
+
+            if(signUps.Count(s => s.SignUpType == SignUpType.SignedUp) < role.Spots)
+                return true;
+
+            return signUps.Where(s => s.LiebUserId == liebUserId && s.SignUpType == SignUpType.SignedUp).Any();
+        }
     }
 }

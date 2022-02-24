@@ -1,0 +1,22 @@
+﻿@page "/raidoverview"
+@using Lieb.Data
+@inject RaidService RaidService
+
+
+<h3>RaidOverview</h3>
+
+@foreach (var raid in raids) {
+    <p>wupwup</p>
+    <RaidDetails Raid=@raid />
+}
+
+
+
+    @code {
+    private List<Models.GuildWars2.Raid.Raid> raids;
+
+    protected override async Task OnInitializedAsync()
+    {
+        raids = RaidService.GetRaids();
+    }
+}

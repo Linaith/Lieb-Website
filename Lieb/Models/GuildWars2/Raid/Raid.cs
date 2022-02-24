@@ -16,11 +16,11 @@
 
         public string Description { get; set; } = String.Empty;
 
-        public DateTimeOffset StartTime { get; set; }
+        public DateTime StartTime { get; set; }
 
         public double RaidDuration { get; set; }
 
-        public string Organisator { get; set; } = String.Empty;
+        public string Organizer { get; set; } = String.Empty;
 
         public string Guild { get; set; } = String.Empty;
 

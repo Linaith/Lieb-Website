@@ -1,4 +1,6 @@
 ﻿using Lieb.Models;
+using Lieb.Models.GuildWars2;
+using Lieb.Models.GuildWars2.Raid;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -29,12 +31,16 @@ namespace Lieb.Data
                 return;   // DB has been seeded
             }
 
+            GuildWars2Account linaith = new GuildWars2Account() { AccountName = "Linaith.2375" };
+            GuildWars2Account sarah = new GuildWars2Account() { AccountName = "Sarah.3984" };
+            GuildWars2Account hierpiepts = new GuildWars2Account() { AccountName = "hierpiepts.5241" };
+            GuildWars2Account bloodseeker = new GuildWars2Account() { AccountName = "Bloodseeker.2043" };
 
             var users = new LiebUser[]
             {
-                new LiebUser{DiscordUserId=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15")},
-                new LiebUser{DiscordUserId=1, Name="Lisa"},
-                new LiebUser{DiscordUserId=2, Name="Simon"}
+                new LiebUser{DiscordUserId=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith} },
+                new LiebUser{DiscordUserId=1, Name="Lisa", GuildWars2Accounts = new List<GuildWars2Account>(){ hierpiepts}},
+                new LiebUser{DiscordUserId=2, Name="Simon", GuildWars2Accounts = new List<GuildWars2Account>(){ bloodseeker}}
             };
 
             context.LiebUsers.AddRange(users);
@@ -63,6 +69,45 @@ namespace Lieb.Data
 
             context.RoleAssignments.AddRange(assignments);
             context.SaveChanges();
+
+            PlannedRaidRole ele = new PlannedRaidRole()
+            {
+                Description = "Beste",
+                Name = "Heal Ele",
+                Spots = 2
+            };
+            PlannedRaidRole scourge = new PlannedRaidRole()
+            {
+                Description = "WupWup",
+                Name = "Scourge",
+                Spots = 8
+            };
+
+            Raid raid = new Raid()
+            {
+                Title = "Testraid",
+                Description = "This is a test raid\nwith multiple lines?",
+                Guild = "LIEB",
+                Organizer = "Sarah",
+                RaidDuration = 2,
+                RaidType = RaidType.RandomClasses,
+                StartTime = DateTime.Now,
+                VoiceChat = "ts.lieb.games",
+                Roles = new [] { ele, scourge}
+            };
+            context.Raids.Add(raid);
+            context.SaveChanges();
+
+            var signUps = new RaidSignUp[]
+            {
+                new RaidSignUp{GuildWars2AccountId = linaith.GuildWars2AccountId, LiebUserId = users[0].LiebUserId, PlannedRaidRoleId = ele.PlannedRaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
+                new RaidSignUp{GuildWars2AccountId = hierpiepts.GuildWars2AccountId, LiebUserId = users[1].LiebUserId, PlannedRaidRoleId = scourge.PlannedRaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
+                new RaidSignUp{GuildWars2AccountId = bloodseeker.GuildWars2AccountId, LiebUserId = users[2].LiebUserId, PlannedRaidRoleId = scourge.PlannedRaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.Maybe }
+            };
+
+            context.RaidSignUps.AddRange(signUps);
+            context.SaveChanges();
+
         }
     }
 }

@@ -16,9 +16,9 @@ namespace Lieb.Data
         public DbSet<LiebUser> LiebUsers { get; set; }
         public DbSet<RoleAssignment> RoleAssignments { get; set; }
         public DbSet<LiebRole> LiebRoles { get; set; }
-        public DbSet<GuildWars2Account> GuildWars2Account { get; set; }
+        public DbSet<GuildWars2Account> GuildWars2Accounts { get; set; }
         public DbSet<Equipped> Equipped { get; set; }
-        public DbSet<GuildWars2Build> RaidRoles { get; set; }
+        public DbSet<GuildWars2Build> GuildWars2Builds { get; set; }
         public DbSet<PlannedRaidRole> PlannedRaidRoles { get; set; }
         public DbSet<Raid> Raids { get; set; }
         public DbSet<RaidReminder> RaidReminders { get; set; }

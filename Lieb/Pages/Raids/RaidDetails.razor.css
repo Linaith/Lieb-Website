@@ -1,0 +1,31 @@
+﻿body {
+    background-color: rgb(38 38 38);
+    border-radius: 25px;
+    padding: 25px;
+    width: fit-content;
+    color: lightgray;
+}
+
+h5 {
+    color: lightgrey;
+}
+
+.times {
+    float: left;
+    display: inline;
+    width: 49%;
+    padding-top: 15px;
+}
+
+
+.details {
+    float: left;
+    display: inline;
+    width: 33%;
+    padding-top: 15px;
+}
+
+table {
+    column-width: auto;
+    color: lightgray;
+}

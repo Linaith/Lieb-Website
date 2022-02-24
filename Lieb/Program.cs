@@ -8,12 +8,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-builder.Services.AddDbContext<LiebContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("LiebContext")));
+//builder.Services.AddDbContext<LiebContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("LiebContext")), ServiceLifetime.Transient);
+builder.Services.AddDbContextFactory<LiebContext>(opt =>
+        opt.UseSqlServer(builder.Configuration.GetConnectionString("LiebContext")), ServiceLifetime.Transient);
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddServerSideBlazor();
+
+builder.Services.AddScoped<RaidService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<GuildWars2AccountService>();
+
+
+
+
+//builder.Services.AddTransient<RaidService>();
+//builder.Services.AddTransient<UserService>();
+//builder.Services.AddTransient<GuildWars2AccountService>();
+
 builder.Services.AddAuthentication(opt =>
 {
     opt.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;

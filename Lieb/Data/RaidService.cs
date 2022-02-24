@@ -70,7 +70,7 @@ namespace Lieb.Data
 
                 foreach (RaidSignUp signUp in raid.SignUps)
                 {
-                    if (signUp.SignUpType == SignUpType.SignedUp || signUp.SignUpType == SignUpType.Maybe)
+                    if (signUp.SignUpType == SignUpType.SignedUp)
                     {
                         int id = signUp.PlannedRaidRoleId;
                         if (addedIds.ContainsKey(id))
@@ -96,7 +96,7 @@ namespace Lieb.Data
 
         public async Task SignUp(int raidId, int liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)
         {
-            if ((await GetFreeRoles(raidId)).Where(r => r.PlannedRaidRoleId == plannedRoleId).Any())
+            if ((await GetFreeRoles(raidId)).Where(r => r.PlannedRaidRoleId == plannedRoleId).Any() || signUpType == SignUpType.Backup || signUpType == SignUpType.Flex)
             {
                 using var context = _contextFactory.CreateDbContext();
                 context.RaidSignUps.Add(new RaidSignUp()
@@ -132,7 +132,27 @@ namespace Lieb.Data
 
         public async Task ChangeSignUpType(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType)
         {
+            bool roleIsAvailable = (await GetFreeRoles(raidId)).Where(r => r.PlannedRaidRoleId == plannedRoleId).Any();
+            if (!roleIsAvailable && signUpType == SignUpType.SignedUp)
+            {
+                return;
+            }
+
             using var context = _contextFactory.CreateDbContext();
+
+            //allow changing to Maybe if already signed up
+            if (!roleIsAvailable && signUpType == SignUpType.Maybe)
+            {
+                Raid raid = await context.Raids
+                .Include(r => r.SignUps)
+                .FirstOrDefaultAsync(r => r.RaidId != raidId);
+                RaidSignUp sign = raid.SignUps.FirstOrDefault(s => s.LiebUserId == liebUserId && s.SignUpType != SignUpType.Flex && s.SignUpType != SignUpType.SignedOff);
+                if(!(sign.SignUpType == SignUpType.SignedUp && sign.PlannedRaidRoleId == plannedRoleId))
+                {
+                    return;
+                }
+            }
+
             RaidSignUp signUp = await context.RaidSignUps.FirstOrDefaultAsync(x => x.RaidId == raidId && x.LiebUserId == liebUserId && x.SignUpType != SignUpType.SignedOff && x.SignUpType != SignUpType.Flex);
             signUp.PlannedRaidRoleId = plannedRoleId;
             signUp.SignUpType = signUpType;

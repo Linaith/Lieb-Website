@@ -50,7 +50,7 @@
                     {
                         Models.GuildWars2.Raid.RaidSignUp[] signUps = Raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).ToArray();
                         int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();
-                        
+
                         <tr>
                             @if (@usedSpots < @role.Spots)
                             {
@@ -175,7 +175,7 @@
 
     async Task SignOffClicked(PlannedRaidRole role, LiebUser liebUser)
     {
-        await RaidService.SignOff(Raid.RaidId, liebUser.LiebUserId);
+        await RaidService.SignOff(Raid.RaidId, liebUser.LiebUserId, role.PlannedRaidRoleId);
         Raid = RaidService.GetRaid(Raid.RaidId);
     }
 

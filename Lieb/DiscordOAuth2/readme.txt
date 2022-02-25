@@ -1,0 +1,1 @@
+﻿Source: https://github.com/Auralytical/Discord.OAuth2

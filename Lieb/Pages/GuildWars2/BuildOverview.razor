@@ -14,19 +14,45 @@
                 <span class="oi oi-plus" aria-hidden="true"></span> Add Build
             </NavLink>
         </div>
-        @foreach (var build in _builds) {
-            <div class="nav-item px-3">
-                @{string navLink = $"buildedit/{@build.GuildWars2BuildId}";}
-                <NavLink class="nav-link" href="@navLink">@build.BuildName</NavLink>
-            </div>
-        }
     </Authorized>
-    <NotAuthorized>
-        @foreach (var build in _builds) {
-                <div>@build.BuildName</div>
-        }
-    </NotAuthorized>
 </AuthorizeView>
+
+
+ <table>
+    <tr>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Elite</th>
+        <th>Might</th>
+        <th>Heal</th>
+        <th>Quick</th>
+        <th>Alac</th>
+    </tr>
+
+
+@foreach (var build in _builds.OrderBy(b => b.Class).ThenBy(b => b.EliteSpecialization))
+{
+    <tr>    
+        <AuthorizeView Policy="Admin">
+            <Authorized>
+                <td class="nav-item px-3">
+                    @{string navLink = $"buildedit/{@build.GuildWars2BuildId}";}
+                    <NavLink class="nav-link" href="@navLink">@build.BuildName</NavLink>
+                </td>
+            </Authorized>
+            <NotAuthorized>
+                <td>   @build.BuildName</td>
+            </NotAuthorized>
+        </AuthorizeView>
+        <td>@build.Class.ToString()</td>
+        <td>@build.EliteSpecialization.ToString()</td>
+        <td>@build.Might.ToString()</td>
+        <td>@build.Heal.ToString()</td>
+        <td>@build.Quickness.ToString()</td>
+        <td>@build.Alacrity.ToString()</td>
+    </tr>
+}
+</table> 
 
 
 @code 

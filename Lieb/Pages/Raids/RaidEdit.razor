@@ -150,7 +150,7 @@
 
     async Task DeleteRaidClicked()
     {
-        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete the raid?");
         if (confirmed)
         {
             await RaidService.DeleteRaid(_raid.RaidId);
@@ -171,5 +171,6 @@
         }
 
         await RaidService.AddOrEditRaid(_raid);
+        NavigationManager.NavigateTo("raidoverview");
     }
 }

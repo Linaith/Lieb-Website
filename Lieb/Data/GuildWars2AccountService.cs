@@ -13,72 +13,80 @@ namespace Lieb.Data
             _contextFactory = contextFactory;
         }
 
-        public async Task AddAccount(GuildWars2Account guildWars2Account, ulong discordId)
+        public GuildWars2Account GetAccount(int gw2AccountId)
         {
             using var context = _contextFactory.CreateDbContext();
-            LiebUser liebUser = await context.LiebUsers.FirstOrDefaultAsync(u => u.DiscordUserId == discordId);
-            if (liebUser != null)
-            {
-                liebUser.GuildWars2Accounts.Add(guildWars2Account);
-                await context.SaveChangesAsync();
-            }
+            return context.GuildWars2Accounts
+                .Include(a => a.EquippedBuilds)
+                .ThenInclude(e => e.GuildWars2Build)
+                .FirstOrDefault(a => a.GuildWars2AccountId == gw2AccountId);
         }
 
-        public async Task UpdateAccount(int guildWars2AccountId, string accountName, string apiKey)
+        public async Task AddOrEditAccount(GuildWars2Account account, int userId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            GuildWars2Account account = await context.GuildWars2Accounts.FirstOrDefaultAsync(u => u.GuildWars2AccountId == guildWars2AccountId);
             if (account != null)
             {
-                account.ApiKey = apiKey;
-                if (!string.IsNullOrEmpty(accountName))
+                using var context = _contextFactory.CreateDbContext();
+                if (account.GuildWars2AccountId == 0)
                 {
-                    account.AccountName = accountName;
+                    //context.GuildWars2Accounts.Add(account);
+                    LiebUser user = context.LiebUsers.FirstOrDefault(u => u.LiebUserId == userId);
+                    if(user != null)
+                    {
+                        user.GuildWars2Accounts.Add(account);
+                    }
+                    await context.SaveChangesAsync();
                 }
-                await context.SaveChangesAsync();
+                else
+                {
+                    GuildWars2Account accountToChange = context.GuildWars2Accounts
+                        .Include(a => a.EquippedBuilds)
+                        .Include(e => e.EquippedBuilds)
+                        .FirstOrDefault(a => a.GuildWars2AccountId == account.GuildWars2AccountId);
+
+                    accountToChange.AccountName = account.AccountName;
+                    accountToChange.ApiKey = account.ApiKey;
+
+                    List<Equipped> toDelete = new List<Equipped>();
+                    foreach (Equipped equipped in accountToChange.EquippedBuilds)
+                    {
+                        Equipped? newEquipped = account.EquippedBuilds.FirstOrDefault(r => r.EquippedId == equipped.EquippedId);
+                        if (newEquipped != null)
+                        {
+                            equipped.CanTank = newEquipped.CanTank;
+                        }
+                        else
+                        {
+                            toDelete.Add(equipped);
+                        }
+                    }
+                    foreach(Equipped equipped in toDelete)
+                    {
+                        accountToChange.EquippedBuilds.Remove(equipped);
+                        context.Equipped.Remove(equipped);
+                    }
+                    foreach (Equipped equipped in account.EquippedBuilds.Where(r => r.EquippedId == 0))
+                    {
+                        accountToChange.EquippedBuilds.Add(equipped);
+                    }
+
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
-        public async Task RemoveAccount()
+
+        public async Task DeleteAccount(int accountId)
         {
             using var context = _contextFactory.CreateDbContext();
-
-        }
-
-        public async Task AddBuildToAccount()
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-        }
-
-        public async Task RemoveBuildFromAccount()
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-        }
-
-        public async Task<List<GuildWars2Build>> GetBuilds()
-        {
-            using var context = _contextFactory.CreateDbContext();
-            return context.GuildWars2Builds.ToList();
-        }
-
-        public async Task CreateBuild()
-        {
-            using var context = _contextFactory.CreateDbContext();
-            await context.SaveChangesAsync();
-        }
-
-        public async Task UpdateBuild()
-        {
-            using var context = _contextFactory.CreateDbContext();
-            await context.SaveChangesAsync();
-        }
-
-        public async Task DeleteBuild()
-        {
-            using var context = _contextFactory.CreateDbContext();
-            await context.SaveChangesAsync();
+            GuildWars2Account? account = await context.GuildWars2Accounts.FirstOrDefaultAsync(b => b.GuildWars2AccountId == accountId);
+            if (account != null)
+            {
+                context.Equipped.RemoveRange(account.EquippedBuilds);
+                await context.SaveChangesAsync();
+                context.GuildWars2Accounts.Remove(account);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

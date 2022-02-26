@@ -1,0 +1,145 @@
+﻿@page "/gw2accountedit"
+@page "/gw2accountedit/{gw2Id}"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@inject GuildWars2AccountService GuildWars2AccountService
+@inject GuildWars2BuildService GuildWars2BuildService
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JsRuntime
+
+<h3>ManageGuildWars2Account</h3>
+
+<AuthorizeView Context="authorizationContext">
+    <Authorized>
+        <EditForm Model="@_account" OnValidSubmit="@HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+    
+            <p>
+                <label>
+                    Account name:
+                    <InputText @bind-Value="_account.AccountName" />
+                </label>
+            </p>
+            <p>
+                <label>
+                    Api-Key:
+                    <InputText @bind-Value="_account.ApiKey" />
+                </label>
+            </p>
+
+            
+             <table>
+                <tr>
+                    <th></th>
+                    <th>can Tank</th>
+                    <th>Build</th>
+                </tr>
+        
+            
+                <label>Equipped Builds</label>
+                @foreach (Equipped equippedBuild in _account.EquippedBuilds)
+                {
+                    <tr>
+                        <td><button type=button @onclick="() => RemoveBuildClicked(equippedBuild.GuildWars2BuildId)">Remove</button></td>
+                        <td><input type="checkbox" checked="@equippedBuild.CanTank" @onchange="args => TankingStatusChanged(equippedBuild, args)" /></td>
+                        <td>@equippedBuild.GuildWars2Build.BuildName</td>
+                    </tr>
+                }
+            </table> 
+                
+            <p>
+                <label>Existing Builds</label>
+                @foreach (GuildWars2Build build in GuildWars2BuildService.GetBuilds())
+                {
+                    if(!_account.EquippedBuilds.Where(e => e.GuildWars2BuildId == build.GuildWars2BuildId).Any())
+                    {
+                        <div><button type=button @onclick="() => AddBuildlicked(build)">Add</button>@build.BuildName</div>
+                    }
+                }
+            </p>
+        
+
+            <br />
+            <button type="submit">Submit</button>
+
+        </EditForm>
+        <br/>
+        <button type=button @onclick="() => DeleteAccountClicked()">Delete Account</button>
+    </Authorized>
+</AuthorizeView>
+
+
+@code {
+
+    [Parameter]
+    public string gw2Id { get; set; }
+
+    public GuildWars2Account _account;
+
+    private LiebUser _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+        _user = UserService.GetLiebUserSmall(discordId);
+
+        if(!string.IsNullOrEmpty(gw2Id) && int.TryParse(gw2Id, out int parsedId) && _user.GuildWars2Accounts.Where(a => a.GuildWars2AccountId == parsedId).Any())
+        {
+            _account = GuildWars2AccountService.GetAccount(parsedId);
+        }
+        else
+        {
+            _account = new GuildWars2Account();
+        }
+    }
+
+    async Task AddBuildlicked(GuildWars2Build build)
+    {
+        Equipped equipped = new Equipped()
+            {
+                GuildWars2AccountId = _account.GuildWars2AccountId,
+                GuildWars2Account = _account,
+                GuildWars2BuildId = build.GuildWars2BuildId,
+                GuildWars2Build = build
+            };
+        _account.EquippedBuilds.Add(equipped);
+    }
+
+
+    async Task RemoveBuildClicked(int buildId)
+    {
+        Equipped equipped = _account.EquippedBuilds.FirstOrDefault(e => e.GuildWars2BuildId == buildId);
+        if (equipped != null)
+        {
+            _account.EquippedBuilds.Remove(equipped);
+        }
+    }
+
+    async Task TankingStatusChanged(Equipped equipped, ChangeEventArgs args)
+    {
+        equipped.CanTank =bool.Parse(args.Value.ToString());
+    }
+
+    async Task DeleteAccountClicked()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this Account?\nThis will sign you off in every raid in which you are signed up with this account.");
+        if (confirmed)
+        {
+            await GuildWars2AccountService.DeleteAccount(_account.GuildWars2AccountId);
+            NavigationManager.NavigateTo("accountedit");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await GuildWars2AccountService.AddOrEditAccount(_account, _user.LiebUserId);
+        NavigationManager.NavigateTo("accountedit");
+    }
+}

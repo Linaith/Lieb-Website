@@ -1,4 +1,5 @@
 ﻿using Lieb.Models;
+using Lieb.Models.GuildWars2;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -51,6 +52,22 @@ namespace Lieb.Data
             }
             else
                 return -1;
+        }
+
+        public async Task EditUser(LiebUser user)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser? userToChange = context.LiebUsers
+            .Include(u => u.GuildWars2Accounts)
+            .FirstOrDefault(u => u.LiebUserId == user.LiebUserId);
+
+            if(userToChange != null)
+            {
+                userToChange.Name = user.Name;
+                userToChange.Pronouns = user.Pronouns;
+                userToChange.Birthday = user.Birthday;
+            }
+            await context.SaveChangesAsync();
         }
     }
 }

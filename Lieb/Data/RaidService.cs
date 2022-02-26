@@ -76,7 +76,8 @@ namespace Lieb.Data
                     raidToChange.DiscordChannelId = raid.DiscordChannelId;
                     raidToChange.DiscordGuildId = raid.DiscordGuildId;
 
-                    foreach(PlannedRaidRole role in raidToChange.Roles)
+                    List<PlannedRaidRole> rolesToRemove = new List<PlannedRaidRole>();
+                    foreach (PlannedRaidRole role in raidToChange.Roles)
                     {
                         PlannedRaidRole? newRole = raid.Roles.FirstOrDefault(r => r.PlannedRaidRoleId == role.PlannedRaidRoleId);
                         if(newRole != null)
@@ -87,15 +88,20 @@ namespace Lieb.Data
                         }
                         else
                         {
-                            raidToChange.Roles.Remove(role);
-                            context.PlannedRaidRoles.Remove(role);
+                            rolesToRemove.Add(role);
                         }
+                    }
+                    foreach(PlannedRaidRole role in rolesToRemove)
+                    {
+                        raidToChange.Roles.Remove(role);
+                        context.PlannedRaidRoles.Remove(role);
                     }
                     foreach (PlannedRaidRole role in raid.Roles.Where(r => r.PlannedRaidRoleId == 0))
                     {
                         raidToChange.Roles.Add(role);
                     }
 
+                    List<RaidReminder> reminderToRemove = new List<RaidReminder>();
                     foreach (RaidReminder reminder in raidToChange.Reminders)
                     {
                         RaidReminder? newReminder = raid.Reminders.FirstOrDefault(r => r.RaidReminderId == reminder.RaidReminderId);
@@ -109,9 +115,13 @@ namespace Lieb.Data
                         }
                         else
                         {
-                            raidToChange.Reminders.Remove(reminder);
-                            context.RaidReminders.Remove(reminder);
+                            reminderToRemove.Add(reminder);
                         }
+                    }
+                    foreach(RaidReminder reminder in reminderToRemove)
+                    {
+                        raidToChange.Reminders.Remove(reminder);
+                        context.RaidReminders.Remove(reminder);
                     }
                     foreach (PlannedRaidRole role in raid.Roles.Where(r => r.PlannedRaidRoleId == 0))
                     {

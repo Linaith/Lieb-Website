@@ -140,10 +140,10 @@
 <AuthorizeView Policy="RaidLead">
     <div class="nav-item px-3">
         @{string navLink = $"raidedit/{@Raid.RaidId}";}
-            <NavLink class="nav-link" href="@navLink">
-                <span class="oi oi-plus" aria-hidden="true"></span> Edit
-            </NavLink>
-        </div>
+        <NavLink class="nav-link" href="@navLink">
+            <span class="oi oi-plus" aria-hidden="true"></span> Edit
+        </NavLink>
+    </div>
 </AuthorizeView>
 </body>
 

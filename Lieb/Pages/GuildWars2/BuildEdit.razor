@@ -98,7 +98,7 @@
 
     async Task DeleteBuildClicked()
     {
-        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this Build?");
         if (confirmed)
         {
             await GuildWars2BuildService.DeleteBuild(_build.GuildWars2BuildId);

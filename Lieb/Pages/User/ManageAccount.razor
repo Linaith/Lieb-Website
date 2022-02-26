@@ -1,0 +1,78 @@
+﻿@page "/accountedit"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>ManageAccount</h3>
+
+<AuthorizeView Context="authorizationContext">
+    <Authorized>
+    <EditForm Model="@_user" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+    
+        <p>
+            <label>
+                Name:
+                <InputText @bind-Value="_user.Name" />
+            </label>
+        </p>
+        <p>
+            <label>
+                Pronouns:
+                <InputText @bind-Value="_user.Pronouns" />
+            </label>
+        </p>
+        
+        <p>
+            <label>
+                Birthday:
+                <InputDate @bind-Value="_user.Birthday" />
+            </label>
+        </p>
+        
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="gw2accountedit">
+                <span class="oi oi-plus" aria-hidden="true"></span> Add Account
+            </NavLink>
+        </div>
+
+        @foreach(GuildWars2Account account in _user.GuildWars2Accounts)
+        {
+            <div class="nav-item px-3">
+                @{string navLink = $"gw2accountedit/{@account.GuildWars2AccountId}";}
+                <NavLink class="nav-link" href="@navLink">@account.AccountName</NavLink>
+            </div>
+        }
+        
+        <br />
+        <button type="submit">Submit</button>
+
+    </EditForm>
+</Authorized>
+</AuthorizeView>
+
+
+@code {
+
+    public LiebUser _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+        _user = UserService.GetLiebUserSmall(discordId);
+    }
+
+
+    private async Task HandleValidSubmit()
+    {
+        await UserService.EditUser(_user);
+    }
+}

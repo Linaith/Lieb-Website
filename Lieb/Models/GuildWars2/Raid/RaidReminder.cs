@@ -1,4 +1,6 @@
-﻿namespace Lieb.Models.GuildWars2.Raid
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Lieb.Models.GuildWars2.Raid
 {
     public class RaidReminder
     {
@@ -20,6 +22,8 @@
 
         public ReminderType Type { get; set; }
 
+        [Required]
+        [StringLength(1000, ErrorMessage = "Message too long (1000 character limit).")]
         public string Message { get; set; }
 
         public double HoursBeforeRaid { get; set; }

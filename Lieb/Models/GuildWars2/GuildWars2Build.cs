@@ -1,4 +1,6 @@
-﻿namespace Lieb.Models.GuildWars2
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Lieb.Models.GuildWars2
 {
     public enum Role
     {
@@ -67,6 +69,9 @@
     public class GuildWars2Build
     {
         public int GuildWars2BuildId { get; set; }
+
+        [Required]
+        [StringLength(60, ErrorMessage = "BuildName too long (60 character limit).")]
         public string BuildName { get; set; } = String.Empty;
 
         public short Might { get; set; }

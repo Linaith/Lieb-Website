@@ -15,9 +15,11 @@ namespace Lieb.Models.GuildWars2.Raid
         public int RaidId { get; private set; }
 
         [Required]
+        [StringLength(100, ErrorMessage = "Title too long (100 character limit).")]
         public string Title { get; set; } = String.Empty;
 
         [Required]
+        [StringLength(1000, ErrorMessage = "Description too long (1000 character limit).")]
         public string Description { get; set; } = String.Empty;
 
         [Required]
@@ -30,12 +32,15 @@ namespace Lieb.Models.GuildWars2.Raid
         public DateTimeOffset EndTime { get; set; }
 
         [Required]
+        [StringLength(50, ErrorMessage = "Organizer too long (50 character limit).")]
         public string Organizer { get; set; } = String.Empty;
 
         [Required]
+        [StringLength(50, ErrorMessage = "Guild too long (50 character limit).")]
         public string Guild { get; set; } = String.Empty;
 
         [Required]
+        [StringLength(50, ErrorMessage = "VoiceChat too long (50 character limit).")]
         public string VoiceChat { get; set; } = String.Empty;
 
         [Required]

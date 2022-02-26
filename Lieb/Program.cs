@@ -23,13 +23,8 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<RaidService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GuildWars2AccountService>();
+builder.Services.AddScoped<GuildWars2BuildService>();
 
-
-
-
-//builder.Services.AddTransient<RaidService>();
-//builder.Services.AddTransient<UserService>();
-//builder.Services.AddTransient<GuildWars2AccountService>();
 
 builder.Services.AddAuthentication(opt =>
 {

@@ -1,0 +1,40 @@
+﻿@page "/buildoverview"
+@using Lieb.Data
+@using Lieb.Models.GuildWars2
+@inject GuildWars2BuildService GuildWars2BuildService
+
+
+<h3>BuildOverview</h3>
+
+
+<AuthorizeView Policy="Admin">
+    <Authorized>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="buildedit">
+                <span class="oi oi-plus" aria-hidden="true"></span> Add Build
+            </NavLink>
+        </div>
+        @foreach (var build in _builds) {
+            <div class="nav-item px-3">
+                @{string navLink = $"buildedit/{@build.GuildWars2BuildId}";}
+                <NavLink class="nav-link" href="@navLink">@build.BuildName</NavLink>
+            </div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        @foreach (var build in _builds) {
+                <div>@build.BuildName</div>
+        }
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code 
+{
+    private List<GuildWars2Build> _builds;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _builds = GuildWars2BuildService.GetBuilds();
+    }
+}

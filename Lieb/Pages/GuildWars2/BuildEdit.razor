@@ -1,0 +1,114 @@
+﻿@page "/buildedit"
+@page "/buildedit/{buildId}"
+@using Lieb.Data
+@using Lieb.Models.GuildWars2
+@using System.ComponentModel.DataAnnotations
+@inject GuildWars2BuildService GuildWars2BuildService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+
+<h3>BuildEdit</h3>
+
+<AuthorizeView Policy="Admin" Context="authorizationContext">
+    <EditForm Model="@_build" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+    
+        <p>
+            <label>
+                Build name:
+                <InputText @bind-Value="_build.BuildName" />
+            </label>
+        </p>
+
+        <p>
+            <label>
+                Might:
+                <InputNumber @bind-Value="_build.Might" />
+            </label>
+        </p>
+        <p>
+            <label>
+                Quickness:
+                <InputNumber @bind-Value="_build.Quickness" />
+            </label>
+        </p>
+        <p>
+            <label>
+                Alacrity:
+                <InputNumber @bind-Value="_build.Alacrity" />
+            </label>
+        </p>
+        <p>
+            <label>
+                Heal:
+                <InputNumber @bind-Value="_build.Heal" />
+            </label>
+        </p>
+        
+        <p>
+            <label>
+                Class:
+                <InputSelect @bind-Value="_build.Class">
+                    @foreach(GuildWars2Class gw2Class in Enum.GetValues(typeof(GuildWars2Class)))
+                    {
+                        <option value="@gw2Class">@gw2Class.ToString()</option>
+                    }
+                </InputSelect>
+            </label>
+        </p>
+        <p>
+            <label>
+                Elite specialization:
+                <InputSelect @bind-Value="_build.EliteSpecialization">
+                    @foreach(EliteSpecialization gw2EliteSpec in Enum.GetValues(typeof(EliteSpecialization)))
+                    {
+                        <option value="@gw2EliteSpec">@gw2EliteSpec.ToString()</option>
+                    }
+                </InputSelect>
+            </label>
+        </p>
+    <button type="submit">Submit</button>
+
+    </EditForm>
+        <br/>
+<button type=button @onclick="() => DeleteBuildClicked()">Delete Build</button>
+</AuthorizeView>
+
+
+@code {
+
+    [Parameter]
+    public string buildId { get; set; }
+
+    public GuildWars2Build _build;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if(!string.IsNullOrEmpty(buildId) && int.TryParse(buildId, out int parsedId))
+        {
+            _build = GuildWars2BuildService.GetBuild(parsedId);
+        }
+        else
+        {
+            _build = new GuildWars2Build();
+        }
+    }
+
+    async Task DeleteBuildClicked()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+        if (confirmed)
+        {
+            await GuildWars2BuildService.DeleteBuild(_build.GuildWars2BuildId);
+            NavigationManager.NavigateTo("buildoverview");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await GuildWars2BuildService.AddOrEditBuild(_build);
+            NavigationManager.NavigateTo("buildoverview");
+    }
+}

@@ -5,14 +5,25 @@
 
 <h3>RaidOverview</h3>
 
+
+<AuthorizeView Policy="RaidLead">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="raidedit">
+                <span class="oi oi-plus" aria-hidden="true"></span> Add Raid
+            </NavLink>
+        </div>
+</AuthorizeView>
+
+
 @foreach (var raid in raids) {
-    <p>wupwup</p>
+    <br />
     <RaidDetails Raid=@raid />
 }
 
 
 
-    @code {
+@code 
+{
     private List<Models.GuildWars2.Raid.Raid> raids;
 
     protected override async Task OnInitializedAsync()

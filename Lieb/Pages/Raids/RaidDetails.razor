@@ -13,11 +13,11 @@
 <div >
     <div class="times">
         <h5>Date</h5>
-        <p>@Raid.StartTime.ToLongDateString()</p>
+        <p>@Raid.Date.ToLongDateString()</p>
     </div>
     <div class="times">
         <h5>Time</h5>
-        <p>from: @Raid.StartTime.ToShortTimeString()  to: @Raid.StartTime.AddHours(@Raid.RaidDuration).ToShortTimeString()</p>
+        <p>from: @Raid.StartTime.LocalDateTime.ToShortTimeString()  to: @Raid.EndTime.LocalDateTime.ToShortTimeString()</p>
     </div>
 </div>
 
@@ -109,23 +109,41 @@
         }
     </Authorized>
     <NotAuthorized>
-        @foreach (var role in Raid.Roles)
-        {
-            Models.GuildWars2.Raid.RaidSignUp[] signUps = Raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).ToArray();
-            int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();
-
-            <h5>@role.Name: @role.Description (@usedSpots /@role.Spots)</h5>
-            @foreach (var signUp in signUps)
-            {
-                if(signUp.SignUpType != SignUpType.SignedOff)
-                {
-                    string signUpStatus = string.Empty;
-                    if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
-                    <div>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</div>
-                }
-            }
-        }
+        <div>
+            <table class="table">
+                <tbody>
+                    @foreach (var role in Raid.Roles)
+                    {
+                        Models.GuildWars2.Raid.RaidSignUp[] signUps = Raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).ToArray();
+                        int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();
+                        
+                        <tr>
+                            <td><h5>@role.Name: @role.Description (@usedSpots /@role.Spots)</h5></td>
+                        </tr>
+                        @foreach (var signUp in signUps)
+                        {
+                            if(signUp.SignUpType != SignUpType.SignedOff)
+                            {
+                                string signUpStatus = string.Empty;
+                                if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
+                                <tr>
+                                    <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </NotAuthorized>
+</AuthorizeView>
+<AuthorizeView Policy="RaidLead">
+    <div class="nav-item px-3">
+        @{string navLink = $"raidedit/{@Raid.RaidId}";}
+            <NavLink class="nav-link" href="@navLink">
+                <span class="oi oi-plus" aria-hidden="true"></span> Edit
+            </NavLink>
+        </div>
 </AuthorizeView>
 </body>
 

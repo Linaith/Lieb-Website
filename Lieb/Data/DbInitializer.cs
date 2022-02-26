@@ -38,7 +38,7 @@ namespace Lieb.Data
 
             var users = new LiebUser[]
             {
-                new LiebUser{DiscordUserId=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith} },
+                new LiebUser{DiscordUserId=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
                 new LiebUser{DiscordUserId=1, Name="Lisa", GuildWars2Accounts = new List<GuildWars2Account>(){ hierpiepts}},
                 new LiebUser{DiscordUserId=2, Name="Simon", GuildWars2Accounts = new List<GuildWars2Account>(){ bloodseeker}}
             };
@@ -89,9 +89,10 @@ namespace Lieb.Data
                 Description = "This is a test raid\nwith multiple lines?",
                 Guild = "LIEB",
                 Organizer = "Sarah",
-                RaidDuration = 2,
                 RaidType = RaidType.RandomClasses,
+                Date = DateTime.Now.Date,
                 StartTime = DateTime.Now,
+                EndTime = DateTime.Now.AddHours(2),
                 VoiceChat = "ts.lieb.games",
                 Roles = new [] { ele, scourge}
             };

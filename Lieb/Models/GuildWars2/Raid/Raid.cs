@@ -1,34 +1,47 @@
-﻿namespace Lieb.Models.GuildWars2.Raid
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Lieb.Models.GuildWars2.Raid
 {
     public enum RaidType
     {
-        Planned = 1,
-        RandomWithBoons = 2,
-        RandomClasses = 3,
-        RandomEliteSpecialization = 4,
+        Planned = 0,
+        RandomWithBoons = 1,
+        RandomClasses = 2,
+        RandomEliteSpecialization = 3,
     }
 
     public class Raid
     {
         public int RaidId { get; private set; }
 
+        [Required]
         public string Title { get; set; } = String.Empty;
 
+        [Required]
         public string Description { get; set; } = String.Empty;
 
-        public DateTime StartTime { get; set; }
+        [Required]
+        public DateTime Date { get; set; } = DateTime.Now;
 
-        public double RaidDuration { get; set; }
+        [Required]
+        public DateTimeOffset StartTime { get; set; }
 
+        [Required]
+        public DateTimeOffset EndTime { get; set; }
+
+        [Required]
         public string Organizer { get; set; } = String.Empty;
 
+        [Required]
         public string Guild { get; set; } = String.Empty;
 
+        [Required]
         public string VoiceChat { get; set; } = String.Empty;
 
-        public int Frequency { get; set; }
-
+        [Required]
         public RaidType RaidType { get; set; }
+
+        public int Frequency { get; set; }
 
         //role name, number of spots
         public ICollection<PlannedRaidRole> Roles { get; set; } = new HashSet<PlannedRaidRole>();

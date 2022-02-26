@@ -44,14 +44,96 @@ namespace Lieb.Data
                 .FirstOrDefault(r => r.RaidId == raidId);
         }
 
-        public async Task CreateRaid(Raid raid)
+        public async Task AddOrEditRaid(Raid raid)
         {
-            if (raid == null)
+            if (raid != null)
             {
                 using var context = _contextFactory.CreateDbContext();
-                context.Raids.Add(raid);
-                await context.SaveChangesAsync();
+                if (raid.RaidId == 0)
+                {
+                    context.Raids.Add(raid);
+                    await context.SaveChangesAsync();
+                }
+                else
+                {
+                    Raid raidToChange = await context.Raids
+                        .Include(r => r.Roles)
+                        .Include(r => r.SignUpHistory)
+                        .Include(r => r.Reminders)
+                        .Include(r => r.SignUps)
+                        .FirstOrDefaultAsync(r => r.RaidId == raid.RaidId);
+                    raidToChange.Title = raid.Title;
+                    raidToChange.Description = raid.Description;
+                    raidToChange.Date = raid.Date;
+                    raidToChange.StartTime = raid.StartTime;
+                    raidToChange.EndTime = raid.EndTime;
+                    raidToChange.Organizer = raid.Organizer;
+                    raidToChange.Guild = raid.Guild;
+                    raidToChange.VoiceChat = raid.VoiceChat;
+                    raidToChange.RaidType = raid.RaidType;
+                    raidToChange.Frequency = raid.Frequency;
+                    raidToChange.DiscordMessageId = raid.DiscordMessageId;
+                    raidToChange.DiscordChannelId = raid.DiscordChannelId;
+                    raidToChange.DiscordGuildId = raid.DiscordGuildId;
+
+                    foreach(PlannedRaidRole role in raidToChange.Roles)
+                    {
+                        PlannedRaidRole? newRole = raid.Roles.FirstOrDefault(r => r.PlannedRaidRoleId == role.PlannedRaidRoleId);
+                        if(newRole != null)
+                        {
+                            role.Spots = newRole.Spots;
+                            role.Name = newRole.Name;
+                            role.Description = newRole.Description;
+                        }
+                        else
+                        {
+                            raidToChange.Roles.Remove(role);
+                            context.PlannedRaidRoles.Remove(role);
+                        }
+                    }
+                    foreach (PlannedRaidRole role in raid.Roles.Where(r => r.PlannedRaidRoleId == 0))
+                    {
+                        raidToChange.Roles.Add(role);
+                    }
+
+                    foreach (RaidReminder reminder in raidToChange.Reminders)
+                    {
+                        RaidReminder? newReminder = raid.Reminders.FirstOrDefault(r => r.RaidReminderId == reminder.RaidReminderId);
+                        if (newReminder != null)
+                        {
+                            reminder.Type = newReminder.Type;
+                            reminder.Message = newReminder.Message;
+                            reminder.HoursBeforeRaid = newReminder.HoursBeforeRaid;
+                            reminder.ChannelId = newReminder.ChannelId;
+                            reminder.Sent = newReminder.Sent;
+                        }
+                        else
+                        {
+                            raidToChange.Reminders.Remove(reminder);
+                            context.RaidReminders.Remove(reminder);
+                        }
+                    }
+                    foreach (PlannedRaidRole role in raid.Roles.Where(r => r.PlannedRaidRoleId == 0))
+                    {
+                        raidToChange.Roles.Add(role);
+                    }
+
+                    await context.SaveChangesAsync();
+                }
             }
+        }
+
+        public async Task DeleteRaid(int raidId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            Raid raid = GetRaid(raidId);
+            context.RaidSignUps.RemoveRange(raid.SignUps);
+            context.PlannedRaidRoles.RemoveRange(raid.Roles);
+            context.SignUpHistories.RemoveRange(raid.SignUpHistory);
+            context.RaidReminders.RemoveRange(raid.Reminders);
+            await context.SaveChangesAsync();
+            context.Raids.Remove(raid);
+            await context.SaveChangesAsync();
         }
 
         public async Task SignUp(int raidId, int liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)

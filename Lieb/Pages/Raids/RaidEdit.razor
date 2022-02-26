@@ -1,0 +1,175 @@
+﻿@page "/raidedit"
+@page "/raidedit/{raidId}"
+@using Lieb.Data
+@using Lieb.Models.GuildWars2.Raid
+@using System.ComponentModel.DataAnnotations
+@inject RaidService RaidService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+
+<h3>CreateRaid</h3>
+
+<AuthorizeView Policy="RaidLead" Context="authorizationContext">
+<EditForm Model="@_raid" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    @{
+        bool _isEdit = _raid.RaidId != 0;
+    }
+    <p>
+        <label>
+            Title:
+            <InputText @bind-Value="_raid.Title" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Description:
+            <InputTextArea @bind-Value="_raid.Description" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Raid Type:
+            <InputSelect @bind-Value="_raid.RaidType" disabled="@_isEdit">
+                <option value="@RaidType.Planned">Planned</option>
+                <option value="@RaidType.RandomWithBoons">Random with boons covred</option>
+                <option value="@RaidType.RandomClasses">Random classes</option>
+                <option value="@RaidType.RandomEliteSpecialization">Random elite specializations</option>
+            </InputSelect>
+        </label>
+    </p>
+    
+    <p>
+        <label>
+            Date:
+            <InputDate @bind-Value="_raid.Date" />
+        </label>
+    </p>
+
+    <p>
+        <label>
+            Start Time:
+            <input type="time" @bind="@_raid.StartTime" />
+        </label>
+    </p>
+    <p>
+        <label>
+            End Time:
+            <input type="time" @bind="@_raid.EndTime" />
+        </label>
+    </p>
+
+    <p>
+        <label>
+            Organizer:
+            <InputText @bind-Value="_raid.Organizer" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Guild:
+            <InputText @bind-Value="_raid.Guild" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Voice chat:
+            <InputText @bind-Value="_raid.VoiceChat" />
+        </label>
+    </p>
+
+    @if(_raid.RaidType == RaidType.Planned)
+    {
+        <p>
+            <label>
+                Roles:
+            </label>
+            <button type=button @onclick="() => AddRoleClicked()">Add role</button>
+            <table>
+                <tr>
+                    <th>Spots</th>
+                    <th>Role name</th>
+                    <th>Description</th>
+                </tr>
+                @foreach( PlannedRaidRole role in _raid.Roles)
+                {
+                    bool disableEdit = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).Any();
+                    <tr>
+                        <td><InputNumber @bind-Value="role.Spots" disabled="@disableEdit" /></td>
+                        <td><InputText @bind-Value="role.Name" disabled="@disableEdit"  /></td>
+                        <td><InputText @bind-Value="role.Description" disabled="@disableEdit"  /></td>
+                        @if(!disableEdit)
+                        {
+                            <td><button type=button @onclick="() => DeleteRoleClicked(role)">Delete</button></td>
+                        }
+                    </tr>
+                }
+            </table> 
+        </p>
+    }
+
+    <button type="submit">Submit</button>
+
+</EditForm>
+        <br/>
+<button type=button @onclick="() => DeleteRaidClicked()">Delete Raid</button>
+</AuthorizeView>
+
+@code {
+
+    [Parameter]
+    public string raidId { get; set; }
+
+    public Raid _raid;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(!string.IsNullOrEmpty(raidId) && int.TryParse(raidId, out int parsedId))
+        {
+            _raid = RaidService.GetRaid(parsedId);
+        }
+        else
+        {
+            _raid = new Raid();
+        }
+    }
+
+    async Task AddRoleClicked()
+    {
+        _raid.Roles.Add(new PlannedRaidRole());
+    }
+
+
+    async Task DeleteRoleClicked(PlannedRaidRole role)
+    {
+        _raid.Roles.Remove(role);
+    }
+
+    async Task DeleteRaidClicked()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+        if (confirmed)
+        {
+            await RaidService.DeleteRaid(_raid.RaidId);
+            NavigationManager.NavigateTo("raidoverview");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if(_raid.RaidType != RaidType.Planned && _raid.Roles.Count == 0)
+        {
+            _raid.Roles.Add(new PlannedRaidRole()
+                {
+                    Spots = 10,
+                    Name = "Random",
+                    Description = _raid.RaidType.ToString()
+                });
+        }
+
+        await RaidService.AddOrEditRaid(_raid);
+    }
+}

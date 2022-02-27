@@ -46,6 +46,8 @@ namespace Lieb.Models.GuildWars2.Raid
         [Required]
         public RaidType RaidType { get; set; }
 
+        public bool IsRandomized { get; set; } = false;
+
         public int Frequency { get; set; }
 
         public string RequiredRole { get; set; } = String.Empty;

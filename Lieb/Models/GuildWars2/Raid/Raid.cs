@@ -48,6 +48,12 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public int Frequency { get; set; }
 
+        public string RequiredRole { get; set; } = String.Empty;
+
+        public DateTime FreeForAllDate { get; set; } = DateTime.Now;
+
+        public DateTimeOffset FreeForAllTime { get; set; }
+
         //role name, number of spots
         public ICollection<PlannedRaidRole> Roles { get; set; } = new HashSet<PlannedRaidRole>();
 

@@ -1,0 +1,118 @@
+﻿@page "/useredit"
+@page "/useredit/{userId}"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JsRuntime
+
+<h3>UserEdit</h3>
+
+<EditForm Model="@_user" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    
+            
+    <AuthorizeView Policy="@Constants.Roles.Admin" Context="authorizationContext">
+        <Authorized>
+            <p>
+                <label>
+                    Banned Until:
+                    <InputDate @bind-Value="_user.BannedUntil" />
+                </label>
+            </p>
+        </Authorized>
+    </AuthorizeView>
+
+    <label>Equipped Builds</label>
+    <table>
+        <tr>
+            <th></th>
+            <th>Role Name</th>
+            <th>IsSystemRole</th>
+        </tr>
+        @foreach (LiebRole role in _roles)
+        {
+            <tr>
+                @{
+                    bool hasRole = _user.RoleAssignments.Where(a => a.LiebRoleId == role.LiebRoleId).Any();
+                    bool disabled = _editingUserRights < role.LevelToAssign;
+                 }
+                <td><input type="checkbox" disabled="@disabled" checked="@hasRole" @onchange="args => RoleStatusChanged(role, args)" /></td>
+                <td>@role.RoleName</td>
+                @if(@role.IsSystemRole)
+                {
+                    <td>True</td>
+                }
+            </tr>
+        }
+    </table> 
+    <br />
+    <button type="submit">Submit</button>
+
+</EditForm>
+
+
+@code {
+
+    [Parameter]
+    public string userId { get; set; }
+
+    private LiebUser _user;
+    private int _editingUserRights = 0;
+    private List<LiebRole> _roles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+        LiebUser editingUser = UserService.GetLiebUser(discordId);
+
+        foreach(RoleAssignment assignment in editingUser.RoleAssignments)
+        {
+            if(_editingUserRights < assignment.LiebRole.Level)
+            {
+                _editingUserRights = assignment.LiebRole.Level;
+            }
+        }
+
+        if(!string.IsNullOrEmpty(userId) && int.TryParse(userId, out int parsedId))
+        {
+            _user = UserService.GetLiebUser(parsedId);
+            _roles = UserService.GetLiebRoles();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("useroverview");
+        }
+    }
+
+    async Task RoleStatusChanged(LiebRole role, ChangeEventArgs args)
+    {
+        bool isChecked = bool.Parse(args.Value.ToString());
+        RoleAssignment? assignment = _user.RoleAssignments.FirstOrDefault(a => a.LiebRoleId == role.LiebRoleId);
+        if(isChecked && assignment == null)
+        {
+            RoleAssignment roleAssignment = new RoleAssignment()
+                {
+                    LiebRoleId = role.LiebRoleId,
+                    LiebUserId = _user.LiebUserId
+                };
+            _user.RoleAssignments.Add(roleAssignment);
+        }
+        else if(!isChecked && assignment != null)
+        {
+            _user.RoleAssignments.Remove(assignment);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await UserService.EditUserRoles(_user);
+        NavigationManager.NavigateTo("useroverview");
+    }
+}

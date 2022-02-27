@@ -1,0 +1,72 @@
+﻿@page "/roleedit"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@inject UserService UserService
+
+
+<h3>UserOverview</h3>
+
+
+<AuthorizeView Policy="@Constants.Roles.Admin">
+    <Authorized>
+        
+    <table>
+    <tr>
+        <th>Name</th>
+        <th>GW2 Account</th>
+        <th>Banned Until</th>
+    </tr>
+        <h5>Roles</h5>
+        @foreach(LiebRole role in _roles)
+        {
+            <tr>
+                <td>@if(!role.IsSystemRole)
+                {
+                    <button type=button @onclick="() => DeleteRoleClicked(role)">Create Role</button>
+                }</td>
+                <td>@role.RoleName</td>
+            </tr>
+        }
+        </table>
+        <p>
+            <label>
+                new Role:
+                <input @bind="_newRoleName" />
+                <button type=button @onclick="() => CreateRoleClicked()">Create Role</button>
+            </label>
+        </p>  
+    </Authorized>
+</AuthorizeView>
+
+
+@code 
+{
+    private List<LiebRole> _roles;
+
+    private string _newRoleName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _roles = UserService.GetLiebRoles();
+    }
+
+    async Task CreateRoleClicked()
+    {
+        LiebRole role = new LiebRole()
+            {
+                RoleName = _newRoleName,
+                IsSystemRole = false,
+                Level = 0,
+                LevelToAssign = Constants.RoleLevels.RaidLeadLevel
+            };
+        await UserService.AddRole(role);
+        _roles = UserService.GetLiebRoles();
+    }
+
+    async Task DeleteRoleClicked(LiebRole role)
+    {
+        await UserService.DeleteRole(role.LiebRoleId);
+        _roles = UserService.GetLiebRoles();
+    }
+}

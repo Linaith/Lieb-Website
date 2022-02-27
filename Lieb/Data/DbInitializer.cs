@@ -9,21 +9,24 @@ namespace Lieb.Data
     {
         public static void Initialize(LiebContext context)
         {
-            //add new Roles
-            List<LiebRole> roles = new List<LiebRole>();
-            foreach (string roleName in Constants.Roles.GetAllRoles())
+            //add special Roles
+            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.Admin) == null)
             {
-                if (context.LiebRoles.FirstOrDefault(r => r.RoleName == roleName) == null)
-                {
-                    roles.Add(new LiebRole()
-                    {
-                        RoleName = roleName
-                    });
-                }
+                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.Admin, IsSystemRole = true, Level = Constants.RoleLevels.AdminLevel, LevelToAssign = Constants.RoleLevels.AdminLevel });
             }
-            context.LiebRoles.AddRange(roles);
+            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.GuildLead) == null)
+            {
+                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.GuildLead, IsSystemRole = true, Level = Constants.RoleLevels.GuildLeadLevel, LevelToAssign = Constants.RoleLevels.AdminLevel });
+            }
+            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.RaidLead) == null)
+            {
+                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.RaidLead, IsSystemRole = true, Level = Constants.RoleLevels.RaidLeadLevel, LevelToAssign = Constants.RoleLevels.GuildLeadLevel });
+            }
+            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.User) == null)
+            {
+                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.User, IsSystemRole = true, Level = Constants.RoleLevels.UserLevel, LevelToAssign = Constants.RoleLevels.AdminLevel + 1  });
+            }
             context.SaveChanges();
-
 
             // Look for any LiebUsers.
             if (context.LiebUsers.Any())

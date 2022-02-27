@@ -1,0 +1,87 @@
+﻿@page "/useroverview"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@inject UserService UserService
+
+
+<h3>UserOverview</h3>
+
+
+<AuthorizeView Policy="@Constants.Roles.Admin">
+    <Authorized>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="roleedit">
+                <span class="oi oi-plus" aria-hidden="true"></span> Edit Roles
+            </NavLink>
+        </div> 
+    </Authorized>
+</AuthorizeView>
+
+
+<label>
+    Banned Only:
+    <input type="checkbox" @bind="_bannedOnly" />
+</label>   
+<label>
+    Search:
+    <input @bind="_searchString" />
+</label>
+
+    <table>
+    <tr>
+        <th>Name</th>
+        <th>GW2 Account</th>
+        <th>Banned Until</th>
+    </tr>
+    @{
+        HashSet<LiebUser> foundUsers = new HashSet<LiebUser>();
+        if(_bannedOnly)
+        {
+            foreach(LiebUser user in _users.Where(u => u.Name.Contains(_searchString) && u.BannedUntil > DateTime.Now))
+            {
+                foundUsers.Add(user);
+            }
+            foreach(LiebUser user in _users.Where(u => u.GuildWars2Accounts.Where(a => a.AccountName.Contains(_searchString)).Any() && u.BannedUntil > DateTime.Now))
+            {
+                foundUsers.Add(user);
+            }
+        }
+        else
+        {
+            foreach(LiebUser user in _users.Where(u => u.Name.Contains(_searchString)))
+            {
+                foundUsers.Add(user);
+            }
+            foreach(LiebUser user in _users.Where(u => u.GuildWars2Accounts.Where(a => a.AccountName.Contains(_searchString)).Any()))
+            {
+                foundUsers.Add(user);
+            }
+        }
+    }
+    @foreach (LiebUser user in foundUsers)
+    {
+        <tr>    
+            <td class="nav-item px-3">
+                @{string navLink = $"useredit/{@user.LiebUserId}";}
+                <NavLink class="nav-link" href="@navLink">@user.Name</NavLink>
+            </td>
+            <td>@foreach(var account in user.GuildWars2Accounts){<div>@account.AccountName </div> }</td>
+            <td>@user.BannedUntil?.ToLongDateString()</td>
+        </tr>
+    }
+</table> 
+
+@code 
+{
+    private List<LiebUser> _users;
+
+    private bool _bannedOnly;
+    private string _searchString = string.Empty;
+    private string _newRoleName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _users = UserService.GetLiebUsers();
+    }
+}

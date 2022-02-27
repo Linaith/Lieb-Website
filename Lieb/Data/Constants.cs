@@ -17,5 +17,13 @@
                 return typeof(Roles).GetFields().Select(f => f.GetValue(f)).Cast<string>().ToList();
             }
         }
+
+        public static class RoleLevels
+        {
+            public const int UserLevel = 20;
+            public const int RaidLeadLevel = 55;
+            public const int GuildLeadLevel = 65;
+            public const int AdminLevel = 80;
+        }
     }
 }

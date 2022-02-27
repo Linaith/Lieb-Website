@@ -137,7 +137,7 @@
         </div>
     </NotAuthorized>
 </AuthorizeView>
-<AuthorizeView Policy="RaidLead">
+<AuthorizeView Policy="@Constants.Roles.RaidLead">
     <div class="nav-item px-3">
         @{string navLink = $"raidedit/{@Raid.RaidId}";}
         <NavLink class="nav-link" href="@navLink">

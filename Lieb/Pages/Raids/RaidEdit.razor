@@ -10,7 +10,7 @@
 
 <h3>CreateRaid</h3>
 
-<AuthorizeView Policy="RaidLead" Context="authorizationContext">
+<AuthorizeView Policy="@Constants.Roles.RaidLead" Context="authorizationContext">
 <EditForm Model="@_raid" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />

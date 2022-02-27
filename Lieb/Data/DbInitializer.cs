@@ -38,12 +38,13 @@ namespace Lieb.Data
             GuildWars2Account sarah = new GuildWars2Account() { AccountName = "Sarah.3984" };
             GuildWars2Account hierpiepts = new GuildWars2Account() { AccountName = "hierpiepts.5241" };
             GuildWars2Account bloodseeker = new GuildWars2Account() { AccountName = "Bloodseeker.2043" };
-
             var users = new LiebUser[]
             {
                 new LiebUser{DiscordUserId=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
+#if DEBUG
                 new LiebUser{DiscordUserId=1, Name="Lisa", GuildWars2Accounts = new List<GuildWars2Account>(){ hierpiepts}},
                 new LiebUser{DiscordUserId=2, Name="Simon", GuildWars2Accounts = new List<GuildWars2Account>(){ bloodseeker}}
+#endif
             };
 
             context.LiebUsers.AddRange(users);
@@ -60,19 +61,21 @@ namespace Lieb.Data
                 new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = AdminRoleId },
                 new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = GuildLeadRoleId },
                 new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = RaidLeadRoleId },
-                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = UserRoleId },
-                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = AdminRoleId },
+                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = UserRoleId }
+#if DEBUG
+                ,new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = AdminRoleId },
                 new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = GuildLeadRoleId },
                 new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = RaidLeadRoleId },
                 new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = UserRoleId },
                 new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = GuildLeadRoleId },
                 new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = RaidLeadRoleId },
                 new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = UserRoleId }
+#endif
             };
 
             context.RoleAssignments.AddRange(assignments);
             context.SaveChanges();
-
+#if DEBUG
             PlannedRaidRole ele = new PlannedRaidRole()
             {
                 Description = "Beste",
@@ -111,7 +114,7 @@ namespace Lieb.Data
 
             context.RaidSignUps.AddRange(signUps);
             context.SaveChanges();
-
-        }
+#endif
+            }
     }
 }

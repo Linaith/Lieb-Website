@@ -13,7 +13,7 @@ builder.Services.AddDbContextFactory<LiebContext>(opt =>
         opt.UseSqlServer(builder.Configuration.GetConnectionString("LiebContext")).EnableSensitiveDataLogging(), ServiceLifetime.Transient);
 #else
 builder.Services.AddDbContextFactory<LiebContext>(opt =>
-        opt.UseSqlServer(builder.Configuration.GetConnectionString("LiebContext")), ServiceLifetime.Transient);
+        opt.UseMySql(builder.Configuration.GetConnectionString("LiebContext"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("LiebContext"))), ServiceLifetime.Transient);
 #endif
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();

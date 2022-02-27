@@ -34,34 +34,65 @@
             </p>
 
             
-             <table>
+            <label>Equipped Builds</label>
+            <table>
                 <tr>
                     <th></th>
                     <th>can Tank</th>
                     <th>Build</th>
+                    <th>Class</th>
+                    <th>Elite</th>
+                    <th>Might</th>
+                    <th>Heal</th>
+                    <th>Quick</th>
+                    <th>Alac</th>
                 </tr>
-        
-            
-                <label>Equipped Builds</label>
                 @foreach (Equipped equippedBuild in _account.EquippedBuilds)
                 {
                     <tr>
                         <td><button type=button @onclick="() => RemoveBuildClicked(equippedBuild.GuildWars2BuildId)">Remove</button></td>
                         <td><input type="checkbox" checked="@equippedBuild.CanTank" @onchange="args => TankingStatusChanged(equippedBuild, args)" /></td>
                         <td>@equippedBuild.GuildWars2Build.BuildName</td>
+                        <td>@equippedBuild.GuildWars2Build.Class.ToString()</td>
+                        <td>@equippedBuild.GuildWars2Build.EliteSpecialization.ToString()</td>
+                        <td>@equippedBuild.GuildWars2Build.Might.ToString()</td>
+                        <td>@equippedBuild.GuildWars2Build.Heal.ToString()</td>
+                        <td>@equippedBuild.GuildWars2Build.Quickness.ToString()</td>
+                        <td>@equippedBuild.GuildWars2Build.Alacrity.ToString()</td>
                     </tr>
                 }
             </table> 
                 
             <p>
                 <label>Existing Builds</label>
+            <table>
+                <tr>
+                    <th></th>
+                    <th>Build</th>
+                    <th>Class</th>
+                    <th>Elite</th>
+                    <th>Might</th>
+                    <th>Heal</th>
+                    <th>Quick</th>
+                    <th>Alac</th>
+                </tr>
                 @foreach (GuildWars2Build build in GuildWars2BuildService.GetBuilds())
                 {
                     if(!_account.EquippedBuilds.Where(e => e.GuildWars2BuildId == build.GuildWars2BuildId).Any())
                     {
-                        <div><button type=button @onclick="() => AddBuildlicked(build)">Add</button>@build.BuildName</div>
+                        <tr>
+                            <td><button type=button @onclick="() => AddBuildlicked(build)">Add</button></td>
+                            <td>@build.BuildName</td>
+                            <td>@build.Class.ToString()</td>
+                            <td>@build.EliteSpecialization.ToString()</td>
+                            <td>@build.Might.ToString()</td>
+                            <td>@build.Heal.ToString()</td>
+                            <td>@build.Quickness.ToString()</td>
+                            <td>@build.Alacrity.ToString()</td>
+                        </tr>
                     }
                 }
+            </table> 
             </p>
         
 

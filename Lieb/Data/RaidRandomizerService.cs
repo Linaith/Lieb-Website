@@ -7,6 +7,7 @@ namespace Lieb.Data
     public class RaidRandomizerService
     {
         private readonly IDbContextFactory<LiebContext> _contextFactory;
+        private static Random _random = new Random();
 
         public RaidRandomizerService(IDbContextFactory<LiebContext> contextFactory)
         {
@@ -45,7 +46,7 @@ namespace Lieb.Data
                         RandomizeEliteSpecs(raid);
                         break;
                     case RaidType.RandomWithBoons:
-
+                        RandomizeWithBoons(raid);
                         break;
                 }
                 raid.IsRandomized = true;
@@ -57,7 +58,6 @@ namespace Lieb.Data
 
         private void RandomizeClasses(Raid raid)
         {
-            Random rand = new Random();
             foreach (RaidSignUp signUp in raid.SignUps)
             {
                 HashSet<GuildWars2Class> possibleClasses = new HashSet<GuildWars2Class>();
@@ -69,7 +69,7 @@ namespace Lieb.Data
                 role.Spots = 1;
                 if (possibleClasses.Count > 0)
                 {
-                    role.Name = possibleClasses.ToList()[rand.Next(possibleClasses.Count - 1)].ToString();
+                    role.Name = possibleClasses.ToList()[_random.Next(possibleClasses.Count - 1)].ToString();
                 }
                 else
                 {
@@ -82,7 +82,6 @@ namespace Lieb.Data
 
         private void RandomizeEliteSpecs(Raid raid)
         {
-            Random rand = new Random();
             foreach (RaidSignUp signUp in raid.SignUps)
             {
                 HashSet<EliteSpecialization> possibleEliteSpecs = new HashSet<EliteSpecialization>();
@@ -94,7 +93,7 @@ namespace Lieb.Data
                 role.Spots = 1;
                 if (possibleEliteSpecs.Count > 0)
                 {
-                    role.Name = possibleEliteSpecs.ToList()[rand.Next(possibleEliteSpecs.Count - 1)].ToString();
+                    role.Name = possibleEliteSpecs.ToList()[_random.Next(possibleEliteSpecs.Count - 1)].ToString();
                 }
                 else
                 {
@@ -102,6 +101,228 @@ namespace Lieb.Data
                 }
                 raid.Roles.Add(role);
                 signUp.PlannedRaidRole = role;
+            }
+        }
+
+        private void RandomizeWithBoons(Raid raid)
+        {
+            Dictionary<int, GuildWars2Build> signedUpUsers= new Dictionary<int, GuildWars2Build>();
+            foreach (RaidSignUp signUp in raid.SignUps)
+            {
+                signedUpUsers.Add(signUp.LiebUserId, signUp.GuildWars2Account.EquippedBuilds.ToList()[_random.Next(signUp.GuildWars2Account.EquippedBuilds.Count - 1)].GuildWars2Build);
+            }
+            BalanceRoles(raid, signedUpUsers);
+            foreach(var userBuild in signedUpUsers)
+            {
+                PlannedRaidRole role = new PlannedRaidRole();
+                role.Spots = 1;
+                role.Name = userBuild.Value.BuildName;
+                raid.Roles.Add(role);
+                RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
+                signUp.PlannedRaidRole = role;
+            }
+        }
+
+        private void BalanceRoles(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int recusrionDepth = 0)
+        {
+            int Alac = 0;
+            int Quick = 0;
+            int Heal = 0;
+            int Might = 0;
+
+            signedUpUsers = signedUpUsers.OrderBy(u => _random.Next()).ToDictionary(u => u.Key, u => u.Value);
+
+            foreach(GuildWars2Build build in signedUpUsers.Values)
+            {
+                Alac += build.Alacrity;
+                Quick += build.Quickness;
+                Heal += build.Heal;
+                Might += build.Might;
+            }
+            if(Alac > 10)
+            {
+                ReduceAlac(raid, signedUpUsers, Alac);
+            }
+            if(Alac < 10)
+            {
+                IncreaseAlac(raid, signedUpUsers, Alac);
+            }
+            signedUpUsers = signedUpUsers.OrderBy(u => _random.Next()).ToDictionary(u => u.Key, u => u.Value);
+            if (Quick > 10)
+            {
+                ReduceQuick(raid, signedUpUsers, Quick);
+            }
+            if (Quick < 10)
+            {
+                IncreaseQuick(raid, signedUpUsers, Quick);
+            }
+            signedUpUsers = signedUpUsers.OrderBy(u => _random.Next()).ToDictionary(u => u.Key, u => u.Value);
+            if (Heal > 10)
+            {
+                ReduceHeal(raid, signedUpUsers, Heal);
+            }
+            if (Heal < 10)
+            {
+                IncreaseHeal(raid, signedUpUsers, Heal);
+            }
+            signedUpUsers = signedUpUsers.OrderBy(u => _random.Next()).ToDictionary(u => u.Key, u => u.Value);
+            if (Might > 10)
+            {
+                ReduceMight(raid, signedUpUsers, Might);
+            }
+            if (Might < 10)
+            {
+                IncreaseMight(raid, signedUpUsers, Might);
+            }
+
+            if(recusrionDepth < 20)
+            {
+                recusrionDepth++;
+                BalanceRoles(raid, signedUpUsers, recusrionDepth);
+            }
+        }
+
+        private void ReduceAlac(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentAlac)
+        {
+            foreach (var userBuild in signedUpUsers)
+            {
+                if(userBuild.Value.Alacrity > 0 && currentAlac > 10)
+                {
+                    RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Alacrity == 0).OrderBy(u => _random.Next()).FirstOrDefault();
+                    if (newBuild != null)
+                    {
+                        currentAlac -= userBuild.Value.Alacrity;
+                        signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
+                        currentAlac += signedUpUsers[userBuild.Key].Alacrity;
+                    }
+                }
+            }
+        }
+
+        private void IncreaseAlac(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentAlac)
+        {
+            foreach (var userBuild in signedUpUsers)
+            {
+                if (userBuild.Value.Alacrity == 00 && currentAlac < 10)
+                {
+                    RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Alacrity > 0).OrderBy(u => _random.Next()).FirstOrDefault();
+                    if (newBuild != null)
+                    {
+                        currentAlac -= userBuild.Value.Alacrity;
+                        signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
+                        currentAlac += signedUpUsers[userBuild.Key].Alacrity;
+                    }
+                }
+            }
+        }
+
+        private void ReduceQuick(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentQuick)
+        {
+            foreach (var userBuild in signedUpUsers)
+            {
+                if (userBuild.Value.Quickness > 0 && currentQuick > 10)
+                {
+                    RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Quickness == 0).OrderBy(u => _random.Next()).FirstOrDefault();
+                    if (newBuild != null)
+                    {
+                        currentQuick -= userBuild.Value.Quickness;
+                        signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
+                        currentQuick += signedUpUsers[userBuild.Key].Quickness;
+                    }
+                }
+            }
+        }
+
+        private void IncreaseQuick(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentQuick)
+        {
+            foreach (var userBuild in signedUpUsers)
+            {
+                if (userBuild.Value.Quickness == 00 && currentQuick < 10)
+                {
+                    RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Quickness > 0).OrderBy(u => _random.Next()).FirstOrDefault();
+                    if (newBuild != null)
+                    {
+                        currentQuick -= userBuild.Value.Quickness;
+                        signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
+                        currentQuick += signedUpUsers[userBuild.Key].Quickness;
+                    }
+                }
+            }
+        }
+
+        private void ReduceMight(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentMight)
+        {
+            foreach (var userBuild in signedUpUsers)
+            {
+                if (userBuild.Value.Might > 0 && currentMight > 10)
+                {
+                    RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Might == 0).OrderBy(u => _random.Next()).FirstOrDefault();
+                    if (newBuild != null)
+                    {
+                        currentMight -= userBuild.Value.Might;
+                        signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
+                        currentMight += signedUpUsers[userBuild.Key].Might;
+                    }
+                }
+            }
+        }
+
+        private void IncreaseMight(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentMight)
+        {
+            foreach (var userBuild in signedUpUsers)
+            {
+                if (userBuild.Value.Might == 00 && currentMight < 10)
+                {
+                    RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Might > 0).OrderBy(u => _random.Next()).FirstOrDefault();
+                    if (newBuild != null)
+                    {
+                        currentMight -= userBuild.Value.Might;
+                        signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
+                        currentMight += signedUpUsers[userBuild.Key].Might;
+                    }
+                }
+            }
+        }
+
+        private void ReduceHeal(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentHeal)
+        {
+            foreach (var userBuild in signedUpUsers)
+            {
+                if (userBuild.Value.Heal > 0 && currentHeal > 10)
+                {
+                    RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Heal == 0).OrderBy(u => _random.Next()).FirstOrDefault();
+                    if (newBuild != null)
+                    {
+                        currentHeal -= userBuild.Value.Heal;
+                        signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
+                        currentHeal += signedUpUsers[userBuild.Key].Heal;
+                    }
+                }
+            }
+        }
+
+        private void IncreaseHeal(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentHeal)
+        {
+            foreach (var userBuild in signedUpUsers)
+            {
+                if (userBuild.Value.Heal == 00 && currentHeal < 10)
+                {
+                    RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Heal > 0).OrderBy(u => _random.Next()).FirstOrDefault();
+                    if (newBuild != null)
+                    {
+                        currentHeal -= userBuild.Value.Heal;
+                        signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
+                        currentHeal += signedUpUsers[userBuild.Key].Heal;
+                    }
+                }
             }
         }
 

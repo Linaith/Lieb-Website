@@ -95,7 +95,7 @@ namespace Lieb.Data
                 Description = "This is a test raid\nwith multiple lines?",
                 Guild = "LIEB",
                 Organizer = "Sarah",
-                RaidType = RaidType.RandomClasses,
+                RaidType = RaidType.RandomWithBoons,
                 Date = DateTime.Now.Date,
                 StartTime = DateTime.Now,
                 EndTime = DateTime.Now.AddHours(2),
@@ -114,7 +114,35 @@ namespace Lieb.Data
 
             context.RaidSignUps.AddRange(signUps);
             context.SaveChanges();
+
+            GuildWars2Build healTempest = new GuildWars2Build() { BuildName = "HealTempest", Class = GuildWars2Class.Elementalist, EliteSpecialization = EliteSpecialization.Tempest, Heal = 5, Might = 10 };
+            GuildWars2Build condiScourge = new GuildWars2Build() { BuildName = "CondiScourge", Class = GuildWars2Class.Necromancer, EliteSpecialization = EliteSpecialization.Scourge };
+            GuildWars2Build quickBrand = new GuildWars2Build() { BuildName = "QuickBrand", Class = GuildWars2Class.Guard, EliteSpecialization = EliteSpecialization.Firebrand, Heal = 5, Quickness = 5 };
+            GuildWars2Build alacregate = new GuildWars2Build() { BuildName = "Alacregate", Class = GuildWars2Class.Revenant, EliteSpecialization = EliteSpecialization.Renegade, Alacrity = 5 };
+            GuildWars2Build chrono = new GuildWars2Build() { BuildName = "Chrono", Class = GuildWars2Class.Mesmer, EliteSpecialization = EliteSpecialization.Chronomancer, Alacrity = 5, Quickness = 5 };
+            GuildWars2Build daredevil = new GuildWars2Build() { BuildName = "Daredevil", Class = GuildWars2Class.Thief, EliteSpecialization = EliteSpecialization.DareDevil };
+            context.GuildWars2Builds.AddRange(new List<GuildWars2Build>(){healTempest, condiScourge, quickBrand, alacregate, chrono, daredevil });
+            context.SaveChanges();
+
+            var equippedBuilds = new Equipped[]
+            {
+                new Equipped(){GuildWars2Account = linaith, CanTank = true, GuildWars2Build = quickBrand},
+                new Equipped(){GuildWars2Account = linaith, CanTank = false, GuildWars2Build = healTempest},
+                new Equipped(){GuildWars2Account = linaith, CanTank = false, GuildWars2Build = daredevil},
+                new Equipped(){GuildWars2Account = sarah, CanTank = false, GuildWars2Build = healTempest},
+                new Equipped(){GuildWars2Account = sarah, CanTank = false, GuildWars2Build = daredevil},
+                new Equipped(){GuildWars2Account = hierpiepts, CanTank = false, GuildWars2Build = condiScourge},
+                new Equipped(){GuildWars2Account = hierpiepts, CanTank = true, GuildWars2Build = quickBrand},
+                new Equipped(){GuildWars2Account = hierpiepts, CanTank = false, GuildWars2Build = healTempest},
+                new Equipped(){GuildWars2Account = bloodseeker, CanTank = true, GuildWars2Build = chrono},
+                new Equipped(){GuildWars2Account = bloodseeker, CanTank = false, GuildWars2Build = alacregate},
+                new Equipped(){GuildWars2Account = bloodseeker, CanTank = false, GuildWars2Build = condiScourge},
+            };
+
+            context.Equipped.AddRange(equippedBuilds);
+            context.SaveChanges();
+
 #endif
-            }
+        }
     }
 }

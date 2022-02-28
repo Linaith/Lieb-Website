@@ -20,7 +20,7 @@ namespace Lieb.Models.GuildWars2
         Thief = 3,
         Ranger = 4,
         Necromancer = 5,
-        Masmer = 6,
+        Mesmer = 6,
         Revenant = 7,
         Guard = 8,
         Warrior = 9,

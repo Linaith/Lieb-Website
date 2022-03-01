@@ -46,7 +46,7 @@
                 bool isSignedUp = userRole != null;
                 DateTime flexTime = _raid.FreeForAllDate.Date + _raid.FreeForAllTime.TimeOfDay;
                 bool isSignUoAllowed = !_raid.IsRandomized && (user.RoleAssignments.FirstOrDefault(a => a.LiebRole.RoleName == _raid.RequiredRole) != null || flexTime < DateTime.Now);
-                isSignedUp = isSignedUp && user.GuildWars2Accounts.Count > 0 && (_raid.RaidType == RaidType.Planned || user.GuildWars2Accounts.FirstOrDefault()?.EquippedBuilds.Count > 0);
+                isSignUoAllowed = isSignUoAllowed && user.GuildWars2Accounts.Count > 0 && (_raid.RaidType == RaidType.Planned || user.GuildWars2Accounts.FirstOrDefault()?.EquippedBuilds.Count > 0);
 
             <table class="table">
                 <tbody>

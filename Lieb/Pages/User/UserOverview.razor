@@ -38,22 +38,22 @@
         HashSet<LiebUser> foundUsers = new HashSet<LiebUser>();
         if(_bannedOnly)
         {
-            foreach(LiebUser user in _users.Where(u => u.Name.Contains(_searchString) && u.BannedUntil > DateTime.Now))
+            foreach(LiebUser user in _users.Where(u => u.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase) && u.BannedUntil > DateTime.Now))
             {
                 foundUsers.Add(user);
             }
-            foreach(LiebUser user in _users.Where(u => u.GuildWars2Accounts.Where(a => a.AccountName.Contains(_searchString)).Any() && u.BannedUntil > DateTime.Now))
+            foreach(LiebUser user in _users.Where(u => u.GuildWars2Accounts.Where(a => a.AccountName.Contains(_searchString, StringComparison.OrdinalIgnoreCase)).Any() && u.BannedUntil > DateTime.Now))
             {
                 foundUsers.Add(user);
             }
         }
         else
         {
-            foreach(LiebUser user in _users.Where(u => u.Name.Contains(_searchString)))
+            foreach(LiebUser user in _users.Where(u => u.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase)))
             {
                 foundUsers.Add(user);
             }
-            foreach(LiebUser user in _users.Where(u => u.GuildWars2Accounts.Where(a => a.AccountName.Contains(_searchString)).Any()))
+            foreach(LiebUser user in _users.Where(u => u.GuildWars2Accounts.Where(a => a.AccountName.Contains(_searchString, StringComparison.OrdinalIgnoreCase)).Any()))
             {
                 foundUsers.Add(user);
             }

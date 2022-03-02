@@ -5,25 +5,19 @@
 @inject UserService UserService
 
 
-<h3>UserOverview</h3>
+<h3>Role Edit</h3>
 
 
 <AuthorizeView Policy="@Constants.Roles.Admin">
     <Authorized>
         
     <table>
-    <tr>
-        <th>Name</th>
-        <th>GW2 Account</th>
-        <th>Banned Until</th>
-    </tr>
-        <h5>Roles</h5>
         @foreach(LiebRole role in _roles)
         {
             <tr>
                 <td>@if(!role.IsSystemRole)
                 {
-                    <button type=button @onclick="() => DeleteRoleClicked(role)">Create Role</button>
+                    <button type=button @onclick="() => DeleteRoleClicked(role)">Delete Role</button>
                 }</td>
                 <td>@role.RoleName</td>
             </tr>

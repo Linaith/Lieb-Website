@@ -1,0 +1,65 @@
+﻿@page "/raidlogs"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@using System.Security.Claims
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<h3>RaidLogs</h3>
+
+<select value=@_selectedLogFolder @onchange="args => ChangeShownLogs(args)">
+    @if (_logGroups.Contains(TRAINING))
+    {
+        <option value="@TRAINING">@TRAINING</option>
+    }
+    @if (_logGroups.Contains(RANDOM))
+    {
+        <option value="@RANDOM">@RANDOM</option>
+    }
+    @foreach (string group in _logGroups)
+    {
+        if (_user.RoleAssignments.FirstOrDefault(r => r.LiebRole.RoleName == group) != null)
+        {
+            <option value=@group>@group</option>
+        }
+    }
+</select>
+
+<br />
+
+@foreach(string logFolder in _availabeLogs)
+{
+    string path = $"{LOGS}/{_selectedLogFolder}/{logFolder}/index.html";
+    <NavLink class="nav-link" href="@path"> @logFolder </NavLink>
+}
+
+
+@code 
+{
+    private const string TRAINING = "Training";
+    private const string RANDOM = "Random";
+    private const string LOGS = "logs";
+    private const string LOG_DIR = $"wwwroot/{LOGS}";
+    private LiebUser _user;
+    private List<string> _logGroups = new List<string>();
+    private List<string> _availabeLogs = new List<string>();
+    private string _selectedLogFolder = "Training";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+        _user = UserService.GetLiebUser(discordId);
+        _logGroups = Directory.EnumerateDirectories(LOG_DIR).Select(d => Path.GetFileName(d)).ToList();
+        _availabeLogs = Directory.EnumerateDirectories($"{LOG_DIR}/{_selectedLogFolder}").Select(d => Path.GetFileName(d)).OrderByDescending(s => s).ToList();
+    }
+    
+    async Task ChangeShownLogs( ChangeEventArgs e)
+    {
+        _selectedLogFolder = e.Value.ToString();
+        _availabeLogs = Directory.EnumerateDirectories($"{LOG_DIR}/{_selectedLogFolder}").Select(d => Path.GetFileName(d)).OrderByDescending(s => s).ToList();
+    }
+}

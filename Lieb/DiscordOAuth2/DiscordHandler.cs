@@ -47,7 +47,7 @@ namespace Discord.OAuth2
 
         private async Task<OAuthCreatingTicketContext> ManageUserRights(OAuthCreatingTicketContext context)
         {
-            ulong discordId = ulong.Parse(context.Identity.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault().Value);
+            ulong discordId = ulong.Parse(context.Identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value);
             LiebUser? user = await _LiebDbcontext.LiebUsers.Include(u => u.RoleAssignments).ThenInclude(r => r.LiebRole).FirstOrDefaultAsync(m => m.DiscordUserId == discordId);
             if (user != null)
             {
@@ -62,8 +62,12 @@ namespace Discord.OAuth2
             else
             {
                 LiebRole standardRole = await _LiebDbcontext.LiebRoles.FirstOrDefaultAsync(m => m.RoleName == Constants.Roles.User);
-                LiebUser newUser = new LiebUser();
-                newUser.DiscordUserId = discordId;
+                string userName = context.Identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value;
+                LiebUser newUser = new LiebUser()
+                {
+                    DiscordUserId = discordId,
+                    Name = userName
+                };
                 _LiebDbcontext.LiebUsers.Add(newUser);
                 await _LiebDbcontext.SaveChangesAsync();
                 RoleAssignment roleAssignment = new RoleAssignment()

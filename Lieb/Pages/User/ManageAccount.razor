@@ -14,8 +14,8 @@
     <Authorized>
     <EditForm Model="@_user" OnValidSubmit="@HandleValidSubmit">
         <DataAnnotationsValidator />
-        <ValidationSummary />
     
+        <p>@_saveMessage</p>
         <p>
             <label>
                 Name:
@@ -36,24 +36,26 @@
             </label>
         </p>
         
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="gw2accountedit">
-                <span class="oi oi-plus" aria-hidden="true"></span> Add Guild Wars 2 Account
-            </NavLink>
-        </div>
-
-        @foreach(GuildWars2Account account in _user.GuildWars2Accounts)
-        {
-            <div class="nav-item px-3">
-                @{string navLink = $"gw2accountedit/{@account.GuildWars2AccountId}";}
-                <NavLink class="nav-link" href="@navLink">@account.AccountName</NavLink>
-            </div>
-        }
-        
         <br />
-        <button type="submit">Submit</button>
+        <button type="submit">Save</button>
+        <ValidationSummary />
 
     </EditForm>
+    
+    <br />
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="gw2accountedit">
+            <span class="oi oi-plus" aria-hidden="true"></span> Add Guild Wars 2 Account
+        </NavLink>
+    </div>
+
+    @foreach(GuildWars2Account account in _user.GuildWars2Accounts)
+    {
+        <div class="nav-item px-3">
+            @{string navLink = $"gw2accountedit/{@account.GuildWars2AccountId}";}
+            <NavLink class="nav-link" href="@navLink">@account.AccountName</NavLink>
+        </div>
+    }
 </Authorized>
 </AuthorizeView>
 
@@ -61,6 +63,7 @@
 @code {
 
     public LiebUser _user;
+    private string _saveMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,5 +77,6 @@
     private async Task HandleValidSubmit()
     {
         await UserService.EditUser(_user);
+        _saveMessage = "changes saved successfully";
     }
 }

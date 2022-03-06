@@ -38,11 +38,11 @@
         HashSet<LiebUser> foundUsers = new HashSet<LiebUser>();
         if(_bannedOnly)
         {
-            foreach(LiebUser user in _users.Where(u => u.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase) && u.BannedUntil > DateTime.Now))
+            foreach(LiebUser user in _users.Where(u => u.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase) && u.BannedUntil >= DateTime.Now.Date))
             {
                 foundUsers.Add(user);
             }
-            foreach(LiebUser user in _users.Where(u => u.GuildWars2Accounts.Where(a => a.AccountName.Contains(_searchString, StringComparison.OrdinalIgnoreCase)).Any() && u.BannedUntil > DateTime.Now))
+            foreach(LiebUser user in _users.Where(u => u.GuildWars2Accounts.Where(a => a.AccountName.Contains(_searchString, StringComparison.OrdinalIgnoreCase)).Any() && u.BannedUntil >= DateTime.Now.Date))
             {
                 foundUsers.Add(user);
             }
@@ -67,7 +67,10 @@
                 <NavLink class="nav-link" href="@navLink">@user.Name</NavLink>
             </td>
             <td>@foreach(var account in user.GuildWars2Accounts){<div>@account.AccountName </div> }</td>
-            <td>@user.BannedUntil?.ToLongDateString()</td>
+            @if(user.BannedUntil >= DateTime.Now.Date)
+            {
+                <td>@user.BannedUntil?.ToLongDateString()</td>
+            }
         </tr>
     }
 </table> 

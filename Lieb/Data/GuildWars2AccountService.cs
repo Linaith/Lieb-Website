@@ -29,8 +29,7 @@ namespace Lieb.Data
                 using var context = _contextFactory.CreateDbContext();
                 if (account.GuildWars2AccountId == 0)
                 {
-                    //context.GuildWars2Accounts.Add(account);
-                    LiebUser user = context.LiebUsers.FirstOrDefault(u => u.LiebUserId == userId);
+                    LiebUser? user = context.LiebUsers.FirstOrDefault(u => u.LiebUserId == userId);
                     if(user != null)
                     {
                         user.GuildWars2Accounts.Add(account);
@@ -39,42 +38,20 @@ namespace Lieb.Data
                 }
                 else
                 {
-                    GuildWars2Account accountToChange = context.GuildWars2Accounts
+                    GuildWars2Account? accountToChange = context.GuildWars2Accounts
                         .Include(a => a.EquippedBuilds)
-                        .Include(e => e.EquippedBuilds)
                         .FirstOrDefault(a => a.GuildWars2AccountId == account.GuildWars2AccountId);
 
-                    accountToChange.AccountName = account.AccountName;
-                    accountToChange.ApiKey = account.ApiKey;
+                    if (accountToChange != null)
+                    {
+                        accountToChange.AccountName = account.AccountName;
+                        accountToChange.ApiKey = account.ApiKey;
 
-                    List<Equipped> toDelete = new List<Equipped>();
-                    foreach (Equipped equipped in accountToChange.EquippedBuilds)
-                    {
-                        Equipped? newEquipped = account.EquippedBuilds.FirstOrDefault(r => r.EquippedId == equipped.EquippedId);
-                        if (newEquipped != null)
-                        {
-                            equipped.CanTank = newEquipped.CanTank;
-                        }
-                        else
-                        {
-                            toDelete.Add(equipped);
-                        }
+                        await context.SaveChangesAsync();
                     }
-                    foreach(Equipped equipped in toDelete)
-                    {
-                        accountToChange.EquippedBuilds.Remove(equipped);
-                        context.Equipped.Remove(equipped);
-                    }
-                    foreach (Equipped equipped in account.EquippedBuilds.Where(r => r.EquippedId == 0))
-                    {
-                        accountToChange.EquippedBuilds.Add(equipped);
-                    }
-
-                    await context.SaveChangesAsync();
                 }
             }
         }
-
 
         public async Task DeleteAccount(int accountId)
         {
@@ -86,6 +63,58 @@ namespace Lieb.Data
                 await context.SaveChangesAsync();
                 context.GuildWars2Accounts.Remove(account);
                 await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task AddBuild(int accountId, int buildId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            GuildWars2Account? account = context.GuildWars2Accounts
+                .Include(a => a.EquippedBuilds)
+                .FirstOrDefault(a => a.GuildWars2AccountId == accountId);
+
+            if (account != null)
+            {
+                account.EquippedBuilds.Add(new Equipped()
+                {
+                    GuildWars2AccountId = accountId,
+                    GuildWars2BuildId = buildId
+                });
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task RemoveBuild(int accountId, int buildId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            GuildWars2Account? account = context.GuildWars2Accounts
+                .Include(a => a.EquippedBuilds)
+                .FirstOrDefault(a => a.GuildWars2AccountId == accountId);
+            if (account != null)
+            {
+                Equipped? buildToRemove = account.EquippedBuilds.FirstOrDefault(b => b.GuildWars2BuildId == buildId);
+                if (buildToRemove != null)
+                {
+                    account.EquippedBuilds.Remove(buildToRemove);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task ChangeTankStatus(int accountId, int buildId, bool canTank)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            GuildWars2Account? account = context.GuildWars2Accounts
+                .Include(a => a.EquippedBuilds)
+                .FirstOrDefault(a => a.GuildWars2AccountId == accountId);
+            if (account != null)
+            {
+                Equipped? build = account.EquippedBuilds.FirstOrDefault(b => b.GuildWars2BuildId == buildId);
+                if (build != null)
+                {
+                    build.CanTank = canTank;
+                    await context.SaveChangesAsync();
+                }
             }
         }
     }

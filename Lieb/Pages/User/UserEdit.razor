@@ -19,42 +19,50 @@
             
     <AuthorizeView Policy="@Constants.Roles.Admin" Context="authorizationContext">
         <Authorized>
+            <p>@_submitMessage</p>
             <p>
                 <label>
                     Banned Until:
                     <InputDate @bind-Value="_user.BannedUntil" />
-                </label>
+                </label>       
+                @if (_user.BannedUntil >= DateTime.Now.Date)
+                {
+                    <button type="submit">Ban</button>
+                }
+                else
+                {
+                    <button type="submit">Unban</button>
+            }
             </p>
         </Authorized>
     </AuthorizeView>
 
-    <table>
-        <tr>
-            <th></th>
-            <th>Role</th>
-            <th>IsSystemRole</th>
-        </tr>
-        @foreach (LiebRole role in _roles)
-        {
-            <tr>
-                @{
-                    bool hasRole = _user.RoleAssignments.Where(a => a.LiebRoleId == role.LiebRoleId).Any();
-                    bool disabled = _editingUserRights < role.LevelToAssign;
-                 }
-                <td><input type="checkbox" disabled="@disabled" checked="@hasRole" @onchange="args => RoleStatusChanged(role, args)" /></td>
-                <td>@role.RoleName</td>
-                @if(@role.IsSystemRole)
-                {
-                    <td>True</td>
-                }
-            </tr>
-        }
-    </table> 
-    <br />
-    <button type="submit">Submit</button>
-
 </EditForm>
 
+
+<table>
+    <tr>
+        <th></th>
+        <th>Role</th>
+        <th>IsSystemRole</th>
+    </tr>
+    @foreach (LiebRole role in _roles)
+    {
+        <tr>
+            @{
+                bool hasRole = _user.RoleAssignments.Where(a => a.LiebRoleId == role.LiebRoleId).Any();
+                bool disabled = _editingUserRights < role.LevelToAssign;
+                }
+            <td><input type="checkbox" disabled="@disabled" checked="@hasRole" @onchange="args => RoleStatusChanged(role, args)" /></td>
+            <td>@role.RoleName</td>
+            @if(@role.IsSystemRole)
+            {
+                <td>True</td>
+            }
+        </tr>
+    }
+</table> 
+<br />
 
 @code {
 
@@ -64,6 +72,7 @@
     private LiebUser _user;
     private int _editingUserRights = 0;
     private List<LiebRole> _roles;
+    private string _submitMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -101,17 +110,26 @@
                     LiebRoleId = role.LiebRoleId,
                     LiebUserId = _user.LiebUserId
                 };
+            await UserService.AddRoleToUser(_user.LiebUserId, role.LiebRoleId);
             _user.RoleAssignments.Add(roleAssignment);
         }
         else if(!isChecked && assignment != null)
         {
+            await UserService.RemoveRoleFromUser(_user.LiebUserId, role.LiebRoleId);
             _user.RoleAssignments.Remove(assignment);
         }
     }
 
     private async Task HandleValidSubmit()
     {
-        await UserService.EditUserRoles(_user);
-        NavigationManager.NavigateTo("useroverview");
+        await UserService.UpdateBannedUntil(_user.LiebUserId, _user.BannedUntil);
+        if(_user.BannedUntil >= DateTime.Now.Date)
+        {
+            _submitMessage = "user banned successfully";
+        }
+        else
+        {
+            _submitMessage = "user unbanned successfully";
+        }
     }
 }

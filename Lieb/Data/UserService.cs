@@ -103,43 +103,46 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public async Task EditUserRoles(LiebUser user)
+        public async Task UpdateBannedUntil(int userId, DateTime? date)
         {
-            if (user != null)
-            {
-                using var context = _contextFactory.CreateDbContext();
-                LiebUser? userToChange = await context.LiebUsers
-                    .Include(u => u.RoleAssignments)
-                    .FirstOrDefaultAsync(u => u.LiebUserId == user.LiebUserId);
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser? user = await context.LiebUsers.FirstOrDefaultAsync(u => u.LiebUserId == userId);
 
-                if (userToChange == null)
-                    return;
+            if (user == null)
+                return;
 
-                userToChange.BannedUntil = user.BannedUntil;
+            user.BannedUntil = date;
 
-                List<RoleAssignment> toDelete = new List<RoleAssignment>();
-                foreach (RoleAssignment assignment in userToChange.RoleAssignments)
-                {
-                    RoleAssignment? newAssignment = user.RoleAssignments.FirstOrDefault(r => r.RoleAssignmentId == assignment.RoleAssignmentId);
-                    if (newAssignment == null)
-                    {
-                        toDelete.Add(assignment);
-                    }
-                }
-                foreach (RoleAssignment assignment in toDelete)
-                {
-                    userToChange.RoleAssignments.Remove(assignment);
-                    context.RoleAssignments.Remove(assignment);
-                }
-                foreach (RoleAssignment assignment in user.RoleAssignments.Where(r => r.RoleAssignmentId == 0))
-                {
-                    userToChange.RoleAssignments.Add(assignment);
-                }
-
-                await context.SaveChangesAsync();
-            }
+            await context.SaveChangesAsync();
         }
 
+        public async Task AddRoleToUser(int userId, int roleId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser? user = await context.LiebUsers
+                    .Include(u => u.RoleAssignments)
+                    .FirstOrDefaultAsync(u => u.LiebUserId == userId);
+            user.RoleAssignments.Add(new RoleAssignment()
+            {
+                LiebUserId = userId,
+                LiebRoleId = roleId
+            });
+            await context.SaveChangesAsync();
+        }
+
+        public async Task RemoveRoleFromUser(int userId, int roleId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser? user = await context.LiebUsers
+                    .Include(u => u.RoleAssignments)
+                    .FirstOrDefaultAsync(u => u.LiebUserId == userId);
+            RoleAssignment assignmentToRemove = user.RoleAssignments.FirstOrDefault(r => r.LiebRoleId == roleId);
+            if(assignmentToRemove != null)
+            {
+                user.RoleAssignments.Remove(assignmentToRemove);
+            }
+            await context.SaveChangesAsync();
+        }
 
         public List<LiebRole> GetLiebRoles()
         {

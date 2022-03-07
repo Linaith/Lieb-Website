@@ -35,10 +35,10 @@
                 </td>
                 <td>@build.Class.ToString()</td>
                 <td>@build.EliteSpecialization.ToString()</td>
-                <td>@build.Might.ToString()</td>
-                <td>@build.Heal.ToString()</td>
-                <td>@build.Quickness.ToString()</td>
-                <td>@build.Alacrity.ToString()</td>
+                <td><input type="checkbox" checked="@(build.Might)" disabled="disabled" /></td>
+                <td><input type="checkbox" checked="@(build.Heal)" disabled="disabled" /></td>
+                <td><input type="checkbox" checked="@(build.Quickness)" disabled="disabled" /></td>
+                <td><input type="checkbox" checked="@(build.Alacrity)" disabled="disabled" /></td>
             </tr>
         }
         </table> 

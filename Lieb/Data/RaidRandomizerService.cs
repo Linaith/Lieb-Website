@@ -134,10 +134,10 @@ namespace Lieb.Data
 
             foreach(GuildWars2Build build in signedUpUsers.Values)
             {
-                Alac += build.Alacrity ? 5 : 0;
-                Quick += build.Quickness ? 5 : 0;
-                Heal += build.Heal ? 5 : 0;
-                Might += build.Might ? 5 : 0;
+                Alac += build.Alacrity;
+                Quick += build.Quickness;
+                Heal += build.Heal;
+                Might += build.Might;
             }
             if(Alac > 10)
             {
@@ -186,14 +186,15 @@ namespace Lieb.Data
         {
             foreach (var userBuild in signedUpUsers)
             {
-                if(userBuild.Value.Alacrity && currentAlac > 10)
+                if(userBuild.Value.Alacrity > 0 && currentAlac > 10)
                 {
                     RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
-                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => !b.GuildWars2Build.Alacrity).OrderBy(u => _random.Next()).FirstOrDefault();
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Alacrity == 0).OrderBy(u => _random.Next()).FirstOrDefault();
                     if (newBuild != null)
                     {
+                        currentAlac -= userBuild.Value.Alacrity;
                         signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
-                        currentAlac -= 5;
+                        currentAlac += signedUpUsers[userBuild.Key].Alacrity;
                     }
                 }
             }
@@ -203,14 +204,15 @@ namespace Lieb.Data
         {
             foreach (var userBuild in signedUpUsers)
             {
-                if (!userBuild.Value.Alacrity && currentAlac < 10)
+                if (userBuild.Value.Alacrity == 00 && currentAlac < 10)
                 {
                     RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
-                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Alacrity).OrderBy(u => _random.Next()).FirstOrDefault();
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Alacrity > 0).OrderBy(u => _random.Next()).FirstOrDefault();
                     if (newBuild != null)
                     {
+                        currentAlac -= userBuild.Value.Alacrity;
                         signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
-                        currentAlac += 5;
+                        currentAlac += signedUpUsers[userBuild.Key].Alacrity;
                     }
                 }
             }
@@ -220,14 +222,15 @@ namespace Lieb.Data
         {
             foreach (var userBuild in signedUpUsers)
             {
-                if (userBuild.Value.Quickness && currentQuick > 10)
+                if (userBuild.Value.Quickness > 0 && currentQuick > 10)
                 {
                     RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
-                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => !b.GuildWars2Build.Quickness).OrderBy(u => _random.Next()).FirstOrDefault();
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Quickness == 0).OrderBy(u => _random.Next()).FirstOrDefault();
                     if (newBuild != null)
                     {
+                        currentQuick -= userBuild.Value.Quickness;
                         signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
-                        currentQuick -=5;
+                        currentQuick += signedUpUsers[userBuild.Key].Quickness;
                     }
                 }
             }
@@ -237,14 +240,15 @@ namespace Lieb.Data
         {
             foreach (var userBuild in signedUpUsers)
             {
-                if (!userBuild.Value.Quickness && currentQuick < 10)
+                if (userBuild.Value.Quickness == 00 && currentQuick < 10)
                 {
                     RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
-                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Quickness).OrderBy(u => _random.Next()).FirstOrDefault();
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Quickness > 0).OrderBy(u => _random.Next()).FirstOrDefault();
                     if (newBuild != null)
                     {
+                        currentQuick -= userBuild.Value.Quickness;
                         signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
-                        currentQuick += 5;
+                        currentQuick += signedUpUsers[userBuild.Key].Quickness;
                     }
                 }
             }
@@ -254,14 +258,15 @@ namespace Lieb.Data
         {
             foreach (var userBuild in signedUpUsers)
             {
-                if (userBuild.Value.Might && currentMight > 10)
+                if (userBuild.Value.Might > 0 && currentMight > 10)
                 {
                     RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
-                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => !b.GuildWars2Build.Might).OrderBy(u => _random.Next()).FirstOrDefault();
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Might == 0).OrderBy(u => _random.Next()).FirstOrDefault();
                     if (newBuild != null)
                     {
+                        currentMight -= userBuild.Value.Might;
                         signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
-                        currentMight -=5;
+                        currentMight += signedUpUsers[userBuild.Key].Might;
                     }
                 }
             }
@@ -271,14 +276,15 @@ namespace Lieb.Data
         {
             foreach (var userBuild in signedUpUsers)
             {
-                if (!userBuild.Value.Might && currentMight < 10)
+                if (userBuild.Value.Might == 00 && currentMight < 10)
                 {
                     RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
-                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Might).OrderBy(u => _random.Next()).FirstOrDefault();
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Might > 0).OrderBy(u => _random.Next()).FirstOrDefault();
                     if (newBuild != null)
                     {
+                        currentMight -= userBuild.Value.Might;
                         signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
-                        currentMight += 5;
+                        currentMight += signedUpUsers[userBuild.Key].Might;
                     }
                 }
             }
@@ -288,14 +294,15 @@ namespace Lieb.Data
         {
             foreach (var userBuild in signedUpUsers)
             {
-                if (userBuild.Value.Heal && currentHeal > 10)
+                if (userBuild.Value.Heal > 0 && currentHeal > 10)
                 {
                     RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
-                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => !b.GuildWars2Build.Heal).OrderBy(u => _random.Next()).FirstOrDefault();
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Heal == 0).OrderBy(u => _random.Next()).FirstOrDefault();
                     if (newBuild != null)
                     {
+                        currentHeal -= userBuild.Value.Heal;
                         signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
-                        currentHeal -= 5;
+                        currentHeal += signedUpUsers[userBuild.Key].Heal;
                     }
                 }
             }
@@ -305,14 +312,15 @@ namespace Lieb.Data
         {
             foreach (var userBuild in signedUpUsers)
             {
-                if (!userBuild.Value.Heal && currentHeal < 10)
+                if (userBuild.Value.Heal == 00 && currentHeal < 10)
                 {
                     RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
-                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Heal).OrderBy(u => _random.Next()).FirstOrDefault();
+                    Equipped newBuild = signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.Heal > 0).OrderBy(u => _random.Next()).FirstOrDefault();
                     if (newBuild != null)
                     {
+                        currentHeal -= userBuild.Value.Heal;
                         signedUpUsers[userBuild.Key] = newBuild.GuildWars2Build;
-                        currentHeal += 5;
+                        currentHeal += signedUpUsers[userBuild.Key].Heal;
                     }
                 }
             }

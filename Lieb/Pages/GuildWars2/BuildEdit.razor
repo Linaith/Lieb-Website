@@ -13,7 +13,6 @@
 <AuthorizeView Policy="@Constants.Roles.Admin" Context="authorizationContext">
     <EditForm Model="@_build" OnValidSubmit="@HandleValidSubmit">
         <DataAnnotationsValidator />
-        <ValidationSummary />
     
         <p>
             <label>
@@ -69,7 +68,9 @@
                 </InputSelect>
             </label>
         </p>
-    <button type="submit">Submit</button>
+
+        <ValidationSummary />
+        <button type="submit">Submit</button>
 
     </EditForm>
         <br/>

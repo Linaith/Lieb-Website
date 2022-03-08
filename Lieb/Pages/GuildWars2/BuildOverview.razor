@@ -14,6 +14,17 @@
                 <span class="oi oi-plus" aria-hidden="true"></span> Add Build
             </NavLink>
         </div>
+            
+            <label>
+                Filter:
+                <select @onchange="args => ChangeFilter(args)" >
+                    <option value="All">All</option>
+                    @foreach(GuildWars2Class gw2Class in Enum.GetValues(typeof(GuildWars2Class)))
+                    {
+                        <option value="@gw2Class">@gw2Class.ToString()</option>
+                    }
+                </select>
+            </label>
 
          <table>
             <tr>
@@ -25,22 +36,21 @@
                 <th>Quick</th>
                 <th>Alac</th>
             </tr>
-
-        @foreach (var build in _builds.OrderBy(b => b.Class).ThenBy(b => b.EliteSpecialization))
-        {
-            <tr>    
-                <td class="nav-item px-3">
-                    @{string navLink = $"buildedit/{@build.GuildWars2BuildId}";}
-                    <NavLink class="nav-link" href="@navLink">@build.BuildName</NavLink>
-                </td>
-                <td>@build.Class.ToString()</td>
-                <td>@build.EliteSpecialization.ToString()</td>
-                <td><input type="checkbox" checked="@(build.Might > 0)" disabled="disabled" /></td>
-                <td><input type="checkbox" checked="@(build.Heal > 0)" disabled="disabled" /></td>
-                <td><input type="checkbox" checked="@(build.Quickness > 0)" disabled="disabled" /></td>
-                <td><input type="checkbox" checked="@(build.Alacrity > 0)" disabled="disabled" /></td>
-            </tr>
-        }
+            @foreach (var build in _buildsToShow.OrderBy(b => b.Class).ThenBy(b => b.EliteSpecialization))
+            {
+                <tr>    
+                    <td class="nav-item px-3">
+                        @{string navLink = $"buildedit/{@build.GuildWars2BuildId}";}
+                        <NavLink class="nav-link" href="@navLink">@build.BuildName</NavLink>
+                    </td>
+                    <td>@build.Class.ToString()</td>
+                    <td>@build.EliteSpecialization.ToString()</td>
+                    <td><input type="checkbox" checked="@(build.Might > 0)" disabled="disabled" /></td>
+                    <td><input type="checkbox" checked="@(build.Heal > 0)" disabled="disabled" /></td>
+                    <td><input type="checkbox" checked="@(build.Quickness > 0)" disabled="disabled" /></td>
+                    <td><input type="checkbox" checked="@(build.Alacrity > 0)" disabled="disabled" /></td>
+                </tr>
+            }
         </table> 
 
     </Authorized>
@@ -49,9 +59,23 @@
 @code 
 {
     private List<GuildWars2Build> _builds;
+    private List<GuildWars2Build> _buildsToShow;
 
     protected override async Task OnInitializedAsync()
     {
         _builds = GuildWars2BuildService.GetBuilds();
+        _buildsToShow = _builds;
+    }
+
+    private void ChangeFilter( ChangeEventArgs e)
+    {
+        if(Enum.TryParse<GuildWars2Class>(e.Value?.ToString(),out GuildWars2Class selectedClass))
+        {
+            _buildsToShow = _builds.Where(b => b.Class == selectedClass).ToList();
+        }
+        else
+        {
+            _buildsToShow = _builds;
+        }
     }
 }

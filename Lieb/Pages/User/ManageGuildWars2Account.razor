@@ -42,6 +42,16 @@
         @if (_account.GuildWars2AccountId != 0)
         {
             <br />
+            <label>
+                Filter:
+                <select @onchange="args => ChangeBuildFilter(args)" >
+                    <option value="All">All</option>
+                    @foreach(GuildWars2Class gw2Class in Enum.GetValues(typeof(GuildWars2Class)))
+                    {
+                        <option value="@gw2Class">@gw2Class.ToString()</option>
+                    }
+                </select>
+            </label>
             <table>
                 <tr>
                     <th>Equipped</th>
@@ -54,7 +64,7 @@
                     <th>Quick</th>
                     <th>Alac</th>
                 </tr>
-                @foreach (GuildWars2Build build in GuildWars2BuildService.GetBuilds())
+                @foreach (GuildWars2Build build in _buildsToShow.OrderBy(b => b.Class).ThenBy(b => b.EliteSpecialization))
                 {
                     Equipped? equippedBuild = _account.EquippedBuilds.FirstOrDefault(e => e.GuildWars2BuildId == build.GuildWars2BuildId);
                     bool isEquipped = equippedBuild != null;
@@ -97,6 +107,10 @@
 
     private string _saveMessage = string.Empty;
 
+    private List<GuildWars2Build> _builds;
+
+    private List<GuildWars2Build> _buildsToShow;
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -111,6 +125,8 @@
         {
             _account = new GuildWars2Account();
         }
+        _builds = GuildWars2BuildService.GetBuilds();
+        _buildsToShow = _builds;
     }
 
     async Task EquippedStatusChanged(int buildId, ChangeEventArgs args)
@@ -148,5 +164,17 @@
         await GuildWars2AccountService.AddOrEditAccount(_account, _user.LiebUserId);
         _account = GuildWars2AccountService.GetAccount(_account.GuildWars2AccountId);
         _saveMessage = "changes saved successfully";
+    }
+
+    private void ChangeBuildFilter( ChangeEventArgs e)
+    {
+        if(Enum.TryParse<GuildWars2Class>(e.Value?.ToString(),out GuildWars2Class selectedClass))
+        {
+            _buildsToShow = _builds.Where(b => b.Class == selectedClass).ToList();
+        }
+        else
+        {
+            _buildsToShow = _builds;
+        }
     }
 }

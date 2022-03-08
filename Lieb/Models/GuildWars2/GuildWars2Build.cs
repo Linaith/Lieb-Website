@@ -79,8 +79,14 @@ namespace Lieb.Models.GuildWars2
         public short Alacrity { get; set; }
         public short Heal { get; set; }
 
+        [Required]
+        [Range(1, 9, ErrorMessage = "Please select a class")]
         public GuildWars2Class Class { get; set; }
+
+        [Required]
+        [Range(1, 90, ErrorMessage = "Please select an elite specialization")]
         public EliteSpecialization EliteSpecialization { get; set; }
+
         public ICollection<Equipped> EquippedRoles { get; set; } = new List<Equipped>();
 
     }

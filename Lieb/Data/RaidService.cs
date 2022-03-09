@@ -1,4 +1,5 @@
-﻿using Lieb.Models.GuildWars2.Raid;
+﻿using Lieb.Models;
+using Lieb.Models.GuildWars2.Raid;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -148,7 +149,7 @@ namespace Lieb.Data
 
         public async Task SignUp(int raidId, int liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)
         {
-            if (!IsSignUpAllowed(liebUserId, plannedRoleId, signUpType))
+            if (!await IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true, new List<int>()))
             {
                 return;
             }
@@ -195,7 +196,7 @@ namespace Lieb.Data
 
         public async Task ChangeSignUpType(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType)
         {
-            if (!IsSignUpAllowed(liebUserId, plannedRoleId, signUpType))
+            if (!await IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true, new List<int>()))
             {
                 return;
             }
@@ -223,7 +224,7 @@ namespace Lieb.Data
             }
         }
 
-        public bool IsSignUpAllowed(int liebUserId, int plannedRoleId, SignUpType signUpType)
+        public bool IsRoleSignUpAllowed(int liebUserId, int plannedRoleId, SignUpType signUpType)
         {
             if(signUpType == SignUpType.Backup || signUpType == SignUpType.Flex || signUpType == SignUpType.SignedOff)
             {
@@ -246,9 +247,14 @@ namespace Lieb.Data
             return signUps.Where(s => s.LiebUserId == liebUserId && s.SignUpType == SignUpType.SignedUp).Any();
         }
 
-        public async Task<bool> IsSignUpAllowed(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType, bool moveFlexUser, List<int> checkedRoleIds)
+        public bool IsRoleSignUpAllowed(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType, bool moveFlexUser)
         {
-            if (IsSignUpAllowed(liebUserId, plannedRoleId, signUpType))
+            return IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, moveFlexUser, new List<int>()).Result;
+        }
+
+        private async Task<bool> IsRoleSignUpAllowed(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType, bool moveFlexUser, List<int> checkedRoleIds)
+        {
+            if (IsRoleSignUpAllowed(liebUserId, plannedRoleId, signUpType))
                 return true;
 
             if (checkedRoleIds == null)
@@ -271,7 +277,7 @@ namespace Lieb.Data
                 foreach (RaidSignUp signUp in raid.SignUps.Where(s => s.LiebUserId == userId && s.SignUpType == SignUpType.Flex))
                 {
                     if (!checkedRoleIds.Contains(signUp.PlannedRaidRoleId)
-                        && await IsSignUpAllowed(raidId, userId, signUp.PlannedRaidRoleId, SignUpType.SignedUp, moveFlexUser, checkedRoleIds))
+                        && await IsRoleSignUpAllowed(raidId, userId, signUp.PlannedRaidRoleId, SignUpType.SignedUp, moveFlexUser, checkedRoleIds))
                     {
                         if (moveFlexUser)
                         {
@@ -282,6 +288,53 @@ namespace Lieb.Data
                 }
             }
             return false;
+        }
+
+        public bool IsRaidSignUpAllowed(int liebUserId, int raidId, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            using var context = _contextFactory.CreateDbContext();
+            Raid? raid = context.Raids
+                .AsNoTracking()
+                .FirstOrDefault(r => r.RaidId == raidId);
+            if(raid == null)
+            {
+                errorMessage = "Raid not found.";
+                return false;
+            }
+            LiebUser? user = context.LiebUsers
+                .Include(u => u.RoleAssignments)
+                .ThenInclude(a => a.LiebRole)
+                .Include(u => u.GuildWars2Accounts)
+                .ThenInclude(a => a.EquippedBuilds)
+                .AsNoTracking()
+                .FirstOrDefault(r => r.LiebUserId == liebUserId);
+            if (user == null)
+            {
+                errorMessage = "User not found.";
+                return false;
+            }
+
+            DateTime freeForAllTime = raid.FreeForAllDate.Date + raid.FreeForAllTime.TimeOfDay;
+            if (!string.IsNullOrEmpty(raid.RequiredRole) && !user.RoleAssignments.Where(a => a.LiebRole.RoleName == raid.RequiredRole).Any() || freeForAllTime > DateTimeOffset.Now)
+            {
+                errorMessage = $"The raid is still locked for {raid.RequiredRole}.";
+                return false;
+            }
+
+            if (user.GuildWars2Accounts.Count == 0)
+            {
+                errorMessage = "No Guild Wars 2 account found.";
+                return false;
+            }
+
+            if (raid.RaidType != RaidType.Planned && !user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Count > 0).Any())
+            {
+                errorMessage = "No equipped Guild Wars 2 build found.";
+                return false;
+            }
+
+            return true;
         }
     }
 }

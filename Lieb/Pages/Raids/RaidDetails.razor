@@ -40,82 +40,82 @@
 <AuthorizeView Policy="@Constants.Roles.User"> 
     <Authorized>
         @{
-                ulong discordId = ulong.Parse(@context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
-                LiebUser user = UserService.GetLiebUser(discordId);
-                RaidSignUp userRole = _raid.SignUps.Where(s => s.LiebUserId == user.LiebUserId).FirstOrDefault();
-                bool isSignedUp = userRole != null;
-                DateTime flexTime = _raid.FreeForAllDate.Date + _raid.FreeForAllTime.TimeOfDay;
-                bool isSignUoAllowed = !_raid.IsRandomized && (user.RoleAssignments.FirstOrDefault(a => a.LiebRole.RoleName == _raid.RequiredRole) != null || flexTime < DateTime.Now);
-                isSignUoAllowed = isSignUoAllowed && user.GuildWars2Accounts.Count > 0 && (_raid.RaidType == RaidType.Planned || user.GuildWars2Accounts.FirstOrDefault()?.EquippedBuilds.Count > 0);
+            ulong discordId = ulong.Parse(@context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            LiebUser user = UserService.GetLiebUser(discordId);
+            RaidSignUp userRole = _raid.SignUps.Where(s => s.LiebUserId == user.LiebUserId).FirstOrDefault();
+            bool isSignedUp = userRole != null;
+            bool isRaidSignUpAllowed = RaidService.IsRaidSignUpAllowed(user.LiebUserId, _raid.RaidId, out string errorMessage);
+        }
+        <label>@errorMessage</label>
+        <table class="table">
+            <tbody>
+                @foreach (var role in _raid.Roles)
+                {
+                    RaidSignUp[] signUps = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).ToArray();
+                    int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();
 
-            <table class="table">
-                <tbody>
-                    @foreach (var role in _raid.Roles)
-                    {
-                        Models.GuildWars2.Raid.RaidSignUp[] signUps = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).ToArray();
-                        int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();
-
-                            <tr>
-                                @if (isSignUoAllowed)
-                                {
-                                    @if (@usedSpots < @role.Spots)
-                                    {
-                                        <td><button @onclick="() => SignUpClicked(role, user, isSignedUp)">Sign Up</button></td>
-                                        <td><button @onclick="() => MaybeClicked(role, user, isSignedUp)">Maybe</button></td>
-                                    }
-                                    else
-                                    {
-                                        <td></td>
-                                        <td></td>
-                                    }
-                                    <td><button @onclick="() => BackupClicked(role, user, isSignedUp)">Backup</button></td>
-                                }
-                                <td><h5>@role.Name: @role.Description (@usedSpots /@role.Spots)</h5></td>
-                        </tr>
-
-                        @foreach (var signUp in signUps)
+                    <tr>
+                        @if (isRaidSignUpAllowed)
                         {
-                            @if(signUp.SignUpType != SignUpType.SignedOff)
+                            @if (RaidService.IsRoleSignUpAllowed(_raid.RaidId, user.LiebUserId, role.PlannedRaidRoleId, SignUpType.SignedUp, false))
                             {
-                                <tr>
-                                    @{bool isUser = isSignedUp && userRole.PlannedRaidRole.PlannedRaidRoleId == role.PlannedRaidRoleId && signUp.LiebUserId == user.LiebUserId;}
-                                    @if (isSignUoAllowed)
-                                    {
-                                        <td></td>
-                                        <td></td>
-                                        @if(isUser)
-                                        {
-                                            <td><button @onclick="() => SignOffClicked(role, user)">Sign Off</button></td>
-                                        }
-                                        else
-                                        {
-                                            <td></td>
-                                        }
-                                    }
-                                    @{string signUpStatus = string.Empty;}
-                                    @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
+                                <td><button @onclick="() => SignUpClicked(role, user, isSignedUp, SignUpType.SignedUp)">Sign Up</button></td>
+                                <td><button @onclick="() => SignUpClicked(role, user, isSignedUp, SignUpType.Maybe)">Maybe</button></td>
+                            }
+                            else
+                            {
+                                <td></td>
+                                <td></td>
+                            }
+                            <td><button @onclick="() => SignUpClicked(role, user, isSignedUp, SignUpType.Backup)">Backup</button></td>
+                            <td><button @onclick="() => SignUpClicked(role, user, isSignedUp, SignUpType.Flex)">Flex</button></td>
+                        }
+                        <td><h5>@role.Name: @role.Description (@usedSpots /@role.Spots)</h5></td>
+                    </tr>
 
-                                    @if (isUser)
+                    @foreach (var signUp in signUps)
+                    {
+                        @if(signUp.SignUpType != SignUpType.SignedOff)
+                        {
+                            <tr>
+                                @{bool isUser = isSignedUp && userRole.PlannedRaidRole.PlannedRaidRoleId == role.PlannedRaidRoleId && signUp.LiebUserId == user.LiebUserId;}
+                                @if (isRaidSignUpAllowed)
+                                {
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    @if(isUser)
                                     {
-                                        <td>@signUp.LiebUser.Name 
-                                        <select value=@signUp.GuildWars2AccountId @onchange="args => ChangeAccount(user, args)">
-                                            @foreach (var account in user.GuildWars2Accounts)
-                                            {
-                                                <option value=@account.GuildWars2AccountId>@account.AccountName</option>
-                                            }
-                                        </select> @signUpStatus </td>
+                                        <td><button @onclick="() => SignOffClicked(role, user)">Sign Off</button></td>
                                     }
                                     else
                                     {
-                                        <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td> 
+                                        <td></td>
                                     }
-                                </tr>
-                            }
+                                }
+                                @{string signUpStatus = string.Empty;}
+                                @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
+
+                                @if (isUser)
+                                {
+                                    <td>@signUp.LiebUser.Name 
+                                    <select value=@signUp.GuildWars2AccountId @onchange="args => ChangeAccount(user, args)">
+                                        @foreach (var account in user.GuildWars2Accounts)
+                                        {
+                                            <option value=@account.GuildWars2AccountId>@account.AccountName</option>
+                                        }
+                                    </select> @signUpStatus </td>
+                                }
+                                else
+                                {
+                                    <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td> 
+                                }
+                            </tr>
                         }
                     }
-                </tbody>
-            </table>
-        }
+                }
+            </tbody>
+        </table>
     </Authorized>
     <NotAuthorized>
         <div>
@@ -165,41 +165,18 @@
     [Parameter]
     public Raid _raid { get; set; }
 
-    async Task SignUpClicked(PlannedRaidRole role, LiebUser liebUser, bool isSignedUp)
-    {
-        if(isSignedUp)
-        {
-            await RaidService.ChangeSignUpType(_raid.RaidId, liebUser.LiebUserId, role.PlannedRaidRoleId, SignUpType.SignedUp);
-        }
-        else
-        {
-            await RaidService.SignUp(_raid.RaidId, liebUser.LiebUserId, liebUser.GuildWars2Accounts.FirstOrDefault().GuildWars2AccountId, role.PlannedRaidRoleId, SignUpType.SignedUp);
-        }
-        _raid = RaidService.GetRaid(_raid.RaidId);
-    }
+    [Parameter]
+    public LiebUser? _user { get; set; }
 
-    async Task BackupClicked(PlannedRaidRole role, LiebUser liebUser, bool isSignedUp)
+    async Task SignUpClicked(PlannedRaidRole role, LiebUser liebUser, bool isSignedUp, SignUpType signUpType)
     {
         if(isSignedUp)
         {
-            await RaidService.ChangeSignUpType(_raid.RaidId, liebUser.LiebUserId, role.PlannedRaidRoleId, SignUpType.Backup);
+            await RaidService.ChangeSignUpType(_raid.RaidId, liebUser.LiebUserId, role.PlannedRaidRoleId, signUpType);
         }
         else
         {
-            await RaidService.SignUp(_raid.RaidId, liebUser.LiebUserId, liebUser.GuildWars2Accounts.FirstOrDefault().GuildWars2AccountId, role.PlannedRaidRoleId, SignUpType.Backup);
-        }
-        _raid = RaidService.GetRaid(_raid.RaidId);
-    }
-
-    async Task MaybeClicked(PlannedRaidRole role, LiebUser liebUser, bool isSignedUp)
-    {
-        if(isSignedUp)
-        {
-            await RaidService.ChangeSignUpType(_raid.RaidId, liebUser.LiebUserId, role.PlannedRaidRoleId, SignUpType.Maybe);
-        }
-        else
-        {
-            await RaidService.SignUp(_raid.RaidId, liebUser.LiebUserId, liebUser.GuildWars2Accounts.FirstOrDefault().GuildWars2AccountId, role.PlannedRaidRoleId, SignUpType.Maybe);
+            await RaidService.SignUp(_raid.RaidId, liebUser.LiebUserId, liebUser.GuildWars2Accounts.FirstOrDefault().GuildWars2AccountId, role.PlannedRaidRoleId, signUpType);
         }
         _raid = RaidService.GetRaid(_raid.RaidId);
     }

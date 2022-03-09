@@ -1,6 +1,11 @@
 ﻿@page "/raidoverview"
 @using Lieb.Data
+@using System.Security.Claims
+@using Lieb.Models
+@using Lieb.Models.GuildWars2.Raid
 @inject RaidService RaidService
+@inject UserService UserService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 
 <h3>RaidOverview</h3>
@@ -15,19 +20,28 @@
 </AuthorizeView>
 
 
-@foreach (var raid in raids) {
+@foreach (var raid in _raids) {
     <br />
-    <RaidDetails _raid=@raid />
+    <RaidDetails _raid=@raid _user=@_user/>
 }
 
 
 
 @code 
 {
-    private List<Models.GuildWars2.Raid.Raid> raids;
+    private List<Raid> _raids;
+    private LiebUser? _user;
 
     protected override async Task OnInitializedAsync()
     {
-        raids = RaidService.GetRaids();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity.IsAuthenticated)
+        {
+            ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            _user = UserService.GetLiebUserSmall(discordId);
+        }
+
+        _raids = RaidService.GetRaids();
     }
 }

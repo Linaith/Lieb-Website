@@ -1,0 +1,19 @@
+﻿
+h5 {
+    color: lightgrey;
+}
+
+table {
+    column-width: auto;
+    color: lightgray;
+/*    border-top: none;
+    border-bottom: none;*/
+}
+
+/*.roleTable table tr:not(:first-child) > td {
+    border-top: none;
+}
+
+.roleTable table tr:not(:last-child) > td {
+    border-bottom: none;
+}*/

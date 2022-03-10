@@ -40,6 +40,7 @@ namespace Lieb.Data
             GuildWars2Account bloodseeker = new GuildWars2Account() { AccountName = "Bloodseeker.2043" };
             var users = new LiebUser[]
             {
+                //new LiebUser{DiscordUserId=0, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
                 new LiebUser{DiscordUserId=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
 #if DEBUG
                 new LiebUser{DiscordUserId=1, Name="Lisa", GuildWars2Accounts = new List<GuildWars2Account>(){ hierpiepts}},
@@ -96,9 +97,9 @@ namespace Lieb.Data
                 Guild = "LIEB",
                 Organizer = "Sarah",
                 RaidType = RaidType.RandomWithBoons,
-                Date = DateTime.Now.Date,
-                StartTime = DateTime.Now,
-                EndTime = DateTime.Now.AddHours(2),
+                StartTimeUTC = DateTime.UtcNow,
+                EndTimeUTC = DateTime.UtcNow.AddHours(2),
+                FreeForAllTimeUTC = DateTime.UtcNow.AddHours(-2),
                 VoiceChat = "ts.lieb.games",
                 Roles = new [] { ele, scourge}
             };
@@ -115,7 +116,7 @@ namespace Lieb.Data
             context.RaidSignUps.AddRange(signUps);
             context.SaveChanges();
 
-            GuildWars2Build healTempest = new GuildWars2Build() { BuildName = "HealTempest", Class = GuildWars2Class.Elementalist, EliteSpecialization = EliteSpecialization.Tempest, Heal = 5, Might = 10 };
+            GuildWars2Build healTempest = new GuildWars2Build() { BuildName = "HealTempest", Class = GuildWars2Class.Elementalist, EliteSpecialization = EliteSpecialization.Tempest, Heal = 5, Might = 5 };
             GuildWars2Build condiScourge = new GuildWars2Build() { BuildName = "CondiScourge", Class = GuildWars2Class.Necromancer, EliteSpecialization = EliteSpecialization.Scourge };
             GuildWars2Build quickBrand = new GuildWars2Build() { BuildName = "QuickBrand", Class = GuildWars2Class.Guard, EliteSpecialization = EliteSpecialization.Firebrand, Heal = 5, Quickness = 5 };
             GuildWars2Build alacregate = new GuildWars2Build() { BuildName = "Alacregate", Class = GuildWars2Class.Revenant, EliteSpecialization = EliteSpecialization.Renegade, Alacrity = 5 };

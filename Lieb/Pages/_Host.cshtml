@@ -7,3 +7,14 @@
 
 @(await Html.RenderComponentAsync<App>(RenderMode.Server))
 <!--<component type="typeof(App)" render-mode="ServerPrerendered" />-->
+<script>
+    function GetTimezoneValue() {
+        // Returns the time difference in minutes between UTC time and local time.
+        return new Date().getTimezoneOffset();
+    }
+</script>
+<script>
+    function GetTimezone() {
+        return new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
+</script>

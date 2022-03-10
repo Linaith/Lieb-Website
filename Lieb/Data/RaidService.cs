@@ -65,14 +65,16 @@ namespace Lieb.Data
                         .FirstOrDefaultAsync(r => r.RaidId == raid.RaidId);
                     raidToChange.Title = raid.Title;
                     raidToChange.Description = raid.Description;
-                    raidToChange.Date = raid.Date;
-                    raidToChange.StartTime = raid.StartTime;
-                    raidToChange.EndTime = raid.EndTime;
+                    raidToChange.StartTimeUTC = raid.StartTimeUTC;
+                    raidToChange.EndTimeUTC = raid.EndTimeUTC;
+                    raidToChange.TimeZone = raid.TimeZone;
                     raidToChange.Organizer = raid.Organizer;
                     raidToChange.Guild = raid.Guild;
                     raidToChange.VoiceChat = raid.VoiceChat;
                     raidToChange.RaidType = raid.RaidType;
                     raidToChange.Frequency = raid.Frequency;
+                    raidToChange.RequiredRole = raid.RequiredRole;
+                    raidToChange.FreeForAllTimeUTC = raid.FreeForAllTimeUTC;
                     raidToChange.DiscordMessageId = raid.DiscordMessageId;
                     raidToChange.DiscordChannelId = raid.DiscordChannelId;
                     raidToChange.DiscordGuildId = raid.DiscordGuildId;
@@ -315,13 +317,6 @@ namespace Lieb.Data
                 return false;
             }
 
-            DateTime freeForAllTime = raid.FreeForAllDate.Date + raid.FreeForAllTime.TimeOfDay;
-            if (!string.IsNullOrEmpty(raid.RequiredRole) && !user.RoleAssignments.Where(a => a.LiebRole.RoleName == raid.RequiredRole).Any() || freeForAllTime > DateTimeOffset.Now)
-            {
-                errorMessage = $"The raid is still locked for {raid.RequiredRole}.";
-                return false;
-            }
-
             if (user.GuildWars2Accounts.Count == 0)
             {
                 errorMessage = "No Guild Wars 2 account found.";
@@ -331,6 +326,12 @@ namespace Lieb.Data
             if (raid.RaidType != RaidType.Planned && !user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Count > 0).Any())
             {
                 errorMessage = "No equipped Guild Wars 2 build found.";
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(raid.RequiredRole) && !user.RoleAssignments.Where(a => a.LiebRole.RoleName == raid.RequiredRole).Any() || raid.FreeForAllTimeUTC.UtcDateTime > DateTimeOffset.UtcNow)
+            {
+                errorMessage = $"The raid is still locked for {raid.RequiredRole}.";
                 return false;
             }
 

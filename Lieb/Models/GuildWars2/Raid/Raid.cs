@@ -23,13 +23,12 @@ namespace Lieb.Models.GuildWars2.Raid
         public string Description { get; set; } = String.Empty;
 
         [Required]
-        public DateTime Date { get; set; } = DateTime.Now;
+        public DateTimeOffset StartTimeUTC { get; set; } = DateTime.Now;
 
         [Required]
-        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset EndTimeUTC { get; set; }
 
-        [Required]
-        public DateTimeOffset EndTime { get; set; }
+        public string TimeZone { get; set; } = String.Empty;
 
         [Required]
         [StringLength(50, ErrorMessage = "Organizer too long (50 character limit).")]
@@ -52,9 +51,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public string RequiredRole { get; set; } = String.Empty;
 
-        public DateTime FreeForAllDate { get; set; } = DateTime.Now;
-
-        public DateTimeOffset FreeForAllTime { get; set; }
+        public DateTimeOffset FreeForAllTimeUTC { get; set; }
 
         //role name, number of spots
         public ICollection<PlannedRaidRole> Roles { get; set; } = new HashSet<PlannedRaidRole>();

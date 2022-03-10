@@ -4,6 +4,7 @@
 @using Lieb.Models.GuildWars2.Raid
 @using System.ComponentModel.DataAnnotations
 @inject RaidService RaidService
+@inject TimeZoneService TimeZoneService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 
@@ -13,7 +14,6 @@
 <AuthorizeView Policy="@Constants.Roles.RaidLead" Context="authorizationContext">
 <EditForm Model="@_raid" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
-    <ValidationSummary />
     @{
         bool _isEdit = _raid.RaidId != 0;
     }
@@ -44,20 +44,20 @@
     <p>
         <label>
             Date:
-            <InputDate @bind-Value="_raid.Date" />
+            <InputDate @bind-Value="_raidDate" />
         </label>
     </p>
 
     <p>
         <label>
             Start Time:
-            <input type="time" @bind="@_raid.StartTime" />
+            <input type="time" @bind="_startTime" />
         </label>
     </p>
     <p>
         <label>
             End Time:
-            <input type="time" @bind="@_raid.EndTime" />
+            <input type="time" @bind="_endTime" />
         </label>
     </p>
 
@@ -109,7 +109,9 @@
             </table> 
         </p>
     }
-
+    
+    <ValidationSummary />
+    <label class="validation-message" >@_errosMessage</label>
     <button type="submit">Submit</button>
 
 </EditForm>
@@ -124,12 +126,26 @@
 
     public Raid _raid;
 
+    private string _errosMessage = string.Empty;
+
+    private DateTimeOffset _raidDate = DateTime.Now.Date;
+    private DateTimeOffset _startTime;
+    private DateTimeOffset _endTime;
+    private DateTimeOffset _freeForAllDate = DateTime.Now.Date;
+    private DateTimeOffset _freeForAllTime;
+
+
 
     protected override async Task OnInitializedAsync()
     {
         if(!string.IsNullOrEmpty(raidId) && int.TryParse(raidId, out int parsedId))
         {
             _raid = RaidService.GetRaid(parsedId);
+            _startTime = await TimeZoneService.GetLocalDateTime(_raid.StartTimeUTC);
+            _endTime = await TimeZoneService.GetLocalDateTime(_raid.EndTimeUTC);
+            _raidDate = _startTime.Date;
+            _freeForAllTime = await TimeZoneService.GetLocalDateTime(_raid.FreeForAllTimeUTC);
+            _freeForAllDate = _freeForAllTime.Date;
         }
         else
         {
@@ -160,8 +176,9 @@
 
     private async Task HandleValidSubmit()
     {
-        if(_raid.RaidType != RaidType.Planned && _raid.Roles.Count == 0)
+        if(_raid.RaidType != RaidType.Planned)
         {
+            _raid.Roles.Clear();
             _raid.Roles.Add(new PlannedRaidRole()
                 {
                     Spots = 10,
@@ -169,6 +186,25 @@
                     Description = _raid.RaidType.ToString()
                 });
         }
+
+        if(_raid.Roles.Count == 0)
+        {
+            _errosMessage = "Roles are needed for a raid.";
+            return;
+        }
+
+        _raid.TimeZone = await TimeZoneService.GetUserTimeZone();
+
+        _raid.StartTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date + _startTime.TimeOfDay);
+        if(_startTime.TimeOfDay > _endTime.TimeOfDay)
+        {
+            _raid.EndTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date + _endTime.TimeOfDay);
+        }
+        else
+        {
+            _raid.EndTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date.AddDays(1) + _endTime.TimeOfDay);
+        }
+        _raid.FreeForAllTimeUTC = await TimeZoneService.GetUTCDateTime(_freeForAllDate.Date + _freeForAllTime.TimeOfDay);
 
         await RaidService.AddOrEditRaid(_raid);
         NavigationManager.NavigateTo("raidoverview");

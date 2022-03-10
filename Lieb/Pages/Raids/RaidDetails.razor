@@ -4,6 +4,7 @@
 @using Lieb.Models.GuildWars2.Raid
 @inject UserService UserService
 @inject RaidService RaidService
+@inject TimeZoneService TimeZoneService
 @inject RaidRandomizerService RaidRandomizerService
 
 <body>
@@ -17,11 +18,11 @@
 <div >
     <div class="times">
         <h5>Date</h5>
-        <p>@_raid.Date.ToLongDateString()</p>
+        <p>@_startTime.DateTime.ToLongDateString()</p>
     </div>
     <div class="times">
         <h5>Time</h5>
-        <p>from: @_raid.StartTime.LocalDateTime.ToShortTimeString()  to: @_raid.EndTime.LocalDateTime.ToShortTimeString()</p>
+        <p>from: @_startTime.LocalDateTime.ToShortTimeString()  to: @_endTime.LocalDateTime.ToShortTimeString()</p>
     </div>
 </div>
 
@@ -72,7 +73,6 @@
 </body>
 
 @code {
-
     [Parameter]
     public Raid _raid { get; set; }
 
@@ -83,9 +83,17 @@
 
     string _errorMessage;
 
+    private DateTimeOffset _startTime;
+    private DateTimeOffset _endTime;
+    private DateTimeOffset _freeForAllTime;
+
     protected override async Task OnInitializedAsync()
     {
         _isRaidSignUpAllowed = _user != null && RaidService.IsRaidSignUpAllowed(_user.LiebUserId, _raid.RaidId, out string _errorMessage);
+
+        _startTime = await TimeZoneService.GetLocalDateTime(_raid.StartTimeUTC);
+        _endTime = await TimeZoneService.GetLocalDateTime(_raid.EndTimeUTC);
+        _freeForAllTime = await TimeZoneService.GetLocalDateTime(_raid.FreeForAllTimeUTC);
     }
 
     async Task SignUpClicked(PlannedRaidRole role, LiebUser liebUser, bool isSignedUp, SignUpType signUpType)

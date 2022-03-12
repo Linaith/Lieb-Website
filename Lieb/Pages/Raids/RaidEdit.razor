@@ -111,7 +111,7 @@
     }
     
     <ValidationSummary />
-    <label class="validation-message" >@_errosMessage</label>
+    <label class="validation-message" >@_errorMessage</label>
     <button type="submit">Submit</button>
 
 </EditForm>
@@ -126,7 +126,7 @@
 
     public Raid _raid;
 
-    private string _errosMessage = string.Empty;
+    private string _errorMessage = string.Empty;
 
     private DateTimeOffset _raidDate = DateTime.Now.Date;
     private DateTimeOffset _startTime;
@@ -189,7 +189,7 @@
 
         if(_raid.Roles.Count == 0)
         {
-            _errosMessage = "Roles are needed for a raid.";
+            _errorMessage = "Roles are needed for a raid.";
             return;
         }
 

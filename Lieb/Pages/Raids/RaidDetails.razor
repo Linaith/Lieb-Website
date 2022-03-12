@@ -89,7 +89,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _isRaidSignUpAllowed = _user != null && RaidService.IsRaidSignUpAllowed(_user.LiebUserId, _raid.RaidId, out string _errorMessage);
+        _isRaidSignUpAllowed = _user != null && RaidService.IsRaidSignUpAllowed(_user.LiebUserId, _raid.RaidId, out _errorMessage);
 
         _startTime = await TimeZoneService.GetLocalDateTime(_raid.StartTimeUTC);
         _endTime = await TimeZoneService.GetLocalDateTime(_raid.EndTimeUTC);

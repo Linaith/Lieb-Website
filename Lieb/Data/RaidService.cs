@@ -327,8 +327,11 @@ namespace Lieb.Data
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(raid.RequiredRole) && !user.RoleAssignments.Where(a => a.LiebRole.RoleName == raid.RequiredRole).Any() || raid.FreeForAllTimeUTC.UtcDateTime > DateTimeOffset.UtcNow)
+            if (!string.IsNullOrEmpty(raid.RequiredRole) 
+                && !user.RoleAssignments.Where(a => a.LiebRole.RoleName == raid.RequiredRole).Any() 
+                && raid.FreeForAllTimeUTC.UtcDateTime > DateTimeOffset.UtcNow)
             {
+                bool userHasRole = user.RoleAssignments.Where(a => a.LiebRole.RoleName == raid.RequiredRole).Any();
                 errorMessage = $"The raid is still locked for {raid.RequiredRole}.";
                 return false;
             }

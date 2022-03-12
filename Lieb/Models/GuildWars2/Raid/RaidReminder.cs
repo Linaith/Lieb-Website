@@ -6,26 +6,21 @@ namespace Lieb.Models.GuildWars2.Raid
     {
         public enum ReminderType
         {
-            User = 0,
-            Channel = 1
-        }
-
-        public RaidReminder(ReminderType type, string message, double hoursBeforeRaid, ulong channelId = 0)
-        {
-            Type = type;
-            Message = message;
-            HoursBeforeRaid = hoursBeforeRaid;
-            ChannelId = channelId;
+            User = 1,
+            Channel = 2
         }
 
         public int RaidReminderId { get; set; }
 
+        [Required]
+        [Range(1, 2, ErrorMessage = "Please select a reminder type")]
         public ReminderType Type { get; set; }
 
         [Required]
         [StringLength(1000, ErrorMessage = "Message too long (1000 character limit).")]
         public string Message { get; set; }
 
+        [Required]
         public double HoursBeforeRaid { get; set; }
 
         public ulong ChannelId { get; set; }

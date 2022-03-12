@@ -21,6 +21,7 @@ namespace Lieb.Data
         public DbSet<GuildWars2Build> GuildWars2Builds { get; set; }
         public DbSet<PlannedRaidRole> PlannedRaidRoles { get; set; }
         public DbSet<Raid> Raids { get; set; }
+        public DbSet<RaidTemplate> RaidTemplates { get; set; }
         public DbSet<RaidReminder> RaidReminders { get; set; }
         public DbSet<RaidSignUp> RaidSignUps { get; set; }
         public DbSet<SignUpHistory> SignUpHistories { get; set; }
@@ -36,6 +37,7 @@ namespace Lieb.Data
             modelBuilder.Entity<GuildWars2Build>().ToTable("GuildWars2Build");
             modelBuilder.Entity<PlannedRaidRole>().ToTable("PlannedRaidRole");
             modelBuilder.Entity<Raid>().ToTable("Raid");
+            modelBuilder.Entity<RaidTemplate>().ToTable("RaidTemplate");
             modelBuilder.Entity<RaidReminder>().ToTable("RaidReminder");
             modelBuilder.Entity<RaidSignUp>().ToTable("RaidSignUp");
             modelBuilder.Entity<SignUpHistory>().ToTable("SignUpHistory");

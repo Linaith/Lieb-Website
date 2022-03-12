@@ -193,7 +193,7 @@
             return;
         }
 
-        _raid.TimeZone = await TimeZoneService.GetUserTimeZone();
+        //_raid.TimeZone = await TimeZoneService.GetUserTimeZone();
 
         _raid.StartTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date + _startTime.TimeOfDay);
         if(_startTime.TimeOfDay > _endTime.TimeOfDay)

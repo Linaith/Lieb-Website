@@ -67,12 +67,10 @@ namespace Lieb.Data
                     raidToChange.Description = raid.Description;
                     raidToChange.StartTimeUTC = raid.StartTimeUTC;
                     raidToChange.EndTimeUTC = raid.EndTimeUTC;
-                    raidToChange.TimeZone = raid.TimeZone;
                     raidToChange.Organizer = raid.Organizer;
                     raidToChange.Guild = raid.Guild;
                     raidToChange.VoiceChat = raid.VoiceChat;
                     raidToChange.RaidType = raid.RaidType;
-                    raidToChange.Frequency = raid.Frequency;
                     raidToChange.RequiredRole = raid.RequiredRole;
                     raidToChange.FreeForAllTimeUTC = raid.FreeForAllTimeUTC;
                     raidToChange.DiscordMessageId = raid.DiscordMessageId;
@@ -336,6 +334,23 @@ namespace Lieb.Data
             }
 
             return true;
+        }
+
+        public void SendReminders()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            List<Raid> raids = context.Raids
+                .Include(r => r.Reminders)
+                .Where(raid => raid.Reminders.Where(reminder => !reminder.Sent && raid.StartTimeUTC.AddHours(-reminder.HoursBeforeRaid) < DateTime.UtcNow).Any())
+                .ToList();
+
+            foreach(Raid raid in raids)
+            {
+                foreach(RaidReminder reminder in raid.Reminders.Where(reminder => !reminder.Sent && raid.StartTimeUTC.AddHours(-reminder.HoursBeforeRaid) < DateTime.UtcNow))
+                {
+                    //TODO send reminders -> this is a Discord Problem...
+                }
+            }
         }
     }
 }

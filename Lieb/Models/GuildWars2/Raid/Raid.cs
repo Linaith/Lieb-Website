@@ -10,17 +10,9 @@ namespace Lieb.Models.GuildWars2.Raid
         RandomEliteSpecialization = 3,
     }
 
-    public class Raid
+    public class Raid : RaidBase
     {
         public int RaidId { get; private set; }
-
-        [Required]
-        [StringLength(100, ErrorMessage = "Title too long (100 character limit).")]
-        public string Title { get; set; } = String.Empty;
-
-        [Required]
-        [StringLength(1000, ErrorMessage = "Description too long (1000 character limit).")]
-        public string Description { get; set; } = String.Empty;
 
         [Required]
         public DateTimeOffset StartTimeUTC { get; set; } = DateTime.Now;
@@ -28,35 +20,9 @@ namespace Lieb.Models.GuildWars2.Raid
         [Required]
         public DateTimeOffset EndTimeUTC { get; set; }
 
-        public string TimeZone { get; set; } = String.Empty;
-
-        [Required]
-        [StringLength(50, ErrorMessage = "Organizer too long (50 character limit).")]
-        public string Organizer { get; set; } = String.Empty;
-
-        [Required]
-        [StringLength(50, ErrorMessage = "Guild too long (50 character limit).")]
-        public string Guild { get; set; } = String.Empty;
-
-        [Required]
-        [StringLength(50, ErrorMessage = "VoiceChat too long (50 character limit).")]
-        public string VoiceChat { get; set; } = String.Empty;
-
-        [Required]
-        public RaidType RaidType { get; set; }
-
-        public bool IsRandomized { get; set; } = false;
-
-        public int Frequency { get; set; }
-
-        public string RequiredRole { get; set; } = String.Empty;
-
         public DateTimeOffset FreeForAllTimeUTC { get; set; }
 
-        //role name, number of spots
-        public ICollection<PlannedRaidRole> Roles { get; set; } = new HashSet<PlannedRaidRole>();
-
-        public ICollection<RaidReminder> Reminders { get; set; } = new List<RaidReminder>();
+        public bool IsRandomized { get; set; } = false;
 
         public ICollection<RaidSignUp> SignUps { get; set; } = new HashSet<RaidSignUp>();
 
@@ -65,8 +31,46 @@ namespace Lieb.Models.GuildWars2.Raid
         //used to edit the Discord message
         public ulong DiscordMessageId { get; set; }
 
-        public ulong DiscordChannelId { get; set; }
+        public Raid() { }
 
-        public ulong DiscordGuildId { get; set; }
+        public Raid(RaidTemplate template)
+        {
+            this.Title = template.Title;
+            this.Description = template.Description;
+            this.Organizer = template.Organizer;
+            this.Guild = template.Guild;
+            this.VoiceChat = template.VoiceChat;
+            this.RaidType = template.RaidType;
+            this.RequiredRole = template.RequiredRole;
+            this.DiscordChannelId = template.DiscordChannelId;
+            this.DiscordGuildId = template.DiscordGuildId;
+
+            foreach(PlannedRaidRole role in template.Roles)
+            {
+                this.Roles.Add(new PlannedRaidRole()
+                {
+                    Description = role.Description,
+                    Name = role.Name,
+                    Spots = role.Spots
+                });
+            }
+            foreach(RaidReminder reminder in template.Reminders)
+            {
+                this.Reminders.Add(new RaidReminder()
+                {
+                    ChannelId = reminder.ChannelId,
+                    HoursBeforeRaid = reminder.HoursBeforeRaid,
+                    Message = reminder.Message,
+                    Sent = reminder.Sent,
+                    Type = reminder.Type
+                });
+            }
+
+            TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(template.TimeZone);
+            StartTimeUTC = TimeZoneInfo.ConvertTimeToUtc(template.StartTime, timeZone);
+            EndTimeUTC = TimeZoneInfo.ConvertTimeToUtc(template.EndTime, timeZone);
+            FreeForAllTimeUTC = TimeZoneInfo.ConvertTimeToUtc(template.FreeForAllTime, timeZone);
+        }
+
     }
 }

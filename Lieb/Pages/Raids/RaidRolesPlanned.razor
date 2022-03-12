@@ -56,7 +56,7 @@
                         @{string signUpStatus = string.Empty;}
                         @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
 
-                        @if (isUser)
+                        @if (isUser && _user.GuildWars2Accounts.Count > 1)
                         {
                             <td>@signUp.LiebUser.Name 
                             <select value=@signUp.GuildWars2AccountId @onchange="args => ChangeAccount(_user, args)">

@@ -21,11 +21,13 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddServerSideBlazor();
 
 builder.Services.AddScoped<RaidService>();
+builder.Services.AddScoped<RaidTemplateService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GuildWars2AccountService>();
 builder.Services.AddScoped<GuildWars2BuildService>();
 builder.Services.AddScoped<RaidRandomizerService>();
 builder.Services.AddScoped<TimeZoneService>();
+builder.Services.AddHostedService<TimerService>();
 
 
 builder.Services.AddAuthentication(opt =>

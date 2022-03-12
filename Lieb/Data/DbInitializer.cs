@@ -106,6 +106,31 @@ namespace Lieb.Data
             context.Raids.Add(raid);
             context.SaveChanges();
 
+            DateTime templateStartTime = DateTime.UtcNow.AddDays(-7).AddMinutes(-117);
+            RaidTemplate template = new RaidTemplate()
+            {
+                Title = "Testraid",
+                Description = "This is a test raid\nwith multiple lines?",
+                Guild = "LIEB",
+                Organizer = "Sarah",
+                RaidType = RaidType.RandomWithBoons,
+                StartTime = templateStartTime,
+                EndTime = templateStartTime.AddHours(2),
+                FreeForAllTime = templateStartTime.AddHours(-2),
+                VoiceChat = "ts.lieb.games",
+                Frequency = 7,
+                CreateDaysBefore = 7,
+                TimeZone = "Europe/Vienna",
+                Roles = new[] { new PlannedRaidRole(){
+                        Description = "WupWup",
+                        Name = "Ups",
+                        Spots = 10
+                    } 
+                }
+            };
+            context.RaidTemplates.Add(template);
+            context.SaveChanges();
+
             var signUps = new RaidSignUp[]
             {
                 new RaidSignUp{GuildWars2AccountId = linaith.GuildWars2AccountId, LiebUserId = users[0].LiebUserId, PlannedRaidRoleId = ele.PlannedRaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },

@@ -6,9 +6,6 @@ namespace Lieb.Data
     {
         private readonly IJSRuntime _jsRuntime;
 
-        private TimeSpan? _userOffset;
-        private int _offsetInMinutes;
-
         public TimeZoneService(IJSRuntime jsRuntime)
         {
             _jsRuntime = jsRuntime;
@@ -16,24 +13,18 @@ namespace Lieb.Data
 
         public async ValueTask<DateTimeOffset> GetLocalDateTime(DateTimeOffset dateTime)
         {
-            if (_userOffset == null)
-            {
-                _offsetInMinutes = await _jsRuntime.InvokeAsync<int>("GetTimezoneValue");
-                _userOffset = TimeSpan.FromMinutes(-_offsetInMinutes);
-            }
+                int offsetInMinutes = await _jsRuntime.InvokeAsync<int>("GetTimezoneValue", dateTime);
+                TimeSpan userOffset = TimeSpan.FromMinutes(-offsetInMinutes);
 
-            return dateTime.ToOffset(_userOffset.Value);
+            return dateTime.ToOffset(userOffset);
         }
 
         public async ValueTask<DateTimeOffset> GetUTCDateTime(DateTimeOffset dateTime)
         {
-            if (_userOffset == null)
-            {
-                _offsetInMinutes = await _jsRuntime.InvokeAsync<int>("GetTimezoneValue");
-                _userOffset = TimeSpan.FromMinutes(-_offsetInMinutes);
-            }
+            int offsetInMinutes = await _jsRuntime.InvokeAsync<int>("GetTimezoneValue", dateTime);
+            TimeSpan userOffset = TimeSpan.FromMinutes(-offsetInMinutes);
 
-            return new DateTimeOffset(dateTime.DateTime.AddMinutes(_offsetInMinutes), new TimeSpan(0));
+            return new DateTimeOffset(dateTime.DateTime.AddMinutes(offsetInMinutes), new TimeSpan(0));
         }
 
         public async ValueTask<string> GetUserTimeZone()

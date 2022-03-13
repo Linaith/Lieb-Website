@@ -89,6 +89,13 @@ namespace Lieb.Data
                 Name = "Scourge",
                 Spots = 8
             };
+            PlannedRaidRole randomRole = new PlannedRaidRole()
+            {
+                Spots = 10,
+                Name = "Random",
+                Description = RaidType.RandomWithBoons.ToString(),
+                IsRandomSignUpRole = true
+            };
 
             Raid raid = new Raid()
             {
@@ -101,7 +108,7 @@ namespace Lieb.Data
                 EndTimeUTC = DateTime.UtcNow.AddHours(2),
                 FreeForAllTimeUTC = DateTime.UtcNow.AddHours(-2),
                 VoiceChat = "ts.lieb.games",
-                Roles = new [] { ele, scourge}
+                Roles = new [] { randomRole, ele, scourge}
             };
             context.Raids.Add(raid);
             context.SaveChanges();

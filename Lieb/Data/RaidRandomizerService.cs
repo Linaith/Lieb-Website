@@ -34,26 +34,21 @@ namespace Lieb.Data
             if (raid == null || raid.RaidType == RaidType.Planned)
                 return;
 
-
-            if (!raid.IsRandomized)
+            switch (raid.RaidType)
             {
-                switch (raid.RaidType)
-                {
-                    case RaidType.RandomClasses:
-                        RandomizeClasses(raid);
-                        break;
-                    case RaidType.RandomEliteSpecialization:
-                        RandomizeEliteSpecs(raid);
-                        break;
-                    case RaidType.RandomWithBoons:
-                        RandomizeWithBoons(raid);
-                        break;
-                }
-                raid.IsRandomized = true;
-                await context.SaveChangesAsync();
-                CleanUpRoles(raid, context);
-                await context.SaveChangesAsync();
+                case RaidType.RandomClasses:
+                    RandomizeClasses(raid);
+                    break;
+                case RaidType.RandomEliteSpecialization:
+                    RandomizeEliteSpecs(raid);
+                    break;
+                case RaidType.RandomWithBoons:
+                    RandomizeWithBoons(raid);
+                    break;
             }
+            await context.SaveChangesAsync();
+            CleanUpRoles(raid, context);
+            await context.SaveChangesAsync();
         }
 
         private void RandomizeClasses(Raid raid)

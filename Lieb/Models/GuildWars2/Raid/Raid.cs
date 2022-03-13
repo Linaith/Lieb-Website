@@ -22,8 +22,6 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public DateTimeOffset FreeForAllTimeUTC { get; set; }
 
-        public bool IsRandomized { get; set; } = false;
-
         public ICollection<RaidSignUp> SignUps { get; set; } = new HashSet<RaidSignUp>();
 
         public ICollection<SignUpHistory> SignUpHistory { get; set; } = new HashSet<SignUpHistory>();

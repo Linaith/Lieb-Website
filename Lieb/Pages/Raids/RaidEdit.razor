@@ -209,12 +209,16 @@
     {
         if(_raid.RaidType != RaidType.Planned)
         {
+            PlannedRaidRole role = _raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
+            int randomRoleId = role != null ? role.PlannedRaidRoleId : 0;
             _raid.Roles.Clear();
             _raid.Roles.Add(new PlannedRaidRole()
                 {
                     Spots = 10,
                     Name = "Random",
-                    Description = _raid.RaidType.ToString()
+                    Description = _raid.RaidType.ToString(),
+                    IsRandomSignUpRole = true,
+                    PlannedRaidRoleId = randomRoleId
                 });
         }
 

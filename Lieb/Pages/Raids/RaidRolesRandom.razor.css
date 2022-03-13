@@ -1,0 +1,9 @@
+﻿h5 {
+    color: lightgrey;
+}
+
+table {
+    column-width: auto;
+    color: lightgray;
+    width: max-content;
+}

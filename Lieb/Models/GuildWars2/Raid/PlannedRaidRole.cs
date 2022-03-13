@@ -14,5 +14,7 @@ namespace Lieb.Models.GuildWars2.Raid
         [Required]
         [StringLength(200, ErrorMessage = "Description too long (200 character limit).")]
         public string Description { get; set; } = String.Empty;
+
+        public bool IsRandomSignUpRole { get; set; } = false;
     }
 }

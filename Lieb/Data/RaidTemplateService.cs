@@ -60,7 +60,7 @@ namespace Lieb.Data
                     raidToChange.EndTime = template.EndTime;
                     raidToChange.FreeForAllTime = template.FreeForAllTime;
                     raidToChange.TimeZone = template.TimeZone;
-                    raidToChange.Frequency = template.Frequency;
+                    raidToChange.Interval = template.Interval;
                     raidToChange.CreateDaysBefore = template.CreateDaysBefore;
 
                     context.PlannedRaidRoles.RemoveRange(raidToChange.Roles);
@@ -105,9 +105,9 @@ namespace Lieb.Data
 
         private void MoveTemplate(RaidTemplate template)
         {
-            template.StartTime = template.StartTime.AddDays(template.Frequency);
-            template.EndTime = template.EndTime.AddDays(template.Frequency);
-            template.FreeForAllTime = template.FreeForAllTime.AddDays(template.Frequency);
+            template.StartTime = template.StartTime.AddDays(template.Interval);
+            template.EndTime = template.EndTime.AddDays(template.Interval);
+            template.FreeForAllTime = template.FreeForAllTime.AddDays(template.Interval);
         }
     }
 }

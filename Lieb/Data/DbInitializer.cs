@@ -125,7 +125,7 @@ namespace Lieb.Data
                 EndTime = templateStartTime.AddHours(2),
                 FreeForAllTime = templateStartTime.AddHours(-2),
                 VoiceChat = "ts.lieb.games",
-                Frequency = 7,
+                Interval = 7,
                 CreateDaysBefore = 7,
                 TimeZone = "Europe/Vienna",
                 Roles = new[] { new PlannedRaidRole(){

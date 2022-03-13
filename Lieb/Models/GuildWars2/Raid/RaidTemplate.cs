@@ -16,7 +16,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public string TimeZone { get; set; } = String.Empty;
 
-        public int Frequency { get; set; }
+        public int Interval { get; set; }
         
         public int CreateDaysBefore { get; set; }
     }

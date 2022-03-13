@@ -36,7 +36,7 @@
             Raid Type:
             <InputSelect @bind-Value="_template.RaidType" disabled="@_isEdit">
                 <option value="@RaidType.Planned">Planned</option>
-                <option value="@RaidType.RandomWithBoons">Random with boons covred</option>
+                <option value="@RaidType.RandomWithBoons">Random with boons covered</option>
                 <option value="@RaidType.RandomClasses">Random classes</option>
                 <option value="@RaidType.RandomEliteSpecialization">Random elite specializations</option>
             </InputSelect>
@@ -121,6 +121,18 @@
         <label>
             Voice chat:
             <InputText @bind-Value="_template.VoiceChat" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Interval in Days:
+            <InputNumber @bind-Value="_template.Interval" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Create Days Before:
+            <InputNumber @bind-Value="_template.CreateDaysBefore" />
         </label>
     </p>
 
@@ -212,7 +224,7 @@
         if (confirmed)
         {
             await RaidTemplateService.DeleteTemplate(_template.RaidTemplateId);
-            NavigationManager.NavigateTo("raidoverview");
+            NavigationManager.NavigateTo("raidtemplateoverview");
         }
     }
 
@@ -249,6 +261,6 @@
         _template.FreeForAllTime = _freeForAllDate.Date + _freeForAllTime.TimeOfDay;
 
         await RaidTemplateService.AddOrEditTemplate(_template);
-        NavigationManager.NavigateTo("raidoverview");
+        NavigationManager.NavigateTo("raidtemplateoverview");
     }
 }

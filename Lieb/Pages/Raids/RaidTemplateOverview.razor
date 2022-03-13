@@ -1,0 +1,38 @@
+﻿@page "/raidtemplateoverview"
+@using Lieb.Data
+@using System.Security.Claims
+@using Lieb.Models
+@using Lieb.Models.GuildWars2.Raid
+@inject RaidService RaidService
+@inject UserService UserService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<h3>RaidTemplateOverview</h3>
+
+
+<AuthorizeView Policy="@Constants.Roles.RaidLead">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="raidedit">
+                <span class="oi oi-plus" aria-hidden="true"></span> Add Raid
+            </NavLink>
+        </div>
+</AuthorizeView>
+
+@foreach (var raid in _raids.OrderBy(r => r.StartTimeUTC)) 
+{
+    <br />
+    <RaidTemplateDetails _raid=@raid/>
+}
+
+
+
+@code 
+{
+    private List<Raid> _raids;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _raids = RaidService.GetRaids();
+    }
+}

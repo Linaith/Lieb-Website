@@ -1,0 +1,78 @@
+﻿@using System.Security.Claims
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2.Raid
+@inject UserService UserService
+@inject RaidService RaidService
+@inject TimeZoneService TimeZoneService
+@inject RaidRandomizerService RaidRandomizerService
+
+<body>
+
+<h5>@_template.Title</h5>
+
+<div>@_template.Description</div>
+
+<div >
+    <div class="times">
+        <h5>Date</h5>
+        <p>@_template.StartTime.ToLongDateString()</p>
+    </div>
+    <div class="times">
+        <h5>Time</h5>
+        <p>from: @_template.StartTime.ToShortTimeString()  to: @_template.EndTime.ToShortTimeString()</p>
+    </div>
+    <div class="times">
+        <h5>TimeZone</h5>
+        <p>@_template.TimeZone</p>
+    </div>
+</div>
+
+<div>
+    <div class="details">
+        <h5>Organizer</h5>
+        <p>@_template.Organizer</p>
+    </div>
+    <div class="details">
+        <h5>Guild</h5>
+        <p>@_template.Guild</p>
+    </div>
+    <div class="details">
+        <h5>Voice chat</h5>
+        <p>@_template.VoiceChat</p>
+    </div>
+</div>
+
+    
+<div>
+    <table class="table">
+        <tbody>
+            @foreach (var role in _template.Roles)
+            {                        
+                <tr>
+                    <td><h5>@role.Name: @role.Description (@role.Spots)</h5></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+        
+<AuthorizeView Policy="@Constants.Roles.RaidLead">
+    <div class="nav-item px-3">
+        @{string navLink = $"raidtemplateedit/{_template.RaidTemplateId}";}
+        <NavLink class="nav-link" href="@navLink">
+            <span class="oi oi-plus" aria-hidden="true"></span> Edit
+        </NavLink>
+    </div>
+</AuthorizeView>
+</body>
+
+@code {
+    [Parameter]
+    public RaidTemplate _template { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+    }
+}

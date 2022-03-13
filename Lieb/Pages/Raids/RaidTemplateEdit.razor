@@ -1,10 +1,10 @@
-﻿@page "/raidedit"
-@page "/raidedit/{raidId}"
+﻿@page "/raidtemplateedit"
+@page "/raidtemplateedit/{raidId}"
 @using Lieb.Data
 @using Lieb.Models
 @using Lieb.Models.GuildWars2.Raid
 @using System.ComponentModel.DataAnnotations
-@inject RaidService RaidService
+@inject RaidTemplateService RaidTemplateService
 @inject UserService UserService
 @inject TimeZoneService TimeZoneService
 @inject NavigationManager NavigationManager
@@ -14,27 +14,27 @@
 <h3>CreateRaid</h3>
 
 <AuthorizeView Policy="@Constants.Roles.RaidLead" Context="authorizationContext">
-<EditForm Model="@_raid" OnValidSubmit="@HandleValidSubmit">
+<EditForm Model="@_template" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     @{
-        bool _isEdit = _raid.RaidId != 0;
+        bool _isEdit = _template.RaidTemplateId != 0;
     }
     <p>
         <label>
             Title:
-            <InputText @bind-Value="_raid.Title" />
+            <InputText @bind-Value="_template.Title" />
         </label>
     </p>
     <p>
         <label>
             Description:
-            <InputTextArea @bind-Value="_raid.Description" />
+            <InputTextArea @bind-Value="_template.Description" />
         </label>
     </p>
     <p>
         <label>
             Raid Type:
-            <InputSelect @bind-Value="_raid.RaidType" disabled="@_isEdit">
+            <InputSelect @bind-Value="_template.RaidType" disabled="@_isEdit">
                 <option value="@RaidType.Planned">Planned</option>
                 <option value="@RaidType.RandomWithBoons">Random with boons covred</option>
                 <option value="@RaidType.RandomClasses">Random classes</option>
@@ -62,11 +62,24 @@
             <input type="time" @bind="_endTime" />
         </label>
     </p>
+    <p>
+        <label>
+            Time Zone:
+            <InputSelect @bind-Value="_template.RequiredRole">
+                <option value="@_template.TimeZone">@_template.TimeZone</option>
+                @if(_userTimeZone != @_template.TimeZone)
+                {
+                    <option value="@_userTimeZone">@_userTimeZone</option>
+                }
+            </InputSelect>
+        </label>
+    </p>
+    
     
     <p>
         <label>
             Required Role:
-            <InputSelect @bind-Value="_raid.RequiredRole">
+            <InputSelect @bind-Value="_template.RequiredRole">
                 <option value="">Not Locked</option>
                 @foreach(LiebRole role in UserService.GetLiebRoles())
                 {
@@ -84,34 +97,34 @@
             <InputDate @bind-Value="_freeForAllDate" />
         </label>
     </p>
+
     <p>
         <label>
             Free for all time:
             <input type="time" @bind="_freeForAllTime" />
         </label>
     </p>
-
     <p>
         <label>
             Organizer:
-            <InputText @bind-Value="_raid.Organizer" />
+            <InputText @bind-Value="_template.Organizer" />
         </label>
     </p>
 
     <p>
         <label>
             Guild:
-            <InputText @bind-Value="_raid.Guild" />
+            <InputText @bind-Value="_template.Guild" />
         </label>
     </p>
     <p>
         <label>
             Voice chat:
-            <InputText @bind-Value="_raid.VoiceChat" />
+            <InputText @bind-Value="_template.VoiceChat" />
         </label>
     </p>
 
-    @if(_raid.RaidType == RaidType.Planned)
+    @if(_template.RaidType == RaidType.Planned)
     {
         <p>
             <label>
@@ -124,17 +137,13 @@
                     <th>Role name</th>
                     <th>Description</th>
                 </tr>
-                @foreach( PlannedRaidRole role in _raid.Roles)
+                @foreach( PlannedRaidRole role in _template.Roles)
                 {
-                    bool disableEdit = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).Any();
                     <tr>
-                        <td><InputNumber @bind-Value="role.Spots" disabled="@disableEdit" /></td>
-                        <td><InputText @bind-Value="role.Name" disabled="@disableEdit"  /></td>
-                        <td><InputText @bind-Value="role.Description" disabled="@disableEdit"  /></td>
-                        @if(!disableEdit)
-                        {
-                            <td><button type=button @onclick="() => DeleteRoleClicked(role)">Delete</button></td>
-                        }
+                        <td><InputNumber @bind-Value="role.Spots" /></td>
+                        <td><InputText @bind-Value="role.Name" /></td>
+                        <td><InputText @bind-Value="role.Description" /></td>
+                        <td><button type=button @onclick="() => DeleteRoleClicked(role)">Delete</button></td>
                     </tr>
                 }
             </table> 
@@ -155,7 +164,7 @@
     [Parameter]
     public string raidId { get; set; }
 
-    public Raid _raid;
+    public RaidTemplate _template;
 
     private string _errorMessage = string.Empty;
 
@@ -164,6 +173,7 @@
     private DateTimeOffset _endTime;
     private DateTimeOffset _freeForAllDate = DateTime.Now.Date;
     private DateTimeOffset _freeForAllTime;
+    private string _userTimeZone = string.Empty;
 
 
 
@@ -171,28 +181,29 @@
     {
         if(!string.IsNullOrEmpty(raidId) && int.TryParse(raidId, out int parsedId))
         {
-            _raid = RaidService.GetRaid(parsedId);
-            _startTime = await TimeZoneService.GetLocalDateTime(_raid.StartTimeUTC);
-            _endTime = await TimeZoneService.GetLocalDateTime(_raid.EndTimeUTC);
+            _template = RaidTemplateService.GetTemplate(parsedId);
+            _startTime = _template.StartTime;
+            _endTime = _template.EndTime;
             _raidDate = _startTime.Date;
-            _freeForAllTime = await TimeZoneService.GetLocalDateTime(_raid.FreeForAllTimeUTC);
+            _freeForAllTime = _template.FreeForAllTime;
             _freeForAllDate = _freeForAllTime.Date;
         }
         else
         {
-            _raid = new Raid();
+            _template = new RaidTemplate();
         }
+        _userTimeZone = await TimeZoneService.GetUserTimeZone();
     }
 
     async Task AddRoleClicked()
     {
-        _raid.Roles.Add(new PlannedRaidRole());
+        _template.Roles.Add(new PlannedRaidRole());
     }
 
 
     async Task DeleteRoleClicked(PlannedRaidRole role)
     {
-        _raid.Roles.Remove(role);
+        _template.Roles.Remove(role);
     }
 
     async Task DeleteRaidClicked()
@@ -200,44 +211,44 @@
         bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete the raid?");
         if (confirmed)
         {
-            await RaidService.DeleteRaid(_raid.RaidId);
+            await RaidTemplateService.DeleteTemplate(_template.RaidTemplateId);
             NavigationManager.NavigateTo("raidoverview");
         }
     }
 
     private async Task HandleValidSubmit()
     {
-        if(_raid.RaidType != RaidType.Planned)
+        if(_template.RaidType != RaidType.Planned)
         {
-            _raid.Roles.Clear();
-            _raid.Roles.Add(new PlannedRaidRole()
+            _template.Roles.Clear();
+            _template.Roles.Add(new PlannedRaidRole()
                 {
                     Spots = 10,
                     Name = "Random",
-                    Description = _raid.RaidType.ToString()
+                    Description = _template.RaidType.ToString()
                 });
         }
 
-        if(_raid.Roles.Count == 0)
+        if(_template.Roles.Count == 0)
         {
             _errorMessage = "Roles are needed for a raid.";
             return;
         }
 
-        //_raid.TimeZone = await TimeZoneService.GetUserTimeZone();
+        _template.TimeZone = await TimeZoneService.GetUserTimeZone();
 
-        _raid.StartTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date + _startTime.TimeOfDay);
+        _template.StartTime =_raidDate.Date + _startTime.TimeOfDay;
         if(_startTime.TimeOfDay > _endTime.TimeOfDay)
         {
-            _raid.EndTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date + _endTime.TimeOfDay);
+            _template.EndTime = _raidDate.Date + _endTime.TimeOfDay;
         }
         else
         {
-            _raid.EndTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date.AddDays(1) + _endTime.TimeOfDay);
+            _template.EndTime = _raidDate.Date.AddDays(1) + _endTime.TimeOfDay;
         }
-        _raid.FreeForAllTimeUTC = await TimeZoneService.GetUTCDateTime(_freeForAllDate.Date + _freeForAllTime.TimeOfDay);
+        _template.FreeForAllTime = _freeForAllDate.Date + _freeForAllTime.TimeOfDay;
 
-        await RaidService.AddOrEditRaid(_raid);
+        await RaidTemplateService.AddOrEditTemplate(_template);
         NavigationManager.NavigateTo("raidoverview");
     }
 }

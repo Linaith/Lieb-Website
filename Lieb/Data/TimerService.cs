@@ -34,7 +34,7 @@ namespace Lieb.Data
                     DateTime UTCStartTime = TimeZoneInfo.ConvertTimeToUtc(template.StartTime, timeZone);
                     if(UTCStartTime.AddDays(-template.CreateDaysBefore).AddHours(1) < DateTime.UtcNow)
                     {
-                        raidTemplateService.CreateNewRaid(template.RaidTemplateId).Wait();
+                        raidTemplateService.CreateRaidFromTemplate(template.RaidTemplateId).Wait();
                     }
                 }
 

@@ -26,6 +26,11 @@ h5 {
     padding-top: 15px;
 }
 
+
+.controlButtons {
+    margin-right: 10px;
+}
+
 table {
     column-width: auto;
     color: lightgray;

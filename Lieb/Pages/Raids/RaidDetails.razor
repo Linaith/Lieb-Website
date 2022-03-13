@@ -6,6 +6,7 @@
 @inject RaidService RaidService
 @inject TimeZoneService TimeZoneService
 @inject RaidRandomizerService RaidRandomizerService
+@inject NavigationManager NavigationManager
 
 <body>
 
@@ -43,20 +44,16 @@
 
  <RaidRoles _raid=@_raid _user=@_user/>
 
-        
-<AuthorizeView Policy="@Constants.Roles.RaidLead">
-    <td><button @onclick="() => SignOffClicked()">Sign Off</button></td>
-    <div class="nav-item px-3">
-        @{string navLink = $"raidedit/{_raid.RaidId}";}
-        <NavLink class="nav-link" href="@navLink">
-            <span class="oi oi-plus" aria-hidden="true"></span> Edit
-        </NavLink>
-    </div>
-    @if(_raid.RaidType != RaidType.Planned)
-    {
-        <button type=button @onclick="() => RandomizeClicked()">Randomize</button>
-    }
-</AuthorizeView>
+<div class="controlButtons">
+    <button @onclick="() => SignOffClicked()">Sign Off</button>
+    <AuthorizeView Policy="@Constants.Roles.RaidLead">
+        <button @onclick="() => EditClicked()">Edit</button>
+        @if(_raid.RaidType != RaidType.Planned)
+        {
+            <button type=button @onclick="() => RandomizeClicked()">Randomize</button>
+        }
+    </AuthorizeView>
+</div>
 </body>
 
 @code {
@@ -87,6 +84,11 @@
     {
         await RaidService.SignOff(_raid.RaidId, _user.LiebUserId);
         _raid = RaidService.GetRaid(_raid.RaidId);
+    }
+
+    async Task EditClicked()
+    {
+        NavigationManager.NavigateTo($"raidedit/{_raid.RaidId}");
     }
     
     async Task RandomizeClicked()

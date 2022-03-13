@@ -104,7 +104,10 @@ namespace Lieb.Data
             Dictionary<int, GuildWars2Build> signedUpUsers= new Dictionary<int, GuildWars2Build>();
             foreach (RaidSignUp signUp in raid.SignUps)
             {
-                signedUpUsers.Add(signUp.LiebUserId, signUp.GuildWars2Account.EquippedBuilds.ToList()[_random.Next(signUp.GuildWars2Account.EquippedBuilds.Count - 1)].GuildWars2Build);
+                if (signUp.GuildWars2Account.EquippedBuilds.Count > 0)
+                {
+                    signedUpUsers.Add(signUp.LiebUserId, signUp.GuildWars2Account.EquippedBuilds.ToList()[_random.Next(signUp.GuildWars2Account.EquippedBuilds.Count - 1)].GuildWars2Build);
+                }
             }
             BalanceRoles(raid, signedUpUsers);
             foreach(var userBuild in signedUpUsers)
@@ -326,7 +329,7 @@ namespace Lieb.Data
             List<PlannedRaidRole> rolesToDelete = new List<PlannedRaidRole>();
             foreach (PlannedRaidRole role in raid.Roles)
             {
-                if (raid.SignUps.FirstOrDefault(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId) == null)
+                if (!role.IsRandomSignUpRole && raid.SignUps.FirstOrDefault(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId) == null)
                 {
                     rolesToDelete.Add(role);
                 }

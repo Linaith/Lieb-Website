@@ -62,6 +62,7 @@ namespace Lieb.Data
                 using var context = _contextFactory.CreateDbContext();
                 return context.LiebUsers
                 .Include(u => u.GuildWars2Accounts)
+                .ThenInclude(a => a.EquippedBuilds)
                 .FirstOrDefault(u => u.DiscordUserId == discordId);
             }
             else

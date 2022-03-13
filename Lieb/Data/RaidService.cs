@@ -213,13 +213,23 @@ namespace Lieb.Data
         public async Task SignOff(int raidId, int liebUserId)
         {
             using var context = _contextFactory.CreateDbContext();
+            //remove Flex Sign Ups
             List<RaidSignUp> signUps = context.RaidSignUps.Where(x => x.RaidId == raidId && x.LiebUserId == liebUserId && x.SignUpType == SignUpType.Flex).ToList();
             context.RaidSignUps.RemoveRange(signUps);
 
+            //change to SignedOff
             RaidSignUp? signUp = context.RaidSignUps.FirstOrDefault(x => x.RaidId == raidId && x.LiebUserId == liebUserId && x.SignUpType != SignUpType.Flex);
             if (signUp != null)
             {
                 signUp.SignUpType = SignUpType.SignedOff;
+
+                //change and delete Role for Random Raids
+                Raid? raid = context.Raids.Include(r => r.Roles).FirstOrDefault(r => r.RaidId == raidId);
+                if(raid != null && raid.RaidType != RaidType.Planned && !signUp.PlannedRaidRole.IsRandomSignUpRole)
+                {
+                    context.PlannedRaidRoles.Remove(signUp.PlannedRaidRole);
+                    signUp.PlannedRaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
+                }
             }
 
             await context.SaveChangesAsync();

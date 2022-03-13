@@ -3,7 +3,7 @@
 <div>
     <table class="table">
         <tbody>
-            @foreach (var role in _raid.Roles)
+            @foreach (var role in _raid.Roles.OrderBy(r => r.PlannedRaidRoleId))
             {
                 Models.GuildWars2.Raid.RaidSignUp[] signUps = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).ToArray();
                 int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();

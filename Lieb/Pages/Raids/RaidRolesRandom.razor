@@ -10,7 +10,7 @@
             RaidSignUp userRole = _raid.SignUps.Where(s => s.LiebUserId == _user.LiebUserId).FirstOrDefault();
             bool isSignedUp = userRole != null;
          }
-        @foreach (PlannedRaidRole role in _raid.Roles)
+        @foreach (PlannedRaidRole role in _raid.Roles.OrderBy(r => r.PlannedRaidRoleId))
         {
             RaidSignUp[] signUps = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).ToArray();
             int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();

@@ -336,6 +336,11 @@ namespace Lieb.Data
                 return false;
             }
 
+            if(raid.EndTimeUTC < DateTimeOffset.UtcNow)
+            {
+                return false;
+            }
+
             return true;
         }
 

@@ -7,7 +7,7 @@
 <table class="table">
     <tbody>
          @{
-            RaidSignUp userRole = _raid.SignUps.Where(s => s.LiebUserId == _user.LiebUserId).FirstOrDefault();
+            RaidSignUp userRole = _raid.SignUps.Where(s => s.LiebUserId == _liebUserId).FirstOrDefault();
             bool isSignedUp = userRole != null;
          }
         @foreach (PlannedRaidRole role in _raid.Roles.OrderBy(r => r.PlannedRaidRoleId))
@@ -16,14 +16,14 @@
             int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();
 
             <tr>
-                <td> <b>@role.Name</b> (@usedSpots /@role.Spots) <br>  @role.Description </td>
+                <td><b>@role.Name</b> (@usedSpots /@role.Spots) <br>  @role.Description </td>
                 <td>
                     @foreach (var signUp in signUps)
                     {
                         @if(signUp.SignUpType != SignUpType.SignedOff)
                         {
                             <tr>
-                                @{bool isUser = isSignedUp && userRole.PlannedRaidRole.PlannedRaidRoleId == role.PlannedRaidRoleId && signUp.LiebUserId == _user.LiebUserId;}
+                                @{bool isUser = isSignedUp && userRole.PlannedRaidRole.PlannedRaidRoleId == role.PlannedRaidRoleId && signUp.LiebUserId == _liebUserId;}
                                 @{string signUpStatus = string.Empty;}
                                 @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
 
@@ -45,17 +45,41 @@
                         }
                     }
                 </td>
-                @if (role.IsRandomSignUpRole && _raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() < role.Spots)
+                @if(_liebUserId > 0)
                 {
-                    <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.SignedUp)">Sign Up</button></td>
-                    <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Maybe)">Maybe</button></td>
-                    <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Backup)">Backup</button></td>
+                    @if(_raid.RaidType == RaidType.Planned)
+                    {
+                        @if (RaidService.IsRoleSignUpAllowed(_raid.RaidId, _user.LiebUserId, role.PlannedRaidRoleId, SignUpType.SignedUp, false))
+                        {
+                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.SignedUp)">Sign Up</button></td>
+                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Maybe)">Maybe</button></td>
+                        }
+                        else
+                        {
+                            <td></td>
+                            <td></td>
+                        }
+                        <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Backup)">Backup</button></td>
+                        @if (isSignedUp && userRole.SignUpType != SignUpType.SignedOff && _raid.RaidType == RaidType.Planned)
+                        {
+                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Flex)">Flex</button></td>
+                        }
+                    }
+                    else
+                    {
+                        @if (role.IsRandomSignUpRole && _raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() < role.Spots)
+                        {
+                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.SignedUp)">Sign Up</button></td>
+                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Maybe)">Maybe</button></td>
+                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Backup)">Backup</button></td>
+                        }
+                    }
                 }
             </tr>
         }
     </tbody>
 </table>
-
+           
 
 @code {
 
@@ -63,18 +87,24 @@
     public Raid _raid { get; set; }
 
     [Parameter]
-    public LiebUser _user { get; set; }
+    public LiebUser? _user { get; set; }
+
+    private int _liebUserId { get; set; } = -1;
 
     private List<GuildWars2Account> _usableAccounts;
 
     protected override async Task OnParametersSetAsync()
     {
-        _usableAccounts = _user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Count > 0).ToList();
+        if (_user != null)
+        {
+            _usableAccounts = _user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Count > 0).ToList();
+            _liebUserId = _user.LiebUserId;
+        }
     }
 
     async Task SignUpClicked(PlannedRaidRole role, LiebUser liebUser, bool isSignedUp, SignUpType signUpType)
     {
-        if(isSignedUp)
+        if(isSignedUp && signUpType != SignUpType.Flex)
         {
             await RaidService.ChangeSignUpType(_raid.RaidId, liebUser.LiebUserId, role.PlannedRaidRoleId, signUpType);
         }

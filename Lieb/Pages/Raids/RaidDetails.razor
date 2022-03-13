@@ -41,21 +41,7 @@
     </div>
 </div>
 
-    @if(_isRaidSignUpAllowed)
-    {
-        if(_raid.RaidType == RaidType.Planned)
-        {
-            <RaidRolesPlanned _raid=@_raid _user=@_user/>
-        }
-        else
-        {
-            <RaidRolesRandom _raid=@_raid _user=@_user/>
-        }
-    }
-    else
-    {
-        <RaidRolesNoSignUp _raid=@_raid/>
-    }
+ <RaidRoles _raid=@_raid _user=@_user/>
 
         
 <AuthorizeView Policy="@Constants.Roles.RaidLead">

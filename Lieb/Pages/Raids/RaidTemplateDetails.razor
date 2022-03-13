@@ -50,7 +50,7 @@
             @foreach (var role in _template.Roles.OrderBy(r => r.PlannedRaidRoleId))
             {                        
                 <tr>
-                    <td><h5>@role.Name: @role.Description (@role.Spots)</h5></td>
+                    <td><Label> <b>@role.Name</b> (@role.Spots) <br>  @role.Description </Label></td>
                 </tr>
             }
         </tbody>

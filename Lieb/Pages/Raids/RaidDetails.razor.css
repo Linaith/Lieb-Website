@@ -2,7 +2,7 @@
     background-color: rgb(38 38 38);
     border-radius: 25px;
     padding: 25px;
-    width: 700px;
+    width: 900px;
     /*width: fit-content;*/
     color: lightgray;
 }
@@ -22,7 +22,7 @@ h5 {
 .details {
     float: left;
     display: inline;
-    width: 150px;
+    width: 33%;
     padding-top: 15px;
 }
 

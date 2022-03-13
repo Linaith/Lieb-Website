@@ -15,6 +15,36 @@
             int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();
 
             <tr>
+                <td><b>@role.Name</b> (@usedSpots /@role.Spots) <br>  @role.Description  </td>
+                <td>
+                    @foreach (var signUp in signUps)
+                    {
+                        @if(signUp.SignUpType != SignUpType.SignedOff)
+                        {
+                            <tr>
+                                @{bool isUser = isSignedUp && userRole.PlannedRaidRole.PlannedRaidRoleId == role.PlannedRaidRoleId && signUp.LiebUserId == _user.LiebUserId;}
+                                @{string signUpStatus = string.Empty;}
+                                @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
+
+                                @if (isUser && _user.GuildWars2Accounts.Count > 1)
+                                {
+                                    <td>@signUp.LiebUser.Name 
+                                    <select value=@signUp.GuildWars2AccountId @onchange="args => ChangeAccount(_user, args)">
+                                        @foreach (var account in _user.GuildWars2Accounts)
+                                        {
+                                            <option value=@account.GuildWars2AccountId>@account.AccountName</option>
+                                        }
+                                    </select> @signUpStatus </td>
+                                }
+                                else
+                                {
+                                    <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td> 
+                                }
+                            </tr>
+                        }
+                    }
+
+                </td>
                 @if (RaidService.IsRoleSignUpAllowed(_raid.RaidId, _user.LiebUserId, role.PlannedRaidRoleId, SignUpType.SignedUp, false))
                 {
                     <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.SignedUp)">Sign Up</button></td>
@@ -30,53 +60,11 @@
                 {
                     <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Flex)">Flex</button></td>
                 }
-                <td><h5>@role.Name: @role.Description (@usedSpots /@role.Spots)</h5></td>
             </tr>
-
-            @foreach (var signUp in signUps)
-            {
-                @if(signUp.SignUpType != SignUpType.SignedOff)
-                {
-                    <tr>
-                        @{bool isUser = isSignedUp && userRole.PlannedRaidRole.PlannedRaidRoleId == role.PlannedRaidRoleId && signUp.LiebUserId == _user.LiebUserId;}
-                        <td></td>
-                        <td></td>
-                        @if (isSignedUp && userRole.SignUpType != SignUpType.SignedOff)
-                        {
-                            <td></td>
-                        }
-                        @if(isUser)
-                        {
-                            <td><button @onclick="() => SignOffClicked(role, _user)">Sign Off</button></td>
-                        }
-                        else
-                        {
-                            <td></td>
-                        }
-                        @{string signUpStatus = string.Empty;}
-                        @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
-
-                        @if (isUser && _user.GuildWars2Accounts.Count > 1)
-                        {
-                            <td>@signUp.LiebUser.Name 
-                            <select value=@signUp.GuildWars2AccountId @onchange="args => ChangeAccount(_user, args)">
-                                @foreach (var account in _user.GuildWars2Accounts)
-                                {
-                                    <option value=@account.GuildWars2AccountId>@account.AccountName</option>
-                                }
-                            </select> @signUpStatus </td>
-                        }
-                        else
-                        {
-                            <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td> 
-                        }
-                    </tr>
-                }
-            }
         }
     </tbody>
 </table>
-
+           
 
 @code {
 
@@ -96,12 +84,6 @@
         {
             await RaidService.SignUp(_raid.RaidId, liebUser.LiebUserId, liebUser.GuildWars2Accounts.FirstOrDefault().GuildWars2AccountId, role.PlannedRaidRoleId, signUpType);
         }
-        _raid = RaidService.GetRaid(_raid.RaidId);
-    }
-
-    async Task SignOffClicked(PlannedRaidRole role, LiebUser liebUser)
-    {
-        await RaidService.SignOff(_raid.RaidId, liebUser.LiebUserId, role.PlannedRaidRoleId);
         _raid = RaidService.GetRaid(_raid.RaidId);
     }
 

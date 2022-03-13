@@ -210,12 +210,18 @@ namespace Lieb.Data
             }
         }
 
-        public async Task SignOff(int raidId, int liebUserId, int plannedRoleId)
+        public async Task SignOff(int raidId, int liebUserId)
         {
-            await ChangeSignUpType(raidId, liebUserId, plannedRoleId, SignUpType.SignedOff);
             using var context = _contextFactory.CreateDbContext();
             List<RaidSignUp> signUps = context.RaidSignUps.Where(x => x.RaidId == raidId && x.LiebUserId == liebUserId && x.SignUpType == SignUpType.Flex).ToList();
             context.RaidSignUps.RemoveRange(signUps);
+
+            RaidSignUp? signUp = context.RaidSignUps.FirstOrDefault(x => x.RaidId == raidId && x.LiebUserId == liebUserId && x.SignUpType != SignUpType.Flex);
+            if (signUp != null)
+            {
+                signUp.SignUpType = SignUpType.SignedOff;
+            }
+
             await context.SaveChangesAsync();
         }
 

@@ -9,19 +9,21 @@
                 int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();
                         
                 <tr>
-                    <td><h5>@role.Name: @role.Description (@usedSpots /@role.Spots)</h5></td>
+                    <td><b>@role.Name</b> (@usedSpots /@role.Spots) <br>  @role.Description </td>
+                    <td>
+                        @foreach (var signUp in signUps)
+                        {
+                            if(signUp.SignUpType != SignUpType.SignedOff)
+                            {
+                                string signUpStatus = string.Empty;
+                                if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
+                                <tr>
+                                    <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td>
+                                </tr>
+                            }
+                        }
+                    </td>
                 </tr>
-                @foreach (var signUp in signUps)
-                {
-                    if(signUp.SignUpType != SignUpType.SignedOff)
-                    {
-                        string signUpStatus = string.Empty;
-                        if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
-                        <tr>
-                            <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td>
-                        </tr>
-                    }
-                }
             }
         </tbody>
     </table>

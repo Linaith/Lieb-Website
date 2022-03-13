@@ -3,7 +3,7 @@
 @using System.Security.Claims
 @using Lieb.Models
 @using Lieb.Models.GuildWars2.Raid
-@inject RaidService RaidService
+@inject RaidTemplateService RaidTemplateService
 @inject UserService UserService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -13,26 +13,26 @@
 
 <AuthorizeView Policy="@Constants.Roles.RaidLead">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="raidedit">
+            <NavLink class="nav-link" href="raidtemplateedit">
                 <span class="oi oi-plus" aria-hidden="true"></span> Add Raid
             </NavLink>
         </div>
 </AuthorizeView>
 
-@foreach (var raid in _raids.OrderBy(r => r.StartTimeUTC)) 
+@foreach (var raid in _templates.OrderBy(r => r.StartTime)) 
 {
     <br />
-    <RaidTemplateDetails _raid=@raid/>
+    <RaidTemplateDetails _template=@raid/>
 }
 
 
 
 @code 
 {
-    private List<Raid> _raids;
+    private List<RaidTemplate> _templates;
 
     protected override async Task OnInitializedAsync()
     {
-        _raids = RaidService.GetRaids();
+        _templates = RaidTemplateService.GetTemplates();
     }
 }

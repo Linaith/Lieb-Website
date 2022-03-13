@@ -87,7 +87,7 @@
     private DateTimeOffset _endTime;
     private DateTimeOffset _freeForAllTime;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         _isRaidSignUpAllowed = _user != null && RaidService.IsRaidSignUpAllowed(_user.LiebUserId, _raid.RaidId, out _errorMessage);
 

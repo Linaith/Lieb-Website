@@ -5,11 +5,17 @@
 @inject RaidService RaidService
 
 <table class="table">
+    <thead>
+        <tr>
+            <th>Role</th>
+            <th>Users</th>
+        </tr>
+    </thead>
     <tbody>
-         @{
-            RaidSignUp userRole = _raid.SignUps.Where(s => s.LiebUserId == _liebUserId).FirstOrDefault();
-            bool isSignedUp = userRole != null;
-         }
+        @{
+        RaidSignUp userRole = _raid.SignUps.Where(s => s.LiebUserId == _liebUserId).FirstOrDefault();
+        bool isSignedUp = userRole != null;
+        }
         @foreach (PlannedRaidRole role in _raid.Roles.OrderBy(r => r.PlannedRaidRoleId))
         {
             RaidSignUp[] signUps = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).ToArray();

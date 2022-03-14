@@ -18,61 +18,45 @@
             <tr>
                 <td><b>@role.Name</b> (@usedSpots /@role.Spots) <br>  @role.Description </td>
                 <td>
-                    @foreach (var signUp in signUps)
-                    {
-                        @if(signUp.SignUpType != SignUpType.SignedOff)
+                    <table>
+                        @foreach (var signUp in signUps)
                         {
-                            <tr>
-                                @{bool isUser = isSignedUp && userRole.PlannedRaidRole.PlannedRaidRoleId == role.PlannedRaidRoleId && signUp.LiebUserId == _liebUserId;}
-                                @{string signUpStatus = string.Empty;}
-                                @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
+                            @if(signUp.SignUpType != SignUpType.SignedOff)
+                            {
+                                <tr>
+                                    @{bool isUser = isSignedUp && userRole.PlannedRaidRole.PlannedRaidRoleId == role.PlannedRaidRoleId && signUp.LiebUserId == _liebUserId;}
+                                    @{string signUpStatus = string.Empty;}
+                                    @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
 
-                                @if (isUser && _usableAccounts.Count > 1)
-                                {
-                                    <td>@signUp.LiebUser.Name 
-                                    <select value=@signUp.GuildWars2AccountId @onchange="args => ChangeAccount(_user, args)">
-                                        @foreach (var account in _usableAccounts)
-                                        {
-                                            <option value=@account.GuildWars2AccountId>@account.AccountName</option>
-                                        }
-                                    </select> @signUpStatus </td>
-                                }
-                                else
-                                {
-                                    <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td> 
-                                }
-                            </tr>
+                                    @if (isUser && _usableAccounts.Count > 1)
+                                    {
+                                        <td>@signUp.LiebUser.Name 
+                                        <select value=@signUp.GuildWars2AccountId @onchange="args => ChangeAccount(_user, args)">
+                                            @foreach (var account in _usableAccounts)
+                                            {
+                                                <option value=@account.GuildWars2AccountId>@account.AccountName</option>
+                                            }
+                                        </select> @signUpStatus </td>
+                                    }
+                                    else
+                                    {
+                                        <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td> 
+                                    }
+                                </tr>
+                            }
                         }
-                    }
+                    </table>
                 </td>
                 @if(_liebUserId > 0)
                 {
-                    @if(_raid.RaidType == RaidType.Planned)
+                    bool notIsRoleSignUpAllowed = !RaidService.IsRoleSignUpAllowed(_raid.RaidId, _user.LiebUserId, role.PlannedRaidRoleId, SignUpType.SignedUp, false);
+                    bool notIsBackupAllowed = _raid.RaidType != RaidType.Planned && notIsRoleSignUpAllowed;
+                    <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.SignedUp)" disabled="@notIsRoleSignUpAllowed">Sign Up</button></td>
+                    <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Maybe)" disabled="@notIsRoleSignUpAllowed">Maybe</button></td>
+                    <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Backup)" disabled="@notIsBackupAllowed">Backup</button></td>
+                    @if (isSignedUp && userRole.SignUpType != SignUpType.SignedOff && _raid.RaidType == RaidType.Planned)
                     {
-                        @if (RaidService.IsRoleSignUpAllowed(_raid.RaidId, _user.LiebUserId, role.PlannedRaidRoleId, SignUpType.SignedUp, false))
-                        {
-                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.SignedUp)">Sign Up</button></td>
-                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Maybe)">Maybe</button></td>
-                        }
-                        else
-                        {
-                            <td></td>
-                            <td></td>
-                        }
-                        <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Backup)">Backup</button></td>
-                        @if (isSignedUp && userRole.SignUpType != SignUpType.SignedOff && _raid.RaidType == RaidType.Planned)
-                        {
-                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Flex)">Flex</button></td>
-                        }
-                    }
-                    else
-                    {
-                        @if (role.IsRandomSignUpRole && _raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() < role.Spots)
-                        {
-                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.SignedUp)">Sign Up</button></td>
-                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Maybe)">Maybe</button></td>
-                            <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Backup)">Backup</button></td>
-                        }
+                        <td><button @onclick="() => SignUpClicked(role, _user, isSignedUp, SignUpType.Flex)">Flex</button></td>
                     }
                 }
             </tr>

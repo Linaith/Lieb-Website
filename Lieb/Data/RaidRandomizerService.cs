@@ -61,7 +61,7 @@ namespace Lieb.Data
                     possibleClasses.Add(build.GuildWars2Build.Class);
                 }
                 PlannedRaidRole role = new PlannedRaidRole();
-                role.Spots = 1;
+                role.Spots = 0;
                 if (possibleClasses.Count > 0)
                 {
                     role.Name = possibleClasses.ToList()[_random.Next(possibleClasses.Count - 1)].ToString();
@@ -85,7 +85,7 @@ namespace Lieb.Data
                     possibleEliteSpecs.Add(build.GuildWars2Build.EliteSpecialization);
                 }
                 PlannedRaidRole role = new PlannedRaidRole();
-                role.Spots = 1;
+                role.Spots = 0;
                 if (possibleEliteSpecs.Count > 0)
                 {
                     role.Name = possibleEliteSpecs.ToList()[_random.Next(possibleEliteSpecs.Count - 1)].ToString();
@@ -113,7 +113,7 @@ namespace Lieb.Data
             foreach(var userBuild in signedUpUsers)
             {
                 PlannedRaidRole role = new PlannedRaidRole();
-                role.Spots = 1;
+                role.Spots = 0;
                 role.Name = userBuild.Value.BuildName;
                 raid.Roles.Add(role);
                 RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);

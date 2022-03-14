@@ -9,6 +9,7 @@
         <tr>
             <th>Role</th>
             <th>Users</th>
+            <th>(@_raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count()/@_raid.Roles.Sum(r => r.Spots))</th>
         </tr>
     </thead>
     <tbody>
@@ -22,7 +23,7 @@
             int usedSpots = signUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count();
 
             <tr>
-                <td><b>@role.Name</b> (@usedSpots /@role.Spots) <br>  @role.Description </td>
+                <td><b>@role.Name</b> (@usedSpots / @role.Spots) <br>  @role.Description </td>
                 <td>
                     <table>
                         @foreach (var signUp in signUps)

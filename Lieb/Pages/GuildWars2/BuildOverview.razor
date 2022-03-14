@@ -26,7 +26,7 @@
                 </select>
             </label>
 
-         <table>
+         <table class="roletable">
             <tr>
                 <th>Name</th>
                 <th>Class</th>
@@ -45,10 +45,10 @@
                     </td>
                     <td>@build.Class.ToString()</td>
                     <td>@build.EliteSpecialization.ToString()</td>
-                    <td><input type="checkbox" checked="@(build.Might > 0)" disabled="disabled" /></td>
-                    <td><input type="checkbox" checked="@(build.Heal > 0)" disabled="disabled" /></td>
-                    <td><input type="checkbox" checked="@(build.Quickness > 0)" disabled="disabled" /></td>
-                    <td><input type="checkbox" checked="@(build.Alacrity > 0)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Might > 0)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Heal > 0)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Quickness > 0)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Alacrity > 0)" disabled="disabled" /></td>
                 </tr>
             }
         </table> 

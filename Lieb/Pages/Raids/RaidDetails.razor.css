@@ -2,8 +2,8 @@
     background-color: rgb(38 38 38);
     border-radius: 25px;
     padding: 25px;
-    width: 900px;
-    /*width: fit-content;*/
+    /*width: 900px;*/
+    width: stretch;
     color: lightgray;
 }
 
@@ -27,7 +27,7 @@ h5 {
 }
 
 
-.controlButtons {
+.controlButton {
     margin-right: 10px;
 }
 

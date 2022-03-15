@@ -14,7 +14,7 @@
 
 <h5>@_raid.Title</h5>
 
-<div>@_raid.Description</div>
+<label style="white-space: pre-line">@_raid.Description</label>
 
 <div >
     <div class="times">
@@ -44,13 +44,13 @@
 
  <RaidRoles _raid=@_raid _user=@_user/>
 
-<div class="controlButtons">
-    <button @onclick="() => SignOffClicked()">Sign Off</button>
+<div>
+    <button class="controlButton" @onclick="() => SignOffClicked()">Sign Off</button>
     <AuthorizeView Policy="@Constants.Roles.RaidLead">
-        <button @onclick="() => EditClicked()">Edit</button>
+        <button class="controlButton" @onclick="() => EditClicked()">Edit</button>
         @if(_raid.RaidType != RaidType.Planned)
         {
-            <button type=button @onclick="() => RandomizeClicked()">Randomize</button>
+            <button class="controlButton" type=button @onclick="() => RandomizeClicked()">Randomize</button>
         }
     </AuthorizeView>
 </div>

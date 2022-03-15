@@ -75,8 +75,8 @@
                     }
 
                     <tr>
-                        <td><input type="checkbox" checked="@isEquipped" @onchange="args => EquippedStatusChanged(build.GuildWars2BuildId, args)" /></td>
-                        <td><input type="checkbox" checked="@canTank" disabled="@(!isEquipped)" @onchange="args => TankingStatusChanged(build.GuildWars2BuildId, args)" /></td>
+                        <td class="checkboxfield"><input type="checkbox" checked="@isEquipped" @onchange="args => EquippedStatusChanged(build.GuildWars2BuildId, args)" /></td>
+                        <td class="checkboxfield"><input type="checkbox" checked="@canTank" disabled="@(!isEquipped)" @onchange="args => TankingStatusChanged(build.GuildWars2BuildId, args)" /></td>
                         <td>@build.BuildName</td>
                         <td>@build.Class.ToString()</td>
                         <td>@build.EliteSpecialization.ToString()</td>

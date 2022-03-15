@@ -6,9 +6,30 @@ h5 {
 table {
     column-width: auto;
     color: lightgray;
+    width: fit-content;
 /*    border-top: none;
     border-bottom: none;*/
 }
+
+button {
+    width: max-content;
+}
+
+.signUpButton{
+    width: 30px;
+}
+
+.tdSignUp {
+    max-width: 400px;
+    width: fit-content;
+}
+
+
+.tdRole {
+    max-width: 500px;
+    width: fit-content;
+}
+
 
 /*.roleTable table tr:not(:first-child) > td {
     border-top: none;

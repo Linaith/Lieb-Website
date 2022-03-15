@@ -1,0 +1,60 @@
+﻿@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@using Lieb.Models.GuildWars2.Raid
+@inject RaidService RaidService
+
+
+<table>
+     @{RaidSignUp[] signUps = _raid.SignUps.Where(s => s.PlannedRaidRoleId == _currentRoleId).ToArray();}
+    @foreach (var signUp in signUps)
+    {
+        @if(signUp.SignUpType != SignUpType.SignedOff)
+        {
+            <tr>
+                @{
+                    bool isUser = signUp.LiebUserId == _liebUserId;
+                    string signUpStatus = string.Empty;
+                    @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
+                }
+
+                @if (isUser && _usableAccounts.Count > 1)
+                {
+                    <td>@signUp.LiebUser.Name 
+                    <select value=@signUp.GuildWars2AccountId @onchange="args => ChangeAccount(args)">
+                        @foreach (var account in _usableAccounts)
+                        {
+                            <option value=@account.GuildWars2AccountId>@account.AccountName</option>
+                        }
+                    </select> @signUpStatus </td>
+                }
+                else
+                {
+                    <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td> 
+                }
+            </tr>
+        }
+    }
+</table>
+@code {
+
+    [Parameter]
+    public Raid _raid { get; set; }
+
+    [Parameter]
+    public int _liebUserId { get; set; } = -1;
+
+    [Parameter]
+    public List<GuildWars2Account> _usableAccounts { get; set; }
+
+    [Parameter]
+    public int _currentRoleId { get; set; }
+
+
+    async Task ChangeAccount(ChangeEventArgs e)
+    {
+        int accountId = int.Parse(e.Value.ToString());
+        await RaidService.ChangeAccount(_raid.RaidId, _liebUserId, accountId);
+        _raid = RaidService.GetRaid(_raid.RaidId);
+    }
+}

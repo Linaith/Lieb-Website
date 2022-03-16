@@ -20,17 +20,21 @@
 
                 @if (isUser && _usableAccounts.Count > 1 && signUp.SignUpType != SignUpType.Flex)
                 {
-                    <td>@signUp.LiebUser.Name 
-                    <select value=@signUp.GuildWars2AccountId @onchange="args => _Parent.ChangeAccount(args)">
-                        @foreach (var account in _usableAccounts)
-                        {
-                            <option value=@account.GuildWars2AccountId>@account.AccountName</option>
-                        }
-                    </select> @signUpStatus </td>
+                    <td>
+                        <select value=@signUp.GuildWars2AccountId @onchange="args => _Parent.ChangeAccount(args)">
+                            @foreach (var account in _usableAccounts)
+                            {
+                                <option value=@account.GuildWars2AccountId>@account.AccountName</option>
+                            }
+                        </select> @signUpStatus 
+                    </td>
                 }
                 else
                 {
-                    <td>@signUp.LiebUser.Name (@signUp.GuildWars2Account.AccountName) @signUpStatus</td> 
+                    <td class="nametooltip">
+                        @signUp.GuildWars2Account.AccountName @signUpStatus
+                        <span class="tooltiptext">@signUp.LiebUser.Name</span>
+                    </td> 
                 }
             </tr>
         }

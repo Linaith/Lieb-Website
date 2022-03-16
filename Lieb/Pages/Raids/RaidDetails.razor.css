@@ -11,21 +11,25 @@ h5 {
     color: lightgrey;
 }
 
+.timesblock {
+    display: block;
+}
+
 .times {
-    float: left;
-    display: inline;
-    width: 49%;
+    display: inline-block;
+    width: 250px;
     padding-top: 15px;
 }
 
+.detailsblock {
+    display: block;
+}
 
 .details {
-    float: left;
-    display: inline;
-    width: 33%;
+    display: inline-block;
+    width: 250px;
     padding-top: 15px;
 }
-
 
 .controlButton {
     margin-right: 10px;

@@ -16,31 +16,33 @@
 
 <label style="white-space: pre-line">@_raid.Description</label>
 
-<div >
-    <div class="times">
+
+<span class="timesblock">
+    <span class="times">
         <h5>Date</h5>
         <p>@_startTime.DateTime.ToLongDateString()</p>
-    </div>
-    <div class="times">
+    </span>
+    <span class="times">
         <h5>Time</h5>
         <p>from: @_startTime.DateTime.ToShortTimeString()  to: @_endTime.DateTime.ToShortTimeString()</p>
-    </div>
-</div>
+    </span>
+</span>
 
-<div>
-    <div class="details">
+<span class="detailsblock">
+    <span class="details">
         <h5>Organizer</h5>
         <p>@_raid.Organizer</p>
-    </div>
-    <div class="details">
+    </span>
+    <span class="details">
         <h5>Guild</h5>
         <p>@_raid.Guild</p>
-    </div>
-    <div class="details">
+    </span>
+    <span class="details">
         <h5>Voice chat</h5>
         <p>@_raid.VoiceChat</p>
-    </div>
-</div>
+    </span>
+</span>
+
 
  <RaidRoles _raid=@_raid _user=@_user/>
 

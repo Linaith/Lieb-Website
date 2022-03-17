@@ -194,7 +194,7 @@ namespace Lieb.Data
             List<RaidSignUp> signUps = context.RaidSignUps.Where(r => r.RaidId == raidId && r.LiebUserId == liebUserId).ToList();
             if (signUpType != SignUpType.Flex && signUps.Where(r => r.SignUpType != SignUpType.Flex).Any())
             {
-                await ChangeSignUpType(raidId, liebUserId, plannedRoleId, signUpType);
+                ChangeSignUpType(raidId, liebUserId, plannedRoleId, signUpType);
             }
             else if (!signUps.Where(r => r.PlannedRaidRoleId == plannedRoleId).Any())
             {
@@ -246,7 +246,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public async Task ChangeSignUpType(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType)
+        public void ChangeSignUpType(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType)
         {
             if (!IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true))
             {
@@ -264,7 +264,6 @@ namespace Lieb.Data
             if (flexSignUp != null && signUp != null)
             {
                 flexSignUp.PlannedRaidRoleId = signUp.PlannedRaidRoleId;
-                await context.SaveChangesAsync();
             }
 
             //change to new role
@@ -272,8 +271,8 @@ namespace Lieb.Data
             {
                 signUp.PlannedRaidRoleId = plannedRoleId;
                 signUp.SignUpType = signUpType;
-                await context.SaveChangesAsync();
             }
+            context.SaveChanges();
         }
 
         public bool IsRoleSignUpAllowed(int liebUserId, int plannedRoleId, SignUpType signUpType)
@@ -360,7 +359,7 @@ namespace Lieb.Data
                     {
                         if (moveFlexUser)
                         {
-                            await ChangeSignUpType(raid.RaidId, userId, signUp.PlannedRaidRoleId, SignUpType.SignedUp);
+                            ChangeSignUpType(raid.RaidId, userId, signUp.PlannedRaidRoleId, SignUpType.SignedUp);
                         }
                         return true;
                     }

@@ -44,10 +44,12 @@
 </span>
 
 
- <RaidRoles _raid=@_raid _user=@_user/>
+ <RaidRoles _raid=@_raid _user=@_user _isRaidSignUpAllowed=@_isRaidSignUpAllowed/>
 
 <div>
-    <button class="controlButton" @onclick="() => SignOffClicked()">Sign Off</button>
+    <AuthorizeView>
+        <button class="controlButton" @onclick="() => SignOffClicked()">Sign Off</button>
+    </AuthorizeView>
     <AuthorizeView Policy="@Constants.Roles.RaidLead">
         <button class="controlButton" @onclick="() => EditClicked()">Edit</button>
         @if(_raid.RaidType != RaidType.Planned)

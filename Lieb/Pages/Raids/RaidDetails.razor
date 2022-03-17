@@ -10,76 +10,81 @@
 
 <body>
 
-<label class="errormessage">@_errorMessage</label>
+<div @onclick="() => _isCollapsed = !_isCollapsed">
+    <label class="errormessage">@_errorMessage</label>
 
-<h5>@_raid.Title
-@if (_user != null && _isRaidSignUpAllowed) 
-{
-    <div class="signUpStatusTooltip">
-        @if(_raid.SignUps.Where(s => s.LiebUserId == _user.LiebUserId).Any())
-        {
-            <span class="oi oi-badge" style="color:green"></span>  
-                <span class="tooltiptext">You are signed up</span>  
-        }
-        else if(_raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() < _raid.Roles.Sum(r => r.Spots))
-        {   
-            <span class="oi oi-aperture nametooltip"></span>     
-                <span class="tooltiptext">You can sign up</span>  
-        }
-        else
-        {
-            <span class="oi oi-ban nametooltip" style="color:red"></span>   
-                <span class="tooltiptext">The raid is full</span>   
-        }  
-    </div>
-}
-</h5>
-
-
-<label style="white-space: pre-line">@_raid.Description</label>
+    <h5>@_raid.Title
+    @if (_user != null && _isRaidSignUpAllowed) 
+    {
+        <div class="signUpStatusTooltip">
+            @if(_raid.SignUps.Where(s => s.LiebUserId == _user.LiebUserId).Any())
+            {
+                <span class="oi oi-badge" style="color:green"></span>  
+                    <span class="tooltiptext">You are signed up</span>  
+            }
+            else if(_raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() < _raid.Roles.Sum(r => r.Spots))
+            {   
+                <span class="oi oi-aperture nametooltip"></span>     
+                    <span class="tooltiptext">You can sign up</span>  
+            }
+            else
+            {
+                <span class="oi oi-ban nametooltip" style="color:red"></span>   
+                    <span class="tooltiptext">The raid is full</span>   
+            }  
+        </div>
+    }
+    </h5>
 
 
-<span class="timesblock">
-    <span class="times">
-        <h5>Date</h5>
-        <p>@_startTime.DateTime.ToLongDateString()</p>
+    <label style="white-space: pre-line">@_raid.Description</label>
+
+
+    <span class="timesblock">
+        <span class="times">
+            <h5>Date</h5>
+            <p>@_startTime.DateTime.ToLongDateString()</p>
+        </span>
+        <span class="times">
+            <h5>Time</h5>
+            <p>from: @_startTime.DateTime.ToShortTimeString()  to: @_endTime.DateTime.ToShortTimeString()</p>
+        </span>
     </span>
-    <span class="times">
-        <h5>Time</h5>
-        <p>from: @_startTime.DateTime.ToShortTimeString()  to: @_endTime.DateTime.ToShortTimeString()</p>
-    </span>
-</span>
-
-<span class="detailsblock">
-    <span class="details">
-        <h5>Organizer</h5>
-        <p>@_raid.Organizer</p>
-    </span>
-    <span class="details">
-        <h5>Guild</h5>
-        <p>@_raid.Guild</p>
-    </span>
-    <span class="details">
-        <h5>Voice chat</h5>
-        <p>@_raid.VoiceChat</p>
-    </span>
-</span>
-
-
- <RaidRoles _raid=@_raid _user=@_user _isRaidSignUpAllowed=@_isRaidSignUpAllowed/>
-
-<div>
-    <AuthorizeView>
-        <button class="controlButton" @onclick="() => SignOffClicked()">Sign Off</button>
-    </AuthorizeView>
-    <AuthorizeView Policy="@Constants.Roles.RaidLead">
-        <button class="controlButton" @onclick="() => EditClicked()">Edit</button>
-        @if(_raid.RaidType != RaidType.Planned)
-        {
-            <button class="controlButton" type=button @onclick="() => RandomizeClicked()">Randomize</button>
-        }
-    </AuthorizeView>
 </div>
+
+    @if (!_isCollapsed)
+    {
+        <span class="detailsblock">
+            <span class="details">
+                <h5>Organizer</h5>
+                <p>@_raid.Organizer</p>
+            </span>
+            <span class="details">
+                <h5>Guild</h5>
+                <p>@_raid.Guild</p>
+            </span>
+            <span class="details">
+                <h5>Voice chat</h5>
+                <p>@_raid.VoiceChat</p>
+            </span>
+        </span>
+
+
+        <RaidRoles _raid=@_raid _user=@_user _isRaidSignUpAllowed=@_isRaidSignUpAllowed/>
+
+        <div>
+            <AuthorizeView>
+                <button class="controlButton" @onclick="() => SignOffClicked()">Sign Off</button>
+            </AuthorizeView>
+            <AuthorizeView Policy="@Constants.Roles.RaidLead">
+                <button class="controlButton" @onclick="() => EditClicked()">Edit</button>
+                @if (_raid.RaidType != RaidType.Planned)
+                {
+                    <button class="controlButton" type=button @onclick="() => RandomizeClicked()">Randomize</button>
+                }
+            </AuthorizeView>
+        </div>
+    }
 </body>
 
 @code {
@@ -96,6 +101,8 @@
     private DateTimeOffset _startTime;
     private DateTimeOffset _endTime;
     private DateTimeOffset _freeForAllTime;
+
+    bool _isCollapsed = true;
 
     protected override async Task OnParametersSetAsync()
     {

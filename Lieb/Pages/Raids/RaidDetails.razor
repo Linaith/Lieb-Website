@@ -10,9 +10,31 @@
 
 <body>
 
-<label>@_errorMessage</label>
+<label class="errormessage">@_errorMessage</label>
 
-<h5>@_raid.Title</h5>
+<h5>@_raid.Title
+@if (_user != null && _isRaidSignUpAllowed) 
+{
+    <div class="signUpStatusTooltip">
+        @if(_raid.SignUps.Where(s => s.LiebUserId == _user.LiebUserId).Any())
+        {
+            <span class="oi oi-badge" style="color:green"></span>  
+                <span class="tooltiptext">You are signed up</span>  
+        }
+        else if(_raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() < _raid.Roles.Sum(r => r.Spots))
+        {   
+            <span class="oi oi-aperture nametooltip"></span>     
+                <span class="tooltiptext">You can sign up</span>  
+        }
+        else
+        {
+            <span class="oi oi-ban nametooltip" style="color:red"></span>   
+                <span class="tooltiptext">The raid is full</span>   
+        }  
+    </div>
+}
+</h5>
+
 
 <label style="white-space: pre-line">@_raid.Description</label>
 

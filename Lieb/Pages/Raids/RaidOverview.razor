@@ -25,6 +25,18 @@
         <input type="date" value="@_startDate.ToString("yyyy-MM-dd")" @onchange="args => StartFilterChanged(args)" />
         To:
         <input type="date" value="@_endDate.ToString("yyyy-MM-dd")" @onchange="args => EndFilterChanged(args)" />
+        RaidGroup:
+        <select @onchange="args => GroupFilterChanged(args)" >
+            <option value="">All</option>
+            <option value="No Group">No Group</option>
+            @foreach(LiebRole role in UserService.GetLiebRoles())
+            {
+                if (!role.IsSystemRole)
+                {
+                    <option value="@role.RoleName">@role.RoleName</option>
+                }
+            }
+        </select>
 </label>
 
 <br />
@@ -42,6 +54,7 @@
     private LiebUser? _user;
     private DateTime _startDate = DateTime.Now.Date;
     private DateTime _endDate = DateTime.Now.Date.AddDays(15).AddSeconds(-1);
+    private string _filterRole = string.Empty;
     private List<Raid> _raidsToShow;
 
     protected override async Task OnInitializedAsync()
@@ -55,18 +68,40 @@
         }
 
         _raids = RaidService.GetRaids();
-        _raidsToShow = _raids.Where(r => r.StartTimeUTC > _startDate && r.StartTimeUTC < _endDate).ToList();
+        ApplyFilter();
     }
 
     private void StartFilterChanged(ChangeEventArgs e)
     {
         _startDate = DateTime.Parse(e.Value.ToString());
-        _raidsToShow = _raids.Where(r => r.StartTimeUTC > _startDate && r.StartTimeUTC < _endDate).ToList();
+        ApplyFilter();
     }
-    
+
     private void EndFilterChanged(ChangeEventArgs e)
     {
         _endDate = DateTime.Parse(e.Value.ToString()).AddDays(1).AddSeconds(-1);
-        _raidsToShow = _raids.Where(r => r.StartTimeUTC > _startDate && r.StartTimeUTC < _endDate).ToList();
+        ApplyFilter();
+    }
+
+    private void GroupFilterChanged(ChangeEventArgs e)
+    {
+        _filterRole = e.Value?.ToString();
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        if(String.IsNullOrEmpty(_filterRole))
+        {
+            _raidsToShow = _raids.Where(r => r.StartTimeUTC > _startDate && r.StartTimeUTC < _endDate).ToList();
+        }
+        else if(_filterRole == "No Group")
+        {
+            _raidsToShow = _raids.Where(r => r.StartTimeUTC > _startDate && r.StartTimeUTC < _endDate && string.IsNullOrEmpty(r.RequiredRole)).ToList();
+        }
+        else
+        {
+            _raidsToShow = _raids.Where(r => r.StartTimeUTC > _startDate && r.StartTimeUTC < _endDate && r.RequiredRole == _filterRole).ToList();
+        }
     }
 }

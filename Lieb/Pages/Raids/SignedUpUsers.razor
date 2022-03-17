@@ -7,15 +7,15 @@
 
 <table>
      @{RaidSignUp[] signUps = _raid.SignUps.Where(s => s.PlannedRaidRoleId == _currentRoleId).ToArray();}
-    @foreach (var signUp in signUps)
+    @foreach (var signUp in signUps.OrderBy(s => s.SignUpType))
     {
-        @if(signUp.SignUpType != SignUpType.SignedOff)
+        @if(_signUpTypes.Contains(signUp.SignUpType))
         {
             <tr>
                 @{
                     bool isUser = signUp.LiebUserId == _liebUserId;
                     string signUpStatus = string.Empty;
-                    @if (signUp.SignUpType != SignUpType.SignedUp) signUpStatus = $" - {signUp.SignUpType}";
+                    @if (signUp.SignUpType != SignUpType.SignedUp && _signUpTypes.Count > 1) signUpStatus = $" - {signUp.SignUpType}";
                 }
 
                 @if (isUser && _usableAccounts.Count > 1 && signUp.SignUpType != SignUpType.Flex)
@@ -29,11 +29,24 @@
                         </select> @signUpStatus 
                     </td>
                 }
+                else if(isUser)
+                {
+                    <td class="nametooltip username">
+                        @signUp.GuildWars2Account.AccountName @signUpStatus
+                        @if(_showToolTip)
+                        {
+                            <span class="tooltiptext">@signUp.LiebUser.Name</span>
+                        }
+                    </td> 
+                }
                 else
                 {
                     <td class="nametooltip">
                         @signUp.GuildWars2Account.AccountName @signUpStatus
-                        <span class="tooltiptext">@signUp.LiebUser.Name</span>
+                        @if(_showToolTip)
+                        {
+                            <span class="tooltiptext">@signUp.LiebUser.Name</span>
+                        }
                     </td> 
                 }
             </tr>
@@ -55,4 +68,10 @@
 
     [Parameter]
     public int _currentRoleId { get; set; }
+
+    [Parameter]
+    public List<SignUpType> _signUpTypes { get; set; }
+
+    [Parameter]
+    public bool _showToolTip { get; set; } = false;
 }

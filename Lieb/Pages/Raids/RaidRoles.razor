@@ -5,10 +5,27 @@
 @inject RaidService RaidService
 
 <table class="table">
+    @{
+        bool flexExists = _raid.SignUps.Where(s => s.SignUpType == SignUpType.Flex).Any();
+    }
     <thead>
-        <tr>
-            <th>Role</th>
+        <tr @onclick="() => ExpandAll()">
+            <th>
+                @if(@_expandableRoles.FirstOrDefault().IsRowExpanded)
+                {
+                    <span class="oi oi-chevron-top" style="margin-right:7px"> </span>
+                }
+                else
+                {
+                    <span class="oi oi-chevron-bottom" style="margin-right:7px"> </span>
+                }
+                Role
+            </th>
             <th>Users</th>
+            @if (flexExists)
+            {
+                <th>Flex</th>
+            }
             <th>(@_raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count()/@_raid.Roles.Sum(r => r.Spots))</th>
         </tr>
     </thead>
@@ -16,28 +33,51 @@
         @{
             bool isSignedUp = _raid.SignUps.Where(s => s.LiebUserId == _liebUserId && s.SignUpType != SignUpType.SignedOff).Any();
         }
-        @foreach (PlannedRaidRole role in _raid.Roles.OrderBy(r => r.PlannedRaidRoleId))
+        @foreach (ExpandableRole role in _expandableRoles.OrderBy(r => r.Role.PlannedRaidRoleId))
         {
             <tr>
-                <td class="tdRole">
-                    <b>@role.Name</b> (@_raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId && s.SignUpType == SignUpType.SignedUp).Count() / @role.Spots) 
-                    <br>  @role.Description
+                @{
+                <td class="tdRole" @onclick="() => role.IsRowExpanded = !role.IsRowExpanded">
+                    @if(@role.IsRowExpanded)
+                    {
+                        <span class="oi oi-chevron-top" style="margin-right:7px"> </span>
+                    }
+                    else
+                    {
+                        <span class="oi oi-chevron-bottom" style="margin-right:7px"> </span>
+                    }
+                    <b>@role.Role.Name</b> (@_raid.SignUps.Where(s => s.PlannedRaidRoleId == role.Role.PlannedRaidRoleId && s.SignUpType == SignUpType.SignedUp).Count() / @role.Role.Spots) 
+                    @if (@role.IsRowExpanded)
+                    {
+                        <br>  @role.Role.Description
+                    }
                 </td>
+                }
                 <td class="tdSignUp">
+                    @{List<SignUpType> signUpTypes =new List<SignUpType>(){SignUpType.SignedUp, SignUpType.Maybe, SignUpType.Backup};}
                     <CascadingValue Value="this">
-                        <SignedUpUsers _raid=@_raid _usableAccounts=@_usableAccounts _liebUserId=@_liebUserId _currentRoleId=@role.PlannedRaidRoleId></SignedUpUsers>
+                        <SignedUpUsers _raid=@_raid _usableAccounts=@_usableAccounts _liebUserId=@_liebUserId _currentRoleId=@role.Role.PlannedRaidRoleId _signUpTypes=@signUpTypes _showToolTip=@true></SignedUpUsers>
                     </CascadingValue>
                 </td>
-                @if(_liebUserId > 0)
+                @if (flexExists)
                 {
-                    bool notIsRoleSignUpAllowed = !RaidService.IsRoleSignUpAllowed(_raid.RaidId, _liebUserId, role.PlannedRaidRoleId, SignUpType.SignedUp, false);
+                    List<SignUpType> flexSignUpTypes =new List<SignUpType>(){SignUpType.Flex};
+                    <td class="tdSignUp">
+                        <CascadingValue Value="this">
+                            <SignedUpUsers _raid=@_raid _usableAccounts=@_usableAccounts _liebUserId=@_liebUserId _currentRoleId=@role.Role.PlannedRaidRoleId _signUpTypes=@flexSignUpTypes></SignedUpUsers>
+                        </CascadingValue>
+                    </td>
+                }
+                @if(_liebUserId > 0 && _isRaidSignUpAllowed)
+                {
+                    bool notIsRoleSignUpAllowed = !RaidService.IsRoleSignUpAllowed(_raid.RaidId, _liebUserId, role.Role.PlannedRaidRoleId, SignUpType.SignedUp, false);
                     bool notIsBackupAllowed = _raid.RaidType != RaidType.Planned && notIsRoleSignUpAllowed;
-                    <td class="signUpButton"><button @onclick="() => SignUpClicked(role, SignUpType.SignedUp)" disabled="@notIsRoleSignUpAllowed">Sign Up</button></td>
-                    <td class="signUpButton"><button @onclick="() => SignUpClicked(role, SignUpType.Maybe)" disabled="@notIsRoleSignUpAllowed">Maybe</button></td>
-                    <td class="signUpButton"><button @onclick="() => SignUpClicked(role, SignUpType.Backup)" disabled="@notIsBackupAllowed">Backup</button></td>
+                    <td class="signUpButton"><button @onclick="() => SignUpClicked(role.Role, SignUpType.SignedUp)" disabled="@notIsRoleSignUpAllowed">Sign Up</button></td>
+                    <td class="signUpButton"><button @onclick="() => SignUpClicked(role.Role, SignUpType.Maybe)" disabled="@notIsRoleSignUpAllowed">Maybe</button></td>
+                    <td class="signUpButton"><button @onclick="() => SignUpClicked(role.Role, SignUpType.Backup)" disabled="@notIsBackupAllowed">Backup</button></td>
                     @if (isSignedUp && _raid.RaidType == RaidType.Planned)
                     {
-                        <td><button @onclick="() => SignUpClicked(role, SignUpType.Flex)">Flex</button></td>
+                        <td><button @onclick="() => SignUpClicked(role.Role, SignUpType.Flex)">Flex</button></td>
                     }
                 }
             </tr>
@@ -54,9 +94,20 @@
     [Parameter]
     public LiebUser? _user { get; set; }
 
+    [Parameter]
+    public bool _isRaidSignUpAllowed { get; set; }
+
     private int _liebUserId { get; set; } = -1;
 
     private List<GuildWars2Account> _usableAccounts;
+
+    private List<ExpandableRole> _expandableRoles;
+
+    private class ExpandableRole
+    {
+        public PlannedRaidRole Role;
+        public bool IsRowExpanded = false;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -72,13 +123,21 @@
             }
             _liebUserId = _user.LiebUserId;
         }
+        _expandableRoles = new List<ExpandableRole>();
+        foreach(PlannedRaidRole role in _raid.Roles)
+        {
+            _expandableRoles.Add(new ExpandableRole()
+                {
+                    Role = role
+                });
+        }
     }
 
     async Task SignUpClicked(PlannedRaidRole role, SignUpType signUpType)
     {
         if(_raid.SignUps.Where(s => s.LiebUserId == _liebUserId).Any() && signUpType != SignUpType.Flex)
         {
-            await RaidService.ChangeSignUpType(_raid.RaidId, _liebUserId, role.PlannedRaidRoleId, signUpType);
+            RaidService.ChangeSignUpType(_raid.RaidId, _liebUserId, role.PlannedRaidRoleId, signUpType);
         }
         else
         {
@@ -93,5 +152,14 @@
         await RaidService.ChangeAccount(_raid.RaidId, _liebUserId, accountId);
         _raid = RaidService.GetRaid(_raid.RaidId);
         this.StateHasChanged();
+    }
+
+    public async Task ExpandAll()
+    {
+        bool newStatus = !_expandableRoles.FirstOrDefault().IsRowExpanded;
+        foreach(ExpandableRole role in _expandableRoles)
+        {
+            role.IsRowExpanded = newStatus;
+        }
     }
 }

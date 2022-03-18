@@ -9,15 +9,15 @@
         bool flexExists = _raid.SignUps.Where(s => s.SignUpType == SignUpType.Flex).Any();
     }
     <thead>
-        <tr @onclick="() => ExpandAll()">
+        <tr @onclick="() => ToggleAll()">
             <th>
-                @if(@_expandableRoles.FirstOrDefault().IsRowExpanded)
+                @if(_allExpanded)
                 {
-                    <span class="oi oi-chevron-top" style="margin-right:7px"> </span>
+                    <span class="oi oi-collapse-up" style="margin-right:7px"> </span>
                 }
                 else
                 {
-                    <span class="oi oi-chevron-bottom" style="margin-right:7px"> </span>
+                    <span class="oi oi-expand-down" style="margin-right:7px"> </span>
                 }
                 Role
             </th>
@@ -37,7 +37,7 @@
         {
             <tr>
                 @{
-                <td class="tdRole" @onclick="() => role.IsRowExpanded = !role.IsRowExpanded">
+                <td class="tdRole" @onclick="() => ToggleRow(role)">
                     @if(@role.IsRowExpanded)
                     {
                         <span class="oi oi-chevron-top" style="margin-right:7px"> </span>
@@ -56,7 +56,7 @@
                 <td class="tdSignUp">
                     @{List<SignUpType> signUpTypes =new List<SignUpType>(){SignUpType.SignedUp, SignUpType.Maybe, SignUpType.Backup};}
                     <CascadingValue Value="this">
-                        <SignedUpUsers _raid=@_raid _usableAccounts=@_usableAccounts _liebUserId=@_liebUserId _currentRoleId=@role.Role.PlannedRaidRoleId _signUpTypes=@signUpTypes _showToolTip=@true></SignedUpUsers>
+                        <SignedUpUsers _raid=@_raid _usableAccounts=@_usableAccounts _liebUserId=@_liebUserId _currentRoleId=@role.Role.PlannedRaidRoleId _signUpTypes=@signUpTypes _showToolTip=@true _showUserColor=@true></SignedUpUsers>
                     </CascadingValue>
                 </td>
                 @if (flexExists)
@@ -87,6 +87,8 @@
            
 
 @code {
+    [Parameter]
+    public RaidDetails _Parent { get; set; }
 
     [Parameter]
     public Raid _raid { get; set; }
@@ -102,6 +104,8 @@
     private List<GuildWars2Account> _usableAccounts;
 
     private List<ExpandableRole> _expandableRoles;
+
+    private bool _allExpanded = false;
 
     private class ExpandableRole
     {
@@ -143,7 +147,7 @@
         {
             await RaidService.SignUp(_raid.RaidId, _liebUserId, _usableAccounts.FirstOrDefault().GuildWars2AccountId, role.PlannedRaidRoleId, signUpType);
         }
-        _raid = RaidService.GetRaid(_raid.RaidId);
+        _Parent.HasChanged();
     }
 
     public async Task ChangeAccount(ChangeEventArgs e)
@@ -154,12 +158,18 @@
         this.StateHasChanged();
     }
 
-    public async Task ExpandAll()
+    private async Task ToggleRow(ExpandableRole role)
     {
-        bool newStatus = !_expandableRoles.FirstOrDefault().IsRowExpanded;
+        role.IsRowExpanded = !role.IsRowExpanded;
+        _allExpanded = !_expandableRoles.Where(r => !r.IsRowExpanded).Any();
+    }
+
+    private async Task ToggleAll()
+    {
         foreach(ExpandableRole role in _expandableRoles)
         {
-            role.IsRowExpanded = newStatus;
+            role.IsRowExpanded = !_allExpanded;
         }
+        _allExpanded = !_allExpanded;
     }
 }

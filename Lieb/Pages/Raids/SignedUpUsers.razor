@@ -29,7 +29,7 @@
                         </select> @signUpStatus 
                     </td>
                 }
-                else if(isUser)
+                else if(isUser && _showUserColor)
                 {
                     <td class="nametooltip username">
                         @signUp.GuildWars2Account.AccountName @signUpStatus
@@ -74,4 +74,7 @@
 
     [Parameter]
     public bool _showToolTip { get; set; } = false;
+
+    [Parameter]
+    public bool _showUserColor { get; set; } = false;
 }

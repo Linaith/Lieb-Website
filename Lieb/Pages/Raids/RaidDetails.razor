@@ -17,7 +17,7 @@
     @if (_user != null && _isRaidSignUpAllowed) 
     {
         <div class="signUpStatusTooltip">
-            @if(_raid.SignUps.Where(s => s.LiebUserId == _user.LiebUserId).Any())
+            @if(_raid.SignUps.Where(s => s.LiebUserId == _user.LiebUserId && s.SignUpType != SignUpType.SignedOff).Any())
             {
                 <span class="oi oi-badge" style="color:green"></span>  
                     <span class="tooltiptext">You are signed up</span>  
@@ -70,7 +70,7 @@
         </span>
 
 
-        <RaidRoles _raid=@_raid _user=@_user _isRaidSignUpAllowed=@_isRaidSignUpAllowed/>
+        <RaidRoles _Parent=@this _raid=@_raid _user=@_user _isRaidSignUpAllowed=@_isRaidSignUpAllowed/>
 
         <div>
             <AuthorizeView>
@@ -123,10 +123,16 @@
     {
         NavigationManager.NavigateTo($"raidedit/{_raid.RaidId}");
     }
-    
+
     async Task RandomizeClicked()
     {
         await RaidRandomizerService.RandomizeRaid(_raid.RaidId);
         _raid = RaidService.GetRaid(_raid.RaidId);
+    }
+
+    public void HasChanged()
+    {
+        _raid = RaidService.GetRaid(_raid.RaidId);
+        this.StateHasChanged();
     }
 }

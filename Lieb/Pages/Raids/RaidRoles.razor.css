@@ -1,14 +1,8 @@
 ﻿
-h5 {
-    color: lightgrey;
-}
-
 table {
     column-width: auto;
-    color: lightgray;
+    color: lightgrey;
     width: fit-content;
-/*    border-top: none;
-    border-bottom: none;*/
 }
 
 button {
@@ -29,12 +23,3 @@ button {
     max-width: 500px;
     width: fit-content;
 }
-
-
-/*.roleTable table tr:not(:first-child) > td {
-    border-top: none;
-}
-
-.roleTable table tr:not(:last-child) > td {
-    border-bottom: none;
-}*/

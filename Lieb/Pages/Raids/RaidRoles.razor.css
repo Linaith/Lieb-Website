@@ -6,11 +6,8 @@ table {
 }
 
 button {
-    width: max-content;
-}
-
-.signUpButton{
-    width: 30px;
+    /*width: max-content;*/
+    width: 80px;
 }
 
 .tdSignUp {

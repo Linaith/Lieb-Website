@@ -21,7 +21,7 @@
                 @if (isUser && _usableAccounts.Count > 1 && signUp.SignUpType != SignUpType.Flex)
                 {
                     <td>
-                        <select value=@signUp.GuildWars2AccountId @onchange="args => _Parent.ChangeAccount(args)">
+                        <select class="accountselect" value=@signUp.GuildWars2AccountId @onchange="args => _Parent.ChangeAccount(args)">
                             @foreach (var account in _usableAccounts)
                             {
                                 <option value=@account.GuildWars2AccountId>@account.AccountName</option>

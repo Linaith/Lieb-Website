@@ -36,3 +36,7 @@
 .nametooltip:hover .tooltiptext {
     visibility: visible;
 }
+
+.accountselect {
+    background-color: #555555;
+}

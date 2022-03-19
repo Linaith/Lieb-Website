@@ -72,12 +72,12 @@
                 {
                     bool notIsRoleSignUpAllowed = !RaidService.IsRoleSignUpAllowed(_raid.RaidId, _liebUserId, role.Role.PlannedRaidRoleId, SignUpType.SignedUp, false);
                     bool notIsBackupAllowed = _raid.RaidType != RaidType.Planned && notIsRoleSignUpAllowed;
-                    <td class="signUpButton"><button @onclick="() => SignUpClicked(role.Role, SignUpType.SignedUp)" disabled="@notIsRoleSignUpAllowed">Sign Up</button></td>
-                    <td class="signUpButton"><button @onclick="() => SignUpClicked(role.Role, SignUpType.Maybe)" disabled="@notIsRoleSignUpAllowed">Maybe</button></td>
-                    <td class="signUpButton"><button @onclick="() => SignUpClicked(role.Role, SignUpType.Backup)" disabled="@notIsBackupAllowed">Backup</button></td>
+                    <td><button class="raidButton" @onclick="() => SignUpClicked(role.Role, SignUpType.SignedUp)" disabled="@notIsRoleSignUpAllowed">Sign Up</button></td>
+                    <td><button class="raidButton" @onclick="() => SignUpClicked(role.Role, SignUpType.Maybe)" disabled="@notIsRoleSignUpAllowed">Maybe</button></td>
+                    <td><button class="raidButton" @onclick="() => SignUpClicked(role.Role, SignUpType.Backup)" disabled="@notIsBackupAllowed">Backup</button></td>
                     @if (isSignedUp && _raid.RaidType == RaidType.Planned)
                     {
-                        <td><button @onclick="() => SignUpClicked(role.Role, SignUpType.Flex)">Flex</button></td>
+                        <td><button class="raidButton" @onclick="() => SignUpClicked(role.Role, SignUpType.Flex)">Flex</button></td>
                     }
                 }
             </tr>

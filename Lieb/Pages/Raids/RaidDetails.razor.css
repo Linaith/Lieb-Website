@@ -35,6 +35,19 @@ h5 {
     margin-right: 10px;
 }
 
+::deep .raidButton {
+    color: lightgray;
+    background-color: #444444;
+    width: 100px;
+    border: none;
+    padding: 8px;
+    text-align: center;
+    text-decoration: none;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
 table {
     column-width: auto;
     color: lightgray;

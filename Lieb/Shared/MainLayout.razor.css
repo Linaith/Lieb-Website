@@ -22,6 +22,63 @@ main {
     color: lightskyblue;
 }
 
+::deep input {
+    background-color: #555555;
+    border: none;
+    color: lightgray;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+    ::deep input:disabled {
+        background-color: #777777;
+        color: darkgrey;
+    }
+
+::deep textarea {
+    background-color: #555555;
+    border: none;
+    color: lightgray;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+    ::deep textarea:disabled {
+        background-color: #777777;
+        color: darkgrey;
+    }
+
+::deep select {
+    background-color: #555555;
+    border: none;
+    color: lightgray;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+    ::deep select:disabled {
+        background-color: #777777;
+        color: darkgrey;
+    }
+
+::deep button {
+    color: lightgray;
+    background-color: #555555;
+    width: 130px;
+    /*border: none;*/
+    padding: 8px;
+    text-align: center;
+    text-decoration: none;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+    ::deep button:disabled {
+        background-color: #777777;
+        color: darkgrey;
+    }
+
 .top-row {
     background-color: #202020;
     border-bottom: 1px solid #d6d5d5;

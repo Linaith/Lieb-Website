@@ -74,13 +74,13 @@
 
         <div>
             <AuthorizeView>
-                <button class="controlButton" @onclick="() => SignOffClicked()">Sign Off</button>
+                <button class="controlButton raidButton" @onclick="() => SignOffClicked()">Sign Off</button>
             </AuthorizeView>
             <AuthorizeView Policy="@Constants.Roles.RaidLead">
-                <button class="controlButton" @onclick="() => EditClicked()">Edit</button>
+                <button class="controlButton raidButton" @onclick="() => EditClicked()">Edit</button>
                 @if (_raid.RaidType != RaidType.Planned)
                 {
-                    <button class="controlButton" type=button @onclick="() => RandomizeClicked()">Randomize</button>
+                    <button class="controlButton raidButton" type=button @onclick="() => RandomizeClicked()">Randomize</button>
                 }
             </AuthorizeView>
         </div>

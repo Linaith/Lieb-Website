@@ -10,21 +10,21 @@ namespace Lieb.Data
         public static void Initialize(LiebContext context)
         {
             //add special Roles
-            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.Admin) == null)
+            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.Admin.Name) == null)
             {
-                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.Admin, IsSystemRole = true, Level = Constants.RoleLevels.AdminLevel, LevelToAssign = Constants.RoleLevels.AdminLevel });
+                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.Admin.Name, Type = RoleType.SystemRole, Level = Constants.Roles.Admin.PowerLevel, LevelToAssign = Constants.Roles.Admin.PowerLevel });
             }
-            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.GuildLead) == null)
+            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.Moderator.Name) == null)
             {
-                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.GuildLead, IsSystemRole = true, Level = Constants.RoleLevels.GuildLeadLevel, LevelToAssign = Constants.RoleLevels.AdminLevel });
+                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.Moderator.Name, Type = RoleType.SystemRole, Level = Constants.Roles.Moderator.PowerLevel, LevelToAssign = Constants.Roles.Admin.PowerLevel });
             }
-            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.RaidLead) == null)
+            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.RaidLead.Name) == null)
             {
-                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.RaidLead, IsSystemRole = true, Level = Constants.RoleLevels.RaidLeadLevel, LevelToAssign = Constants.RoleLevels.GuildLeadLevel });
+                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.RaidLead.Name, Type = RoleType.SystemRole, Level = Constants.Roles.RaidLead.PowerLevel, LevelToAssign = Constants.Roles.Moderator.PowerLevel });
             }
-            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.User) == null)
+            if (context.LiebRoles.FirstOrDefault(r => r.RoleName == Constants.Roles.User.Name) == null)
             {
-                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.User, IsSystemRole = true, Level = Constants.RoleLevels.UserLevel, LevelToAssign = Constants.RoleLevels.AdminLevel + 1  });
+                context.LiebRoles.Add(new LiebRole() { RoleName = Constants.Roles.User.Name, Type = RoleType.SystemRole, Level = Constants.Roles.User.PowerLevel, LevelToAssign = Constants.Roles.Admin.PowerLevel + 1  });
             }
             context.SaveChanges();
 
@@ -52,10 +52,10 @@ namespace Lieb.Data
             context.SaveChanges();
 
 
-            int AdminRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.Admin).LiebRoleId;
-            int GuildLeadRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.GuildLead).LiebRoleId;
-            int RaidLeadRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.RaidLead).LiebRoleId;
-            int UserRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.User).LiebRoleId;
+            int AdminRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.Admin.Name).LiebRoleId;
+            int GuildLeadRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.Moderator.Name).LiebRoleId;
+            int RaidLeadRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.RaidLead.Name).LiebRoleId;
+            int UserRoleId = context.LiebRoles.FirstOrDefault(x => x.RoleName == Constants.Roles.User.Name).LiebRoleId;
 
             var assignments = new RoleAssignment[]
             {

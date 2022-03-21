@@ -2,6 +2,13 @@
 
 namespace Lieb.Models
 {
+    public enum RoleType
+    {
+        GuildRole = 1,
+        SystemRole = 2,
+        UserDefinedRole = 3
+    }
+
     public class LiebRole
     {
         public int LiebRoleId { get; set; }
@@ -10,7 +17,7 @@ namespace Lieb.Models
         [StringLength(40, ErrorMessage = "RoleName too long (40 character limit).")]
         public string RoleName { get; set; } = string.Empty;
 
-        public bool IsSystemRole { get; set; } = false;
+        public RoleType Type { get; set; }
 
         public int Level { get; set; } = 20;
 

@@ -10,7 +10,7 @@
 
 <h3>BuildEdit</h3>
 
-<AuthorizeView Policy="@Constants.Roles.Admin" Context="authorizationContext">
+<AuthorizeView Policy="@Constants.Roles.Admin.Name" Context="authorizationContext">
     <EditForm Model="@_build" OnValidSubmit="@HandleValidSubmit">
         <DataAnnotationsValidator />
     

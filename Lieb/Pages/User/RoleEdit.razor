@@ -8,20 +8,19 @@
 <h3>Role Edit</h3>
 
 
-<AuthorizeView Policy="@Constants.Roles.Admin">
+<AuthorizeView Policy="@Constants.Roles.Admin.Name">
     <Authorized>
-        
-    <table>
-        @foreach(LiebRole role in _roles)
-        {
-            <tr>
-                <td>@if(!role.IsSystemRole)
-                {
-                    <button type=button @onclick="() => DeleteRoleClicked(role)">Delete Role</button>
-                }</td>
-                <td>@role.RoleName</td>
-            </tr>
-        }
+        <table>
+            @foreach(LiebRole role in _roles)
+            {
+                <tr>
+                    <td>@role.RoleName</td>
+                    <td>@if(role.Type == RoleType.UserDefinedRole)
+                    {
+                        <button type=button @onclick="() => DeleteRoleClicked(role)">Delete Role</button>
+                    }</td>
+                </tr>
+            }
         </table>
         <p>
             <label>
@@ -50,9 +49,9 @@
         LiebRole role = new LiebRole()
             {
                 RoleName = _newRoleName,
-                IsSystemRole = false,
+                Type = RoleType.UserDefinedRole,
                 Level = 0,
-                LevelToAssign = Constants.RoleLevels.RaidLeadLevel
+                LevelToAssign = Constants.Roles.RaidLead.PowerLevel
             };
         await UserService.AddRole(role);
         _roles = UserService.GetLiebRoles();

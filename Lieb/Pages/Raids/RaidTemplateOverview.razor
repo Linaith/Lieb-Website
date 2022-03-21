@@ -11,7 +11,7 @@
 <h3>RaidTemplateOverview</h3>
 
 
-<AuthorizeView Policy="@Constants.Roles.RaidLead">
+<AuthorizeView Policy="@Constants.Roles.RaidLead.Name">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="raidtemplateedit">
                 <span class="oi oi-plus" aria-hidden="true"></span> Add Raid
@@ -22,17 +22,23 @@
 @foreach (var raid in _templates.OrderBy(r => r.StartTime)) 
 {
     <br />
-    <RaidTemplateDetails _template=@raid/>
+    <RaidTemplateDetails _template=@raid _user=@_user/>
 }
-
-
 
 @code 
 {
     private List<RaidTemplate> _templates;
+    private LiebUser? _user;
 
     protected override async Task OnInitializedAsync()
     {
         _templates = RaidTemplateService.GetTemplates();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity.IsAuthenticated)
+        {
+            ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            _user = UserService.GetLiebUser(discordId);
+        }
     }
 }

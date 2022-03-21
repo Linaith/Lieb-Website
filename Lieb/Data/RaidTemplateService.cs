@@ -31,7 +31,7 @@ namespace Lieb.Data
                 .FirstOrDefault(t => t.RaidTemplateId == raidTemplateId);
         }
 
-        public async Task AddOrEditTemplate(RaidTemplate template)
+        public async Task AddOrEditTemplate(RaidTemplate template, List<PlannedRaidRole> rolesToDelete, List<RaidReminder> remindersToDelete)
         {
             if (template != null)
             {
@@ -39,39 +39,14 @@ namespace Lieb.Data
                 if (template.RaidTemplateId == 0)
                 {
                     context.RaidTemplates.Add(template);
-                    await context.SaveChangesAsync();
                 }
                 else
                 {
-                    RaidTemplate raidToChange = await context.RaidTemplates
-                        .Include(r => r.Roles)
-                        .Include(r => r.Reminders)
-                        .FirstOrDefaultAsync(r => r.RaidTemplateId == template.RaidTemplateId);
-                    raidToChange.Title = template.Title;
-                    raidToChange.Description = template.Description;
-                    raidToChange.Organizer = template.Organizer;
-                    raidToChange.Guild = template.Guild;
-                    raidToChange.VoiceChat = template.VoiceChat;
-                    raidToChange.RaidType = template.RaidType;
-                    raidToChange.RequiredRole = template.RequiredRole;
-                    raidToChange.DiscordChannelId = template.DiscordChannelId;
-                    raidToChange.DiscordGuildId = template.DiscordGuildId;
-                    raidToChange.StartTime = template.StartTime;
-                    raidToChange.EndTime = template.EndTime;
-                    raidToChange.FreeForAllTime = template.FreeForAllTime;
-                    raidToChange.TimeZone = template.TimeZone;
-                    raidToChange.Interval = template.Interval;
-                    raidToChange.CreateDaysBefore = template.CreateDaysBefore;
-
-                    context.PlannedRaidRoles.RemoveRange(raidToChange.Roles);
-                    context.RaidReminders.RemoveRange(raidToChange.Reminders);
-                    raidToChange.Roles.Clear();
-                    raidToChange.Reminders.Clear();
-                    raidToChange.Roles = template.Roles;
-                    raidToChange.Reminders = template.Reminders;
-
-                    await context.SaveChangesAsync();
+                    context.Update(template);
+                    context.PlannedRaidRoles.RemoveRange(rolesToDelete);
+                    context.RaidReminders.RemoveRange(remindersToDelete);
                 }
+                await context.SaveChangesAsync();
             }
         }
 

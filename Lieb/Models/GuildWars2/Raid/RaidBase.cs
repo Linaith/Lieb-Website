@@ -29,6 +29,10 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public string RequiredRole { get; set; } = String.Empty;
 
+        public bool MoveFlexUsers { get; set; } = true;
+
+        public int RaidOwnerId { get; set; }
+
         //role name, number of spots
         public ICollection<PlannedRaidRole> Roles { get; set; } = new HashSet<PlannedRaidRole>();
 

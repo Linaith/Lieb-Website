@@ -2,28 +2,28 @@
 {
     public static class Constants
     {
-
-
         public const string ClaimType = "Role";
+        public static readonly int RaidEditPowerLevel = Roles.Moderator.PowerLevel;
+
         public static class Roles
         {
-            public const string User = "User";
-            public const string RaidLead = "RaidLead";
-            public const string GuildLead = "GuildLead";
-            public const string Admin = "Admin";
+            public static readonly RoleConstant User = new RoleConstant("user", 20);
+            public static readonly RoleConstant RaidLead = new RoleConstant("RaidLead", 40);
+            public static readonly RoleConstant Moderator = new RoleConstant("Moderator", 70);
+            public static readonly RoleConstant Admin = new RoleConstant("Admin", 100);
+        }
 
-            public static List<string> GetAllRoles()
+        public class RoleConstant
+        {
+            public readonly string Name;
+            public readonly int PowerLevel;
+
+            public RoleConstant(string name, int powerLevel)
             {
-                return typeof(Roles).GetFields().Select(f => f.GetValue(f)).Cast<string>().ToList();
+                Name = name;
+                PowerLevel = powerLevel;
             }
         }
 
-        public static class RoleLevels
-        {
-            public const int UserLevel = 20;
-            public const int RaidLeadLevel = 55;
-            public const int GuildLeadLevel = 65;
-            public const int AdminLevel = 80;
-        }
     }
 }

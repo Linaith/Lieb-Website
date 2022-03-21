@@ -47,10 +47,17 @@ builder.Services.AddAuthentication(opt =>
 
 builder.Services.AddAuthorization(options =>
 {
-    foreach(string role in Constants.Roles.GetAllRoles())
-    {
-        options.AddPolicy(role, policy => policy.RequireClaim(Constants.ClaimType, role));
-    }
+    options.AddPolicy(Constants.Roles.User.Name, policy => policy.RequireClaim(Constants.ClaimType, new List<string>(){
+        Constants.Roles.User.Name, Constants.Roles.RaidLead.Name, Constants.Roles.Moderator.Name, Constants.Roles.Admin.Name}));
+
+    options.AddPolicy(Constants.Roles.RaidLead.Name, policy => policy.RequireClaim(Constants.ClaimType, new List<string>() { 
+        Constants.Roles.RaidLead.Name, Constants.Roles.Moderator.Name, Constants.Roles.Admin.Name }));
+
+    options.AddPolicy(Constants.Roles.Moderator.Name, policy => policy.RequireClaim(Constants.ClaimType, new List<string>() { 
+        Constants.Roles.Moderator.Name, Constants.Roles.Admin.Name }));
+
+    options.AddPolicy(Constants.Roles.Admin.Name, policy => policy.RequireClaim(Constants.ClaimType, new List<string>() { 
+        Constants.Roles.Admin.Name }));
 });
 
 

@@ -61,7 +61,7 @@ namespace Discord.OAuth2
             }
             else
             {
-                LiebRole standardRole = await _LiebDbcontext.LiebRoles.FirstOrDefaultAsync(m => m.RoleName == Constants.Roles.User);
+                LiebRole standardRole = await _LiebDbcontext.LiebRoles.FirstOrDefaultAsync(m => m.RoleName == Constants.Roles.User.Name);
                 string userName = context.Identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value;
                 LiebUser newUser = new LiebUser()
                 {
@@ -78,7 +78,7 @@ namespace Discord.OAuth2
                 _LiebDbcontext.RoleAssignments.Add(roleAssignment);
                 await _LiebDbcontext.SaveChangesAsync();
 
-                context.Identity.AddClaim(new Claim(Constants.ClaimType, Constants.Roles.User));
+                context.Identity.AddClaim(new Claim(Constants.ClaimType, Constants.Roles.User.Name));
             }
             return context;
         }

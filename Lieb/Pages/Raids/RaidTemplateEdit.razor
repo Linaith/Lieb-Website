@@ -4,16 +4,18 @@
 @using Lieb.Models
 @using Lieb.Models.GuildWars2.Raid
 @using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
 @inject RaidTemplateService RaidTemplateService
 @inject UserService UserService
 @inject TimeZoneService TimeZoneService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JsRuntime
 
 
 <h3>CreateRaid</h3>
 
-<AuthorizeView Policy="@Constants.Roles.RaidLead" Context="authorizationContext">
+<AuthorizeView Policy="@Constants.Roles.RaidLead.Name" Context="authorizationContext">
 <EditForm Model="@_template" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     @{
@@ -83,7 +85,7 @@
                 <option value="">Not Locked</option>
                 @foreach(LiebRole role in UserService.GetLiebRoles())
                 {
-                        if (!role.IsSystemRole)
+                        if (role.Type != RoleType.SystemRole)
                         {
                             <option value="@role.RoleName">@role.RoleName</option>
                         }
@@ -177,6 +179,7 @@
     public string raidId { get; set; }
 
     public RaidTemplate _template;
+    private LiebUser _user;
 
     private string _errorMessage = string.Empty;
 
@@ -186,19 +189,40 @@
     private DateTimeOffset _freeForAllDate = DateTime.Now.Date;
     private DateTimeOffset _freeForAllTime;
     private string _userTimeZone = string.Empty;
-
+    
+    private List<PlannedRaidRole> _rolesToDelete = new List<PlannedRaidRole>();
 
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState != null)
+        {
+            ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            _user = UserService.GetLiebUser(discordId);
+        }
+        if(_user == null)
+        {
+            NavigationManager.NavigateTo("");
+        }
+
         if(!string.IsNullOrEmpty(raidId) && int.TryParse(raidId, out int parsedId))
         {
             _template = RaidTemplateService.GetTemplate(parsedId);
-            _startTime = _template.StartTime;
-            _endTime = _template.EndTime;
-            _raidDate = _startTime.Date;
-            _freeForAllTime = _template.FreeForAllTime;
-            _freeForAllDate = _freeForAllTime.Date;
+
+            if (_template != null && (_template.RaidOwnerId == _user.LiebUserId 
+                || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel))
+            {
+                _startTime = _template.StartTime;
+                _endTime = _template.EndTime;
+                _raidDate = _startTime.Date;
+                _freeForAllTime = _template.FreeForAllTime;
+                _freeForAllDate = _freeForAllTime.Date;
+            }
+            else
+            {
+            _template = new RaidTemplate();
+            }
         }
         else
         {
@@ -215,6 +239,10 @@
 
     async Task DeleteRoleClicked(PlannedRaidRole role)
     {
+        if(role.PlannedRaidRoleId != 0)
+        {
+            _rolesToDelete.Add(role);
+        }
         _template.Roles.Remove(role);
     }
 
@@ -260,7 +288,12 @@
         }
         _template.FreeForAllTime = _freeForAllDate.Date + _freeForAllTime.TimeOfDay;
 
-        await RaidTemplateService.AddOrEditTemplate(_template);
+        if (_template.RaidOwnerId == 0)
+        {
+            _template.RaidOwnerId = _user.LiebUserId;
+        }
+
+        await RaidTemplateService.AddOrEditTemplate(_template, _rolesToDelete, new List<RaidReminder>());
         NavigationManager.NavigateTo("raidtemplateoverview");
     }
 }

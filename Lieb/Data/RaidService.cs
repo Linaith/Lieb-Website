@@ -45,7 +45,7 @@ namespace Lieb.Data
                 .FirstOrDefault(r => r.RaidId == raidId);
         }
 
-        public async Task AddOrEditRaid(Raid raid)
+        public async Task AddOrEditRaid(Raid raid, List<PlannedRaidRole> rolesToDelete, List<RaidReminder> remindersToDelete)
         {
             if (raid != null)
             {
@@ -57,54 +57,26 @@ namespace Lieb.Data
                 }
                 else
                 {
-                    Raid? raidToChange = await context.Raids
-                        .Include(r => r.Roles)
-                        .Include(r => r.SignUpHistory)
-                        .Include(r => r.Reminders)
-                        .Include(r => r.SignUps)
-                        .FirstOrDefaultAsync(r => r.RaidId == raid.RaidId);
-                    if (raidToChange != null)
+                    context.Update(raid);
+                    context.PlannedRaidRoles.RemoveRange(rolesToDelete);
+                    context.RaidReminders.RemoveRange(remindersToDelete);
+
+                    //move users back to "Random" role
+                    if (raid.RaidType != RaidType.Planned)
                     {
-                        raidToChange.Title = raid.Title;
-                        raidToChange.Description = raid.Description;
-                        raidToChange.StartTimeUTC = raid.StartTimeUTC;
-                        raidToChange.EndTimeUTC = raid.EndTimeUTC;
-                        raidToChange.Organizer = raid.Organizer;
-                        raidToChange.Guild = raid.Guild;
-                        raidToChange.VoiceChat = raid.VoiceChat;
-                        raidToChange.RaidType = raid.RaidType;
-                        raidToChange.RequiredRole = raid.RequiredRole;
-                        raidToChange.FreeForAllTimeUTC = raid.FreeForAllTimeUTC;
-                        raidToChange.DiscordMessageId = raid.DiscordMessageId;
-                        raidToChange.DiscordChannelId = raid.DiscordChannelId;
-                        raidToChange.DiscordGuildId = raid.DiscordGuildId;
-
-                        if (raidToChange.RaidType == RaidType.Planned)
+                        int randomRoleId = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole).PlannedRaidRoleId;
+                        foreach (RaidSignUp signUp in raid.SignUps)
                         {
-                            EditRoles(raidToChange, raid, context);
-                        }
-                        else
-                        {
-                            if(!raidToChange.Roles.Where(r => r.IsRandomSignUpRole).Any())
+                            if (randomRoleId == 0)
                             {
-                                raidToChange.Roles.Add(raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole));
+                                signUp.PlannedRaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
                             }
-                            int randomRoleId = raidToChange.Roles.FirstOrDefault(r => r.IsRandomSignUpRole).PlannedRaidRoleId;
-                            foreach (RaidSignUp signUp in raidToChange.SignUps)
+                            else
                             {
-                                if (randomRoleId == 0)
-                                {
-                                    signUp.PlannedRaidRole = raidToChange.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
-                                }
-                                else
-                                {
-                                    signUp.PlannedRaidRoleId = randomRoleId;
-                                }
+                                signUp.PlannedRaidRoleId = randomRoleId;
                             }
-                            context.PlannedRaidRoles.RemoveRange(raidToChange.Roles.Where(r => !r.IsRandomSignUpRole));
                         }
-
-                        EditReminders(raidToChange, raid, context);
+                        context.PlannedRaidRoles.RemoveRange(raid.Roles.Where(r => !r.IsRandomSignUpRole));
                     }
 
                     await context.SaveChangesAsync();
@@ -112,65 +84,7 @@ namespace Lieb.Data
             }
         }
 
-        private void EditRoles(Raid raidToEdit, Raid raid, LiebContext context)
-        {
-            List<PlannedRaidRole> rolesToRemove = new List<PlannedRaidRole>();
-            foreach (PlannedRaidRole role in raidToEdit.Roles)
-            {
-                PlannedRaidRole? newRole = raid.Roles.FirstOrDefault(r => r.PlannedRaidRoleId == role.PlannedRaidRoleId);
-                if (newRole != null)
-                {
-                    role.Spots = newRole.Spots;
-                    role.Name = newRole.Name;
-                    role.Description = newRole.Description;
-                }
-                else
-                {
-                    rolesToRemove.Add(role);
-                }
-            }
-            foreach (PlannedRaidRole role in rolesToRemove)
-            {
-                raidToEdit.Roles.Remove(role);
-                context.PlannedRaidRoles.Remove(role);
-            }
-            foreach (PlannedRaidRole role in raid.Roles.Where(r => r.PlannedRaidRoleId == 0))
-            {
-                raidToEdit.Roles.Add(role);
-            }
-        }
-
-        private void EditReminders(Raid raidToEdit, Raid raid, LiebContext context)
-        {
-            List<RaidReminder> reminderToRemove = new List<RaidReminder>();
-            foreach (RaidReminder reminder in raidToEdit.Reminders)
-            {
-                RaidReminder? newReminder = raid.Reminders.FirstOrDefault(r => r.RaidReminderId == reminder.RaidReminderId);
-                if (newReminder != null)
-                {
-                    reminder.Type = newReminder.Type;
-                    reminder.Message = newReminder.Message;
-                    reminder.HoursBeforeRaid = newReminder.HoursBeforeRaid;
-                    reminder.ChannelId = newReminder.ChannelId;
-                    reminder.Sent = newReminder.Sent;
-                }
-                else
-                {
-                    reminderToRemove.Add(reminder);
-                }
-            }
-            foreach (RaidReminder reminder in reminderToRemove)
-            {
-                raidToEdit.Reminders.Remove(reminder);
-                context.RaidReminders.Remove(reminder);
-            }
-            foreach (PlannedRaidRole role in raid.Roles.Where(r => r.PlannedRaidRoleId == 0))
-            {
-                raidToEdit.Roles.Add(role);
-            }
-        }
-
-            public async Task DeleteRaid(int raidId)
+        public async Task DeleteRaid(int raidId)
         {
             using var context = _contextFactory.CreateDbContext();
             Raid raid = GetRaid(raidId);
@@ -310,14 +224,14 @@ namespace Lieb.Data
 
             if (raid.RaidType == RaidType.Planned)
             {
-                //if (raid.MoveFlexAllowed)
+                if (raid.MoveFlexUsers)
                 {
                     return IsRoleSignUpAllowed(raid, liebUserId, plannedRoleId, signUpType, moveFlexUser, new List<int>()).Result;
                 }
-                //else
-                //{
-                //    return IsRoleSignUpAllowed(liebUserId, plannedRoleId, signUpType);
-                //}
+                else
+                {
+                    return IsRoleSignUpAllowed(liebUserId, plannedRoleId, signUpType);
+                }
             }
             else
             {

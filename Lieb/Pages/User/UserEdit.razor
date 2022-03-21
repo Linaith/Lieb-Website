@@ -17,7 +17,7 @@
     <ValidationSummary />
     
             
-    <AuthorizeView Policy="@Constants.Roles.Admin" Context="authorizationContext">
+    <AuthorizeView Policy="@Constants.Roles.Admin.Name" Context="authorizationContext">
         <Authorized>
             <p>@_submitMessage</p>
             <p>
@@ -44,21 +44,18 @@
     <tr>
         <th></th>
         <th>Role</th>
-        <th>IsSystemRole</th>
+        <th>Type</th>
     </tr>
     @foreach (LiebRole role in _roles)
     {
         <tr>
             @{
                 bool hasRole = _user.RoleAssignments.Where(a => a.LiebRoleId == role.LiebRoleId).Any();
-                bool disabled = _editingUserRights < role.LevelToAssign;
+                bool disabled = _editingUserRights < role.LevelToAssign || role.Type == RoleType.GuildRole;
                 }
             <td><input type="checkbox" disabled="@disabled" checked="@hasRole" @onchange="args => RoleStatusChanged(role, args)" /></td>
             <td>@role.RoleName</td>
-            @if(@role.IsSystemRole)
-            {
-                <td>True</td>
-            }
+            <td>@role.Type.ToString()</td>
         </tr>
     }
 </table> 

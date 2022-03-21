@@ -70,7 +70,7 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
         ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
-        _user = UserService.GetLiebUserSmall(discordId);
+        _user = UserService.GetLiebUserGW2AccountOnly(discordId);
     }
 
 

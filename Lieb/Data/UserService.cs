@@ -55,7 +55,7 @@ namespace Lieb.Data
                 .FirstOrDefault(u => u.LiebUserId == userId);
         }
 
-        public LiebUser GetLiebUserSmall(ulong discordId)
+        public LiebUser GetLiebUserGW2AccountOnly(ulong discordId)
         {
             if (discordId > 0)
             {
@@ -69,7 +69,7 @@ namespace Lieb.Data
                 return new LiebUser();
         }
 
-        public LiebUser GetLiebUserSmall(int userId)
+        public LiebUser GetLiebGW2AccountOnly(int userId)
         {
             using var context = _contextFactory.CreateDbContext();
             return context.LiebUsers
@@ -143,6 +143,36 @@ namespace Lieb.Data
                 user.RoleAssignments.Remove(assignmentToRemove);
             }
             await context.SaveChangesAsync();
+        }
+
+        public int GetPowerLevel(int userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser? user = context.LiebUsers
+                .Include(u => u.RoleAssignments)
+                .ThenInclude(r => r.LiebRole)
+                .AsNoTracking()
+                .FirstOrDefault(u => u.LiebUserId == userId);
+            if (user != null)
+            {
+                return user.RoleAssignments.Max(a => a.LiebRole.Level);
+            }
+            return 0;
+        }
+
+        public int GetPowerLevel(ulong discordId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser? user = context.LiebUsers
+                .Include(u => u.RoleAssignments)
+                .ThenInclude(r => r.LiebRole)
+                .AsNoTracking()
+                .FirstOrDefault(u => u.DiscordUserId == discordId);
+            if (user != null)
+            {
+                return user.RoleAssignments.Max(a => a.LiebRole.Level);
+            }
+            return 0;
         }
 
         public List<LiebRole> GetLiebRoles()

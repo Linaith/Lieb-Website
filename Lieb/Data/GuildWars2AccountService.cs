@@ -34,22 +34,12 @@ namespace Lieb.Data
                     {
                         user.GuildWars2Accounts.Add(account);
                     }
-                    await context.SaveChangesAsync();
                 }
                 else
                 {
-                    GuildWars2Account? accountToChange = context.GuildWars2Accounts
-                        .Include(a => a.EquippedBuilds)
-                        .FirstOrDefault(a => a.GuildWars2AccountId == account.GuildWars2AccountId);
-
-                    if (accountToChange != null)
-                    {
-                        accountToChange.AccountName = account.AccountName;
-                        accountToChange.ApiKey = account.ApiKey;
-
-                        await context.SaveChangesAsync();
-                    }
+                    context.Update(account);
                 }
+                await context.SaveChangesAsync();
             }
         }
 

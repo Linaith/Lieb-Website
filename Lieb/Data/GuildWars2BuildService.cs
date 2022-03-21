@@ -20,26 +20,12 @@ namespace Lieb.Data
                 if (build.GuildWars2BuildId == 0)
                 {
                     context.GuildWars2Builds.Add(build);
-                    await context.SaveChangesAsync();
                 }
                 else
                 {
-                    GuildWars2Build? buildToChange = await context.GuildWars2Builds
-                        .FirstOrDefaultAsync(r => r.GuildWars2BuildId == build.GuildWars2BuildId);
-
-                    if (buildToChange != null)
-                    {
-                        buildToChange.BuildName = build.BuildName;
-                        buildToChange.Might = build.Might;
-                        buildToChange.Quickness = build.Quickness;
-                        buildToChange.Alacrity = build.Alacrity;
-                        buildToChange.Heal = build.Heal;
-                        buildToChange.Class = build.Class;
-                        buildToChange.EliteSpecialization = build.EliteSpecialization;
-
-                        await context.SaveChangesAsync();
-                    }
+                    context.Update(build);
                 }
+                await context.SaveChangesAsync();
             }
         }
 

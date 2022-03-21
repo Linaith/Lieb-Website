@@ -4,16 +4,18 @@
 @using Lieb.Models
 @using Lieb.Models.GuildWars2.Raid
 @using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
 @inject RaidService RaidService
 @inject UserService UserService
 @inject TimeZoneService TimeZoneService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JsRuntime
 
 
 <h3>CreateRaid</h3>
 
-<AuthorizeView Policy="@Constants.Roles.RaidLead" Context="authorizationContext">
+<AuthorizeView Policy="@Constants.Roles.RaidLead.Name" Context="authorizationContext">
 <EditForm Model="@_raid" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     @{
@@ -70,7 +72,7 @@
                 <option value="">Not Locked</option>
                 @foreach(LiebRole role in UserService.GetLiebRoles())
                 {
-                        if (!role.IsSystemRole)
+                        if (role.Type != RoleType.SystemRole)
                         {
                             <option value="@role.RoleName">@role.RoleName</option>
                         }
@@ -151,11 +153,11 @@
 </AuthorizeView>
 
 @code {
-
     [Parameter]
     public string raidId { get; set; }
 
     public Raid _raid;
+    private LiebUser _user;
 
     private string _errorMessage = string.Empty;
 
@@ -165,18 +167,40 @@
     private DateTimeOffset _freeForAllDate = DateTime.Now.Date;
     private DateTimeOffset _freeForAllTime;
 
+    private List<PlannedRaidRole> _rolesToDelete = new List<PlannedRaidRole>();
+
 
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState != null)
+        {
+            ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            _user = UserService.GetLiebUser(discordId);
+        }
+        if(_user == null)
+        {
+            NavigationManager.NavigateTo("");
+        }
+
         if(!string.IsNullOrEmpty(raidId) && int.TryParse(raidId, out int parsedId))
         {
             _raid = RaidService.GetRaid(parsedId);
-            _startTime = await TimeZoneService.GetLocalDateTime(_raid.StartTimeUTC);
-            _endTime = await TimeZoneService.GetLocalDateTime(_raid.EndTimeUTC);
-            _raidDate = _startTime.Date;
-            _freeForAllTime = await TimeZoneService.GetLocalDateTime(_raid.FreeForAllTimeUTC);
-            _freeForAllDate = _freeForAllTime.Date;
+
+            if (_raid != null && (_raid.RaidOwnerId == _user.LiebUserId 
+                || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel))
+            {
+                _startTime = await TimeZoneService.GetLocalDateTime(_raid.StartTimeUTC);
+                _endTime = await TimeZoneService.GetLocalDateTime(_raid.EndTimeUTC);
+                _raidDate = _startTime.Date;
+                _freeForAllTime = await TimeZoneService.GetLocalDateTime(_raid.FreeForAllTimeUTC);
+                _freeForAllDate = _freeForAllTime.Date;
+            }
+            else
+            {
+                _raid = new Raid();
+            }
         }
         else
         {
@@ -192,6 +216,10 @@
 
     async Task DeleteRoleClicked(PlannedRaidRole role)
     {
+        if(role.PlannedRaidRoleId != 0)
+        {
+            _rolesToDelete.Add(role);
+        }
         _raid.Roles.Remove(role);
     }
 
@@ -209,7 +237,7 @@
     {
         if(_raid.RaidType != RaidType.Planned)
         {
-            PlannedRaidRole role = _raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
+            PlannedRaidRole? role = _raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
             int randomRoleId = role != null ? role.PlannedRaidRoleId : 0;
             _raid.Roles.Clear();
             _raid.Roles.Add(new PlannedRaidRole()
@@ -228,8 +256,6 @@
             return;
         }
 
-        //_raid.TimeZone = await TimeZoneService.GetUserTimeZone();
-
         _raid.StartTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date + _startTime.TimeOfDay);
         if(_startTime.TimeOfDay > _endTime.TimeOfDay)
         {
@@ -241,7 +267,12 @@
         }
         _raid.FreeForAllTimeUTC = await TimeZoneService.GetUTCDateTime(_freeForAllDate.Date + _freeForAllTime.TimeOfDay);
 
-        await RaidService.AddOrEditRaid(_raid);
+        if (_raid.RaidOwnerId == 0)
+        {
+            _raid.RaidOwnerId = _user.LiebUserId;
+        }
+
+        await RaidService.AddOrEditRaid(_raid, _rolesToDelete, new List<RaidReminder>());
         NavigationManager.NavigateTo("raidoverview");
     }
 }

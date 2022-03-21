@@ -5,6 +5,7 @@
 @inject UserService UserService
 @inject RaidService RaidService
 @inject TimeZoneService TimeZoneService
+@inject NavigationManager NavigationManager
 @inject RaidRandomizerService RaidRandomizerService
 
 <body>
@@ -58,21 +59,27 @@
 </div>
 
         
-<AuthorizeView Policy="@Constants.Roles.RaidLead">
-    <div class="nav-item px-3">
-        @{string navLink = $"raidtemplateedit/{_template.RaidTemplateId}";}
-        <NavLink class="nav-link" href="@navLink">
-            <span class="oi oi-plus" aria-hidden="true"></span> Edit
-        </NavLink>
-    </div>
+<AuthorizeView>
+    @if (_template.RaidOwnerId == _user.LiebUserId || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel)
+    {
+        <button class="controlButton raidButton" @onclick="() => EditClicked()">Edit</button>
+    }
 </AuthorizeView>
 </body>
 
 @code {
     [Parameter]
     public RaidTemplate _template { get; set; }
+    
+    [Parameter]
+    public LiebUser? _user { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
+    }
+
+    async Task EditClicked()
+    {
+        NavigationManager.NavigateTo($"raidtemplateedit/{_template.RaidTemplateId}");
     }
 }

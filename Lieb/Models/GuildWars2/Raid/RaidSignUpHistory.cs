@@ -1,8 +1,8 @@
 ﻿namespace Lieb.Models.GuildWars2.Raid
 {
-    public class SignUpHistory
+    public class RaidSignUpHistory
     {
-        public int SignUpHistoryId { get; set; }
+        public int RaidSignUpHistoryId { get; set; }
 
         public string UserName { get; set; } = string.Empty;
 

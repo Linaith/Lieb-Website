@@ -60,7 +60,7 @@ namespace Lieb.Data
                 {
                     possibleClasses.Add(build.GuildWars2Build.Class);
                 }
-                PlannedRaidRole role = new PlannedRaidRole();
+                RaidRole role = new RaidRole();
                 role.Spots = 0;
                 if (possibleClasses.Count > 0)
                 {
@@ -84,7 +84,7 @@ namespace Lieb.Data
                 {
                     possibleEliteSpecs.Add(build.GuildWars2Build.EliteSpecialization);
                 }
-                PlannedRaidRole role = new PlannedRaidRole();
+                RaidRole role = new RaidRole();
                 role.Spots = 0;
                 if (possibleEliteSpecs.Count > 0)
                 {
@@ -112,7 +112,7 @@ namespace Lieb.Data
             BalanceRoles(raid, signedUpUsers);
             foreach(var userBuild in signedUpUsers)
             {
-                PlannedRaidRole role = new PlannedRaidRole();
+                RaidRole role = new RaidRole();
                 role.Spots = 0;
                 role.Name = userBuild.Value.BuildName;
                 raid.Roles.Add(role);
@@ -326,19 +326,19 @@ namespace Lieb.Data
 
         private void CleanUpRoles(Raid raid, LiebContext context)
         {
-            List<PlannedRaidRole> rolesToDelete = new List<PlannedRaidRole>();
-            foreach (PlannedRaidRole role in raid.Roles)
+            List<RaidRole> rolesToDelete = new List<RaidRole>();
+            foreach (RaidRole role in raid.Roles)
             {
-                if (!role.IsRandomSignUpRole && raid.SignUps.FirstOrDefault(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId) == null)
+                if (!role.IsRandomSignUpRole && raid.SignUps.FirstOrDefault(s => s.PlannedRaidRoleId == role.RaidRoleId) == null)
                 {
                     rolesToDelete.Add(role);
                 }
             }
-            foreach (PlannedRaidRole role in rolesToDelete)
+            foreach (RaidRole role in rolesToDelete)
             {
                 raid.Roles.Remove(role);
             }
-            context.PlannedRaidRoles.RemoveRange(rolesToDelete);
+            context.RaidRoles.RemoveRange(rolesToDelete);
         }
 
     }

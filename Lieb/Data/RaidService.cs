@@ -45,7 +45,7 @@ namespace Lieb.Data
                 .FirstOrDefault(r => r.RaidId == raidId);
         }
 
-        public async Task AddOrEditRaid(Raid raid, List<PlannedRaidRole> rolesToDelete, List<RaidReminder> remindersToDelete)
+        public async Task AddOrEditRaid(Raid raid, List<RaidRole> rolesToDelete, List<RaidReminder> remindersToDelete)
         {
             if (raid != null)
             {
@@ -58,25 +58,18 @@ namespace Lieb.Data
                 else
                 {
                     context.Update(raid);
-                    context.PlannedRaidRoles.RemoveRange(rolesToDelete);
+                    context.RaidRoles.RemoveRange(rolesToDelete);
                     context.RaidReminders.RemoveRange(remindersToDelete);
 
                     //move users back to "Random" role
                     if (raid.RaidType != RaidType.Planned)
                     {
-                        int randomRoleId = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole).PlannedRaidRoleId;
+                        RaidRole randomRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
                         foreach (RaidSignUp signUp in raid.SignUps)
                         {
-                            if (randomRoleId == 0)
-                            {
-                                signUp.PlannedRaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
-                            }
-                            else
-                            {
-                                signUp.PlannedRaidRoleId = randomRoleId;
-                            }
+                            signUp.PlannedRaidRole = randomRole;
                         }
-                        context.PlannedRaidRoles.RemoveRange(raid.Roles.Where(r => !r.IsRandomSignUpRole));
+                        context.RaidRoles.RemoveRange(raid.Roles.Where(r => !r.IsRandomSignUpRole));
                     }
 
                     await context.SaveChangesAsync();
@@ -89,8 +82,8 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             Raid raid = GetRaid(raidId);
             context.RaidSignUps.RemoveRange(raid.SignUps);
-            context.PlannedRaidRoles.RemoveRange(raid.Roles);
-            context.SignUpHistories.RemoveRange(raid.SignUpHistory);
+            context.RaidRoles.RemoveRange(raid.Roles);
+            context.RaidSignUpHistories.RemoveRange(raid.SignUpHistory);
             context.RaidReminders.RemoveRange(raid.Reminders);
             await context.SaveChangesAsync();
             context.Raids.Remove(raid);
@@ -141,7 +134,7 @@ namespace Lieb.Data
                 Raid? raid = context.Raids.Include(r => r.Roles).FirstOrDefault(r => r.RaidId == raidId);
                 if(raid != null && raid.RaidType != RaidType.Planned && !signUp.PlannedRaidRole.IsRandomSignUpRole)
                 {
-                    context.PlannedRaidRoles.Remove(signUp.PlannedRaidRole);
+                    context.RaidRoles.Remove(signUp.PlannedRaidRole);
                     signUp.PlannedRaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
                 }
             }
@@ -200,8 +193,8 @@ namespace Lieb.Data
 
             List<RaidSignUp> signUps = context.RaidSignUps.Where(s => s.PlannedRaidRoleId == plannedRoleId).ToList();
 
-            PlannedRaidRole? role = context.PlannedRaidRoles
-            .FirstOrDefault(r => r.PlannedRaidRoleId == plannedRoleId);
+            RaidRole? role = context.RaidRoles
+            .FirstOrDefault(r => r.RaidRoleId == plannedRoleId);
 
             if (role == null)
                 return false;
@@ -235,9 +228,9 @@ namespace Lieb.Data
             }
             else
             {
-                PlannedRaidRole? role = context.PlannedRaidRoles
+                RaidRole? role = context.RaidRoles
                     .AsNoTracking()
-                    .FirstOrDefault(r => r.PlannedRaidRoleId == plannedRoleId);
+                    .FirstOrDefault(r => r.RaidRoleId == plannedRoleId);
                 if(role == null) return false;
                 if (role.IsRandomSignUpRole)
                 {

@@ -151,7 +151,7 @@
                     <th>Role name</th>
                     <th>Description</th>
                 </tr>
-                @foreach( PlannedRaidRole role in _template.Roles)
+                @foreach( RaidRole role in _template.Roles)
                 {
                     <tr>
                         <td><InputNumber @bind-Value="role.Spots" /></td>
@@ -190,7 +190,7 @@
     private DateTimeOffset _freeForAllTime;
     private string _userTimeZone = string.Empty;
     
-    private List<PlannedRaidRole> _rolesToDelete = new List<PlannedRaidRole>();
+    private List<RaidRole> _rolesToDelete = new List<RaidRole>();
 
 
     protected override async Task OnInitializedAsync()
@@ -233,13 +233,13 @@
 
     async Task AddRoleClicked()
     {
-        _template.Roles.Add(new PlannedRaidRole());
+        _template.Roles.Add(new RaidRole());
     }
 
 
-    async Task DeleteRoleClicked(PlannedRaidRole role)
+    async Task DeleteRoleClicked(RaidRole role)
     {
-        if(role.PlannedRaidRoleId != 0)
+        if(role.RaidRoleId != 0)
         {
             _rolesToDelete.Add(role);
         }
@@ -261,7 +261,7 @@
         if(_template.RaidType != RaidType.Planned)
         {
             _template.Roles.Clear();
-            _template.Roles.Add(new PlannedRaidRole()
+            _template.Roles.Add(new RaidRole()
                 {
                     Spots = 10,
                     Name = "Random",

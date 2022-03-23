@@ -2,9 +2,9 @@
 
 namespace Lieb.Models.GuildWars2.Raid
 {
-    public class PlannedRaidRole
+    public class RaidRole
     {
-        public int PlannedRaidRoleId { get; set; }
+        public int RaidRoleId { get; set; }
         public int Spots { get; set; }
 
         [Required]

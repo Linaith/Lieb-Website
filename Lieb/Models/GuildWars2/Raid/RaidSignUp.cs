@@ -23,6 +23,6 @@
         public Raid Raid { get; set; }
         public LiebUser LiebUser { get; set; }
         public GuildWars2Account GuildWars2Account { get; set; }
-        public PlannedRaidRole PlannedRaidRole { get; set; }
+        public RaidRole PlannedRaidRole { get; set; }
     }
 }

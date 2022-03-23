@@ -126,9 +126,9 @@
                     <th>Role name</th>
                     <th>Description</th>
                 </tr>
-                @foreach( PlannedRaidRole role in _raid.Roles)
+                @foreach( RaidRole role in _raid.Roles)
                 {
-                    bool disableEdit = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.PlannedRaidRoleId).Any();
+                    bool disableEdit = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.RaidRoleId).Any();
                     <tr>
                         <td><InputNumber @bind-Value="role.Spots" disabled="@disableEdit" /></td>
                         <td><InputText @bind-Value="role.Name" disabled="@disableEdit"  /></td>
@@ -167,7 +167,7 @@
     private DateTimeOffset _freeForAllDate = DateTime.Now.Date;
     private DateTimeOffset _freeForAllTime;
 
-    private List<PlannedRaidRole> _rolesToDelete = new List<PlannedRaidRole>();
+    private List<RaidRole> _rolesToDelete = new List<RaidRole>();
 
 
 
@@ -210,13 +210,13 @@
 
     async Task AddRoleClicked()
     {
-        _raid.Roles.Add(new PlannedRaidRole());
+        _raid.Roles.Add(new RaidRole());
     }
 
 
-    async Task DeleteRoleClicked(PlannedRaidRole role)
+    async Task DeleteRoleClicked(RaidRole role)
     {
-        if(role.PlannedRaidRoleId != 0)
+        if(role.RaidRoleId != 0)
         {
             _rolesToDelete.Add(role);
         }
@@ -237,17 +237,21 @@
     {
         if(_raid.RaidType != RaidType.Planned)
         {
-            PlannedRaidRole? role = _raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
-            int randomRoleId = role != null ? role.PlannedRaidRoleId : 0;
-            _raid.Roles.Clear();
-            _raid.Roles.Add(new PlannedRaidRole()
+            if(!_raid.Roles.Where(r => r.IsRandomSignUpRole).Any())
+            {
+                _raid.Roles.Add(new RaidRole()
                 {
                     Spots = 10,
                     Name = "Random",
                     Description = _raid.RaidType.ToString(),
-                    IsRandomSignUpRole = true,
-                    PlannedRaidRoleId = randomRoleId
+                    IsRandomSignUpRole = true
                 });
+            }
+
+            foreach(RaidRole role in _raid.Roles.Where(r => !r.IsRandomSignUpRole))
+            {
+                _rolesToDelete.Add(role);
+            }
         }
 
         if(_raid.Roles.Count == 0)

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Lieb.Data
+namespace Lieb.Controllers
 {
     [Route("[controller]/[action]")] // Microsoft.AspNetCore.Mvc.Route
     public class AccountController : ControllerBase

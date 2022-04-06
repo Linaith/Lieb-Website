@@ -25,7 +25,7 @@ namespace Lieb.Data
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.GuildWars2Account)
                 .Include(r => r.SignUps)
-                .ThenInclude(s => s.PlannedRaidRole)
+                .ThenInclude(s => s.RaidRole)
                 .ToList();
         }
 
@@ -41,7 +41,7 @@ namespace Lieb.Data
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.GuildWars2Account)
                 .Include(r => r.SignUps)
-                .ThenInclude(s => s.PlannedRaidRole)
+                .ThenInclude(s => s.RaidRole)
                 .FirstOrDefault(r => r.RaidId == raidId);
         }
 
@@ -67,7 +67,7 @@ namespace Lieb.Data
                         RaidRole randomRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
                         foreach (RaidSignUp signUp in raid.SignUps)
                         {
-                            signUp.PlannedRaidRole = randomRole;
+                            signUp.RaidRole = randomRole;
                         }
                         context.RaidRoles.RemoveRange(raid.Roles.Where(r => !r.IsRandomSignUpRole));
                     }
@@ -103,14 +103,14 @@ namespace Lieb.Data
             {
                 ChangeSignUpType(raidId, liebUserId, plannedRoleId, signUpType);
             }
-            else if (!signUps.Where(r => r.PlannedRaidRoleId == plannedRoleId).Any())
+            else if (!signUps.Where(r => r.RaidRoleId == plannedRoleId).Any())
             {
                 context.RaidSignUps.Add(new RaidSignUp()
                 {
                     GuildWars2AccountId = guildWars2AccountId,
                     RaidId = raidId,
                     LiebUserId = liebUserId,
-                    PlannedRaidRoleId = plannedRoleId,
+                    RaidRoleId = plannedRoleId,
                     SignUpType = signUpType
                 });
                 await context.SaveChangesAsync();
@@ -132,10 +132,10 @@ namespace Lieb.Data
 
                 //change and delete Role for Random Raids
                 Raid? raid = context.Raids.Include(r => r.Roles).FirstOrDefault(r => r.RaidId == raidId);
-                if(raid != null && raid.RaidType != RaidType.Planned && !signUp.PlannedRaidRole.IsRandomSignUpRole)
+                if(raid != null && raid.RaidType != RaidType.Planned && !signUp.RaidRole.IsRandomSignUpRole)
                 {
-                    context.RaidRoles.Remove(signUp.PlannedRaidRole);
-                    signUp.PlannedRaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
+                    context.RaidRoles.Remove(signUp.RaidRole);
+                    signUp.RaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
                 }
             }
 
@@ -165,18 +165,18 @@ namespace Lieb.Data
             List<RaidSignUp> signUps = context.RaidSignUps.Where(x => x.RaidId == raidId && x.LiebUserId == liebUserId).ToList();
 
             RaidSignUp? signUp = signUps.FirstOrDefault(x => x.SignUpType != SignUpType.Flex);
-            RaidSignUp? flexSignUp = signUps.FirstOrDefault(x => x.SignUpType == SignUpType.Flex && x.PlannedRaidRoleId == plannedRoleId);
+            RaidSignUp? flexSignUp = signUps.FirstOrDefault(x => x.SignUpType == SignUpType.Flex && x.RaidRoleId == plannedRoleId);
 
             //change Flex to current role
             if (flexSignUp != null && signUp != null)
             {
-                flexSignUp.PlannedRaidRoleId = signUp.PlannedRaidRoleId;
+                flexSignUp.RaidRoleId = signUp.RaidRoleId;
             }
 
             //change to new role
             if (signUp != null)
             {
-                signUp.PlannedRaidRoleId = plannedRoleId;
+                signUp.RaidRoleId = plannedRoleId;
                 signUp.SignUpType = signUpType;
             }
             context.SaveChanges();
@@ -191,7 +191,7 @@ namespace Lieb.Data
 
             using var context = _contextFactory.CreateDbContext();
 
-            List<RaidSignUp> signUps = context.RaidSignUps.Where(s => s.PlannedRaidRoleId == plannedRoleId).ToList();
+            List<RaidSignUp> signUps = context.RaidSignUps.Where(s => s.RaidRoleId == plannedRoleId).ToList();
 
             RaidRole? role = context.RaidRoles
             .FirstOrDefault(r => r.RaidRoleId == plannedRoleId);
@@ -237,9 +237,9 @@ namespace Lieb.Data
                     // new sign up is available if there are free spots and the user is not signed up or still in the random role
                     RaidSignUp? signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == liebUserId);
                     return raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() < role.Spots
-                        && (signUp == null || signUp.PlannedRaidRoleId == plannedRoleId || signUp.SignUpType == SignUpType.SignedOff);
+                        && (signUp == null || signUp.RaidRoleId == plannedRoleId || signUp.SignUpType == SignUpType.SignedOff);
                 }
-                return raid.SignUps.Where(s => s.LiebUserId == liebUserId && s.PlannedRaidRoleId == plannedRoleId).Any();
+                return raid.SignUps.Where(s => s.LiebUserId == liebUserId && s.RaidRoleId == plannedRoleId).Any();
             }
         }
 
@@ -257,16 +257,16 @@ namespace Lieb.Data
                 return false;
             }
 
-            foreach (int userId in raid.SignUps.Where(s => s.PlannedRaidRoleId == plannedRoleId && s.SignUpType == SignUpType.SignedUp).Select(s => s.LiebUserId))
+            foreach (int userId in raid.SignUps.Where(s => s.RaidRoleId == plannedRoleId && s.SignUpType == SignUpType.SignedUp).Select(s => s.LiebUserId))
             {
                 foreach (RaidSignUp signUp in raid.SignUps.Where(s => s.LiebUserId == userId && s.SignUpType == SignUpType.Flex))
                 {
-                    if (!checkedRoleIds.Contains(signUp.PlannedRaidRoleId)
-                        && await IsRoleSignUpAllowed(raid, userId, signUp.PlannedRaidRoleId, SignUpType.SignedUp, moveFlexUser, checkedRoleIds))
+                    if (!checkedRoleIds.Contains(signUp.RaidRoleId)
+                        && await IsRoleSignUpAllowed(raid, userId, signUp.RaidRoleId, SignUpType.SignedUp, moveFlexUser, checkedRoleIds))
                     {
                         if (moveFlexUser)
                         {
-                            ChangeSignUpType(raid.RaidId, userId, signUp.PlannedRaidRoleId, SignUpType.SignedUp);
+                            ChangeSignUpType(raid.RaidId, userId, signUp.RaidRoleId, SignUpType.SignedUp);
                         }
                         return true;
                     }

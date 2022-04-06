@@ -8,7 +8,7 @@
 @inject IJSRuntime JsRuntime
 
 
-<h3>BuildEdit</h3>
+<h3>Build Edit</h3>
 
 <AuthorizeView Policy="@Constants.Roles.Admin.Name" Context="authorizationContext">
     <EditForm Model="@_build" OnValidSubmit="@HandleValidSubmit">

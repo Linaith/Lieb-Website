@@ -13,7 +13,7 @@
 @inject IJSRuntime JsRuntime
 
 
-<h3>CreateRaid</h3>
+<h3>Create Raid</h3>
 
 <AuthorizeView Policy="@Constants.Roles.RaidLead.Name" Context="authorizationContext">
 <EditForm Model="@_raid" OnValidSubmit="@HandleValidSubmit">
@@ -128,7 +128,7 @@
                 </tr>
                 @foreach( RaidRole role in _raid.Roles)
                 {
-                    bool disableEdit = _raid.SignUps.Where(s => s.PlannedRaidRoleId == role.RaidRoleId).Any();
+                    bool disableEdit = _raid.SignUps.Where(s => s.RaidRoleId == role.RaidRoleId).Any();
                     <tr>
                         <td><InputNumber @bind-Value="role.Spots" disabled="@disableEdit" /></td>
                         <td><InputText @bind-Value="role.Name" disabled="@disableEdit"  /></td>

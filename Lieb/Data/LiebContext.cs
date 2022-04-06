@@ -25,6 +25,7 @@ namespace Lieb.Data
         public DbSet<RaidReminder> RaidReminders { get; set; }
         public DbSet<RaidSignUp> RaidSignUps { get; set; }
         public DbSet<RaidSignUpHistory> RaidSignUpHistories { get; set; }
+        public DbSet<DiscordRaidMessage> DiscordRaidMessages { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -41,6 +42,7 @@ namespace Lieb.Data
             modelBuilder.Entity<RaidReminder>().ToTable("RaidReminder");
             modelBuilder.Entity<RaidSignUp>().ToTable("RaidSignUp");
             modelBuilder.Entity<RaidSignUpHistory>().ToTable("RaidSignUpHistory");
+            modelBuilder.Entity<DiscordRaidMessage>().ToTable("DiscordRaidMessage");
         }
     }
 }

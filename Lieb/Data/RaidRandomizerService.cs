@@ -28,7 +28,7 @@ namespace Lieb.Data
                 .ThenInclude(a => a.EquippedBuilds)
                 .ThenInclude(e => e.GuildWars2Build)
                 .Include(r => r.SignUps)
-                .ThenInclude(s => s.PlannedRaidRole)
+                .ThenInclude(s => s.RaidRole)
                 .FirstOrDefault(r => r.RaidId == raidId);
 
             if (raid == null || raid.RaidType == RaidType.Planned)
@@ -71,7 +71,7 @@ namespace Lieb.Data
                     role.Name = "No class found.";
                 }
                 raid.Roles.Add(role);
-                signUp.PlannedRaidRole = role;
+                signUp.RaidRole = role;
             }
         }
 
@@ -95,7 +95,7 @@ namespace Lieb.Data
                     role.Name = "No class found.";
                 }
                 raid.Roles.Add(role);
-                signUp.PlannedRaidRole = role;
+                signUp.RaidRole = role;
             }
         }
 
@@ -117,7 +117,7 @@ namespace Lieb.Data
                 role.Name = userBuild.Value.BuildName;
                 raid.Roles.Add(role);
                 RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userBuild.Key);
-                signUp.PlannedRaidRole = role;
+                signUp.RaidRole = role;
             }
         }
 
@@ -329,7 +329,7 @@ namespace Lieb.Data
             List<RaidRole> rolesToDelete = new List<RaidRole>();
             foreach (RaidRole role in raid.Roles)
             {
-                if (!role.IsRandomSignUpRole && raid.SignUps.FirstOrDefault(s => s.PlannedRaidRoleId == role.RaidRoleId) == null)
+                if (!role.IsRandomSignUpRole && raid.SignUps.FirstOrDefault(s => s.RaidRoleId == role.RaidRoleId) == null)
                 {
                     rolesToDelete.Add(role);
                 }

@@ -6,7 +6,7 @@
 
 
 <table>
-     @{RaidSignUp[] signUps = _raid.SignUps.Where(s => s.PlannedRaidRoleId == _currentRoleId).ToArray();}
+     @{RaidSignUp[] signUps = _raid.SignUps.Where(s => s.RaidRoleId == _currentRoleId).ToArray();}
     @foreach (var signUp in signUps.OrderBy(s => s.SignUpType))
     {
         @if(_signUpTypes.Contains(signUp.SignUpType))

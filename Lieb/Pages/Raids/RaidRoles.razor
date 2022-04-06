@@ -46,7 +46,7 @@
                     {
                         <span class="oi oi-chevron-bottom" style="margin-right:7px"> </span>
                     }
-                    <b>@role.Role.Name</b> (@_raid.SignUps.Where(s => s.PlannedRaidRoleId == role.Role.RaidRoleId && s.SignUpType == SignUpType.SignedUp).Count() / @role.Role.Spots) 
+                    <b>@role.Role.Name</b> (@_raid.SignUps.Where(s => s.RaidRoleId == role.Role.RaidRoleId && s.SignUpType == SignUpType.SignedUp).Count() / @role.Role.Spots) 
                     @if (@role.IsRowExpanded)
                     {
                         <br>  @role.Role.Description

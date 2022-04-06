@@ -8,7 +8,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 
-<h3>RaidOverview</h3>
+<h3>Raid Overview</h3>
 
 
 <AuthorizeView Policy="@Constants.Roles.RaidLead.Name">
@@ -21,11 +21,11 @@
 
 <br />
 <label>
-    Filter From:
+    From:
         <input type="date" value="@_startDate.ToString("yyyy-MM-dd")" @onchange="args => StartFilterChanged(args)" />
         To:
         <input type="date" value="@_endDate.ToString("yyyy-MM-dd")" @onchange="args => EndFilterChanged(args)" />
-        RaidGroup:
+        Raid Group:
         <select @onchange="args => GroupFilterChanged(args)" >
             <option value="">All</option>
             <option value="No Group">No Group</option>
@@ -73,13 +73,23 @@
 
     private void StartFilterChanged(ChangeEventArgs e)
     {
-        _startDate = DateTime.Parse(e.Value.ToString());
+        if(!DateTime.TryParse(e.Value.ToString(), out _startDate))
+        {
+            _startDate = DateTime.UnixEpoch;
+        }
         ApplyFilter();
     }
 
     private void EndFilterChanged(ChangeEventArgs e)
     {
-        _endDate = DateTime.Parse(e.Value.ToString()).AddDays(1).AddSeconds(-1);
+        if(DateTime.TryParse(e.Value.ToString(), out _endDate))
+        {
+            _endDate.AddDays(1).AddSeconds(-1);
+        }
+        else
+        {
+            _endDate = DateTime.MaxValue.Date;
+        }
         ApplyFilter();
     }
 

@@ -158,11 +158,11 @@ namespace Lieb.Data
 
             var signUps = new RaidSignUp[]
             {
-                new RaidSignUp{GuildWars2AccountId = linaith.GuildWars2AccountId, LiebUserId = users[0].LiebUserId, PlannedRaidRoleId = ele.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
-                new RaidSignUp{GuildWars2AccountId = hierpiepts.GuildWars2AccountId, LiebUserId = users[1].LiebUserId, PlannedRaidRoleId = flexTest1.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
-                new RaidSignUp{GuildWars2AccountId = bloodseeker.GuildWars2AccountId, LiebUserId = users[2].LiebUserId, PlannedRaidRoleId = flexTest2.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
-                new RaidSignUp{GuildWars2AccountId = hierpiepts.GuildWars2AccountId, LiebUserId = users[1].LiebUserId, PlannedRaidRoleId = flexTest2.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.Flex },
-                new RaidSignUp{GuildWars2AccountId = bloodseeker.GuildWars2AccountId, LiebUserId = users[2].LiebUserId, PlannedRaidRoleId = flexTest3.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.Flex }
+                new RaidSignUp{GuildWars2AccountId = linaith.GuildWars2AccountId, LiebUserId = users[0].LiebUserId, RaidRoleId = ele.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
+                new RaidSignUp{GuildWars2AccountId = hierpiepts.GuildWars2AccountId, LiebUserId = users[1].LiebUserId, RaidRoleId = flexTest1.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
+                new RaidSignUp{GuildWars2AccountId = bloodseeker.GuildWars2AccountId, LiebUserId = users[2].LiebUserId, RaidRoleId = flexTest2.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
+                new RaidSignUp{GuildWars2AccountId = hierpiepts.GuildWars2AccountId, LiebUserId = users[1].LiebUserId, RaidRoleId = flexTest2.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.Flex },
+                new RaidSignUp{GuildWars2AccountId = bloodseeker.GuildWars2AccountId, LiebUserId = users[2].LiebUserId, RaidRoleId = flexTest3.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.Flex }
             };
 
             context.RaidSignUps.AddRange(signUps);

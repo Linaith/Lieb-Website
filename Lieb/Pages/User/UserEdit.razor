@@ -64,7 +64,7 @@
 @code {
 
     [Parameter]
-    public string userId { get; set; }
+    public string _userId { get; set; }
 
     private LiebUser _user;
     private int _editingUserRights = 0;
@@ -85,7 +85,7 @@
             }
         }
 
-        if(!string.IsNullOrEmpty(userId) && int.TryParse(userId, out int parsedId))
+        if(!string.IsNullOrEmpty(_userId) && ulong.TryParse(_userId, out ulong parsedId))
         {
             _user = UserService.GetLiebUser(parsedId);
             _roles = UserService.GetLiebRoles();
@@ -105,21 +105,21 @@
             RoleAssignment roleAssignment = new RoleAssignment()
                 {
                     LiebRoleId = role.LiebRoleId,
-                    LiebUserId = _user.LiebUserId
+                    LiebUserId = _user.Id
                 };
-            await UserService.AddRoleToUser(_user.LiebUserId, role.LiebRoleId);
+            await UserService.AddRoleToUser(_user.Id, role.LiebRoleId);
             _user.RoleAssignments.Add(roleAssignment);
         }
         else if(!isChecked && assignment != null)
         {
-            await UserService.RemoveRoleFromUser(_user.LiebUserId, role.LiebRoleId);
+            await UserService.RemoveRoleFromUser(_user.Id, role.LiebRoleId);
             _user.RoleAssignments.Remove(assignment);
         }
     }
 
     private async Task HandleValidSubmit()
     {
-        await UserService.UpdateBannedUntil(_user.LiebUserId, _user.BannedUntil);
+        await UserService.UpdateBannedUntil(_user.Id, _user.BannedUntil);
         if(_user.BannedUntil >= DateTime.Now.Date)
         {
             _submitMessage = "user banned successfully";

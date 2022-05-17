@@ -25,9 +25,9 @@ namespace Lieb.Data
                 .ToList();
         }
 
-        public LiebUser GetLiebUser(ulong discordId)
+        public LiebUser GetLiebUser(ulong userId)
         {
-            if (discordId > 0)
+            if (userId > 0)
             {
                 using var context = _contextFactory.CreateDbContext();
                 return context.LiebUsers
@@ -36,56 +36,48 @@ namespace Lieb.Data
                     .ThenInclude(b => b.GuildWars2Build)
                     .Include(u => u.RoleAssignments)
                     .ThenInclude(r => r.LiebRole)
-                    .FirstOrDefault(u => u.DiscordUserId == discordId);
+                    .FirstOrDefault(u => u.Id == userId);
             }
             else
                 return new LiebUser();
         }
 
-        public LiebUser GetLiebUser(int userId)
+        public LiebUser GetLiebUserGW2AccountOnly(ulong userId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            return context.LiebUsers
-                .Include(u => u.GuildWars2Accounts)
-                .ThenInclude(a => a.EquippedBuilds)
-                .ThenInclude(b => b.GuildWars2Build)
-                .Include(u => u.RoleAssignments)
-                .ThenInclude(r => r.LiebRole)
-                .AsNoTracking()
-                .FirstOrDefault(u => u.LiebUserId == userId);
-        }
-
-        public LiebUser GetLiebUserGW2AccountOnly(ulong discordId)
-        {
-            if (discordId > 0)
+            if (userId > 0)
             {
                 using var context = _contextFactory.CreateDbContext();
                 return context.LiebUsers
                 .Include(u => u.GuildWars2Accounts)
                 .ThenInclude(a => a.EquippedBuilds)
-                .FirstOrDefault(u => u.DiscordUserId == discordId);
+                .FirstOrDefault(u => u.Id == userId);
             }
             else
                 return new LiebUser();
         }
 
-        public LiebUser GetLiebGW2AccountOnly(int userId)
+        public async Task CreateUser(ulong discordId, string userName)
         {
             using var context = _contextFactory.CreateDbContext();
-            return context.LiebUsers
-            .Include(u => u.GuildWars2Accounts)
-            .FirstOrDefault(u => u.LiebUserId == userId);
-        }
-
-        public async Task<int> GetLiebUserId(ulong discordId)
-        {
-            if (discordId > 0)
+            LiebUser newUser = new LiebUser()
             {
-                using var context = _contextFactory.CreateDbContext();
-                return (await context.LiebUsers.FirstOrDefaultAsync(u => u.DiscordUserId == discordId)).LiebUserId;
+                Id = discordId,
+                Name = userName
+            };
+            context.LiebUsers.Add(newUser);
+            await context.SaveChangesAsync();
+
+            LiebRole standardRole = await context.LiebRoles.FirstOrDefaultAsync(m => m.RoleName == Constants.Roles.User.Name);
+            if (standardRole != null)
+            {
+                RoleAssignment roleAssignment = new RoleAssignment()
+                {
+                    LiebRoleId = standardRole.LiebRoleId,
+                    LiebUserId = newUser.Id
+                };
+                context.RoleAssignments.Add(roleAssignment);
+                await context.SaveChangesAsync();
             }
-            else
-                return -1;
         }
 
         public async Task EditUser(LiebUser user)
@@ -93,7 +85,7 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             LiebUser? userToChange = context.LiebUsers
             .Include(u => u.GuildWars2Accounts)
-            .FirstOrDefault(u => u.LiebUserId == user.LiebUserId);
+            .FirstOrDefault(u => u.Id == user.Id);
 
             if(userToChange != null)
             {
@@ -104,10 +96,10 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateBannedUntil(int userId, DateTime? date)
+        public async Task UpdateBannedUntil(ulong userId, DateTime? date)
         {
             using var context = _contextFactory.CreateDbContext();
-            LiebUser? user = await context.LiebUsers.FirstOrDefaultAsync(u => u.LiebUserId == userId);
+            LiebUser? user = await context.LiebUsers.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return;
@@ -117,12 +109,12 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public async Task AddRoleToUser(int userId, int roleId)
+        public async Task AddRoleToUser(ulong userId, int roleId)
         {
             using var context = _contextFactory.CreateDbContext();
             LiebUser? user = await context.LiebUsers
                     .Include(u => u.RoleAssignments)
-                    .FirstOrDefaultAsync(u => u.LiebUserId == userId);
+                    .FirstOrDefaultAsync(u => u.Id == userId);
             user.RoleAssignments.Add(new RoleAssignment()
             {
                 LiebUserId = userId,
@@ -131,12 +123,12 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public async Task RemoveRoleFromUser(int userId, int roleId)
+        public async Task RemoveRoleFromUser(ulong userId, int roleId)
         {
             using var context = _contextFactory.CreateDbContext();
             LiebUser? user = await context.LiebUsers
                     .Include(u => u.RoleAssignments)
-                    .FirstOrDefaultAsync(u => u.LiebUserId == userId);
+                    .FirstOrDefaultAsync(u => u.Id == userId);
             RoleAssignment assignmentToRemove = user.RoleAssignments.FirstOrDefault(r => r.LiebRoleId == roleId);
             if(assignmentToRemove != null)
             {
@@ -145,29 +137,14 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public int GetPowerLevel(int userId)
+        public int GetPowerLevel(ulong userId)
         {
             using var context = _contextFactory.CreateDbContext();
             LiebUser? user = context.LiebUsers
                 .Include(u => u.RoleAssignments)
                 .ThenInclude(r => r.LiebRole)
                 .AsNoTracking()
-                .FirstOrDefault(u => u.LiebUserId == userId);
-            if (user != null)
-            {
-                return user.RoleAssignments.Max(a => a.LiebRole.Level);
-            }
-            return 0;
-        }
-
-        public int GetPowerLevel(ulong discordId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            LiebUser? user = context.LiebUsers
-                .Include(u => u.RoleAssignments)
-                .ThenInclude(r => r.LiebRole)
-                .AsNoTracking()
-                .FirstOrDefault(u => u.DiscordUserId == discordId);
+                .FirstOrDefault(u => u.Id == userId);
             if (user != null)
             {
                 return user.RoleAssignments.Max(a => a.LiebRole.Level);

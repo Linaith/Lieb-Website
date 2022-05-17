@@ -13,12 +13,14 @@ namespace Discord.OAuth2
 {
     internal class DiscordHandler : OAuthHandler<DiscordOptions>
     {
-        private readonly Lieb.Data.LiebContext _LiebDbcontext;
+        private readonly LiebContext _dbContext;
+        private readonly UserService _userService;
 
-        public DiscordHandler(IOptionsMonitor<DiscordOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, Lieb.Data.LiebContext context)
+        public DiscordHandler(IOptionsMonitor<DiscordOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, LiebContext context, UserService userService)
             : base(options, logger, encoder, clock)
         {
-            _LiebDbcontext = context;
+            _dbContext = context;
+            _userService = userService;
         }
 
         protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
@@ -48,7 +50,7 @@ namespace Discord.OAuth2
         private async Task<OAuthCreatingTicketContext> ManageUserRights(OAuthCreatingTicketContext context)
         {
             ulong discordId = ulong.Parse(context.Identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value);
-            LiebUser? user = await _LiebDbcontext.LiebUsers.Include(u => u.RoleAssignments).ThenInclude(r => r.LiebRole).FirstOrDefaultAsync(m => m.DiscordUserId == discordId);
+            LiebUser? user = await _dbContext.LiebUsers.Include(u => u.RoleAssignments).ThenInclude(r => r.LiebRole).FirstOrDefaultAsync(m => m.Id == discordId);
             if (user != null)
             {
                 if (user.BannedUntil == null || user.BannedUntil < DateTime.UtcNow)
@@ -61,22 +63,9 @@ namespace Discord.OAuth2
             }
             else
             {
-                LiebRole standardRole = await _LiebDbcontext.LiebRoles.FirstOrDefaultAsync(m => m.RoleName == Constants.Roles.User.Name);
                 string userName = context.Identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value;
-                LiebUser newUser = new LiebUser()
-                {
-                    DiscordUserId = discordId,
-                    Name = userName
-                };
-                _LiebDbcontext.LiebUsers.Add(newUser);
-                await _LiebDbcontext.SaveChangesAsync();
-                RoleAssignment roleAssignment = new RoleAssignment()
-                {
-                    LiebRoleId = standardRole.LiebRoleId,
-                    LiebUserId = newUser.LiebUserId
-                };
-                _LiebDbcontext.RoleAssignments.Add(roleAssignment);
-                await _LiebDbcontext.SaveChangesAsync();
+
+                _userService.CreateUser(discordId, userName);
 
                 context.Identity.AddClaim(new Claim(Constants.ClaimType, Constants.Roles.User.Name));
             }

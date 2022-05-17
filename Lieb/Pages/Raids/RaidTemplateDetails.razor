@@ -60,7 +60,7 @@
 
         
 <AuthorizeView>
-    @if (_template.RaidOwnerId == _user.LiebUserId || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel)
+    @if (_template.RaidOwnerId == _user.Id || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel)
     {
         <button class="controlButton raidButton" @onclick="() => EditClicked()">Edit</button>
     }

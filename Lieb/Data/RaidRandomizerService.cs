@@ -101,7 +101,7 @@ namespace Lieb.Data
 
         private void RandomizeWithBoons(Raid raid)
         {
-            Dictionary<int, GuildWars2Build> signedUpUsers= new Dictionary<int, GuildWars2Build>();
+            Dictionary<ulong, GuildWars2Build> signedUpUsers= new Dictionary<ulong, GuildWars2Build>();
             foreach (RaidSignUp signUp in raid.SignUps)
             {
                 if (signUp.GuildWars2Account.EquippedBuilds.Count > 0)
@@ -121,7 +121,7 @@ namespace Lieb.Data
             }
         }
 
-        private void BalanceRoles(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int recusrionDepth = 0)
+        private void BalanceRoles(Raid raid, Dictionary<ulong, GuildWars2Build> signedUpUsers, int recusrionDepth = 0)
         {
             int Alac = 0;
             int Quick = 0;
@@ -180,7 +180,7 @@ namespace Lieb.Data
             }
         }
 
-        private void ReduceAlac(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentAlac)
+        private void ReduceAlac(Raid raid, Dictionary<ulong, GuildWars2Build> signedUpUsers, int currentAlac)
         {
             foreach (var userBuild in signedUpUsers)
             {
@@ -198,7 +198,7 @@ namespace Lieb.Data
             }
         }
 
-        private void IncreaseAlac(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentAlac)
+        private void IncreaseAlac(Raid raid, Dictionary<ulong, GuildWars2Build> signedUpUsers, int currentAlac)
         {
             foreach (var userBuild in signedUpUsers)
             {
@@ -216,7 +216,7 @@ namespace Lieb.Data
             }
         }
 
-        private void ReduceQuick(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentQuick)
+        private void ReduceQuick(Raid raid, Dictionary<ulong, GuildWars2Build> signedUpUsers, int currentQuick)
         {
             foreach (var userBuild in signedUpUsers)
             {
@@ -234,7 +234,7 @@ namespace Lieb.Data
             }
         }
 
-        private void IncreaseQuick(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentQuick)
+        private void IncreaseQuick(Raid raid, Dictionary<ulong, GuildWars2Build> signedUpUsers, int currentQuick)
         {
             foreach (var userBuild in signedUpUsers)
             {
@@ -252,7 +252,7 @@ namespace Lieb.Data
             }
         }
 
-        private void ReduceMight(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentMight)
+        private void ReduceMight(Raid raid, Dictionary<ulong, GuildWars2Build> signedUpUsers, int currentMight)
         {
             foreach (var userBuild in signedUpUsers)
             {
@@ -270,7 +270,7 @@ namespace Lieb.Data
             }
         }
 
-        private void IncreaseMight(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentMight)
+        private void IncreaseMight(Raid raid, Dictionary<ulong, GuildWars2Build> signedUpUsers, int currentMight)
         {
             foreach (var userBuild in signedUpUsers)
             {
@@ -288,7 +288,7 @@ namespace Lieb.Data
             }
         }
 
-        private void ReduceHeal(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentHeal)
+        private void ReduceHeal(Raid raid, Dictionary<ulong, GuildWars2Build> signedUpUsers, int currentHeal)
         {
             foreach (var userBuild in signedUpUsers)
             {
@@ -306,7 +306,7 @@ namespace Lieb.Data
             }
         }
 
-        private void IncreaseHeal(Raid raid, Dictionary<int, GuildWars2Build> signedUpUsers, int currentHeal)
+        private void IncreaseHeal(Raid raid, Dictionary<ulong, GuildWars2Build> signedUpUsers, int currentHeal)
         {
             foreach (var userBuild in signedUpUsers)
             {

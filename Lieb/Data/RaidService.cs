@@ -90,7 +90,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public async Task SignUp(int raidId, int liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)
+        public async Task SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)
         {
             if (!IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true))
             {
@@ -117,7 +117,7 @@ namespace Lieb.Data
             }
         }
 
-        public async Task SignOff(int raidId, int liebUserId)
+        public async Task SignOff(int raidId, ulong liebUserId)
         {
             using var context = _contextFactory.CreateDbContext();
             //remove Flex Sign Ups
@@ -142,7 +142,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public async Task ChangeAccount(int raidId, int liebUserId, int guildWars2AccountId)
+        public async Task ChangeAccount(int raidId, ulong liebUserId, int guildWars2AccountId)
         {
             using var context = _contextFactory.CreateDbContext();
             List<RaidSignUp> signUps = context.RaidSignUps.Where(x => x.RaidId == raidId && x.LiebUserId == liebUserId).ToList();
@@ -153,7 +153,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public void ChangeSignUpType(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType)
+        public void ChangeSignUpType(int raidId, ulong liebUserId, int plannedRoleId, SignUpType signUpType)
         {
             if (!IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true))
             {
@@ -182,7 +182,7 @@ namespace Lieb.Data
             context.SaveChanges();
         }
 
-        public bool IsRoleSignUpAllowed(int liebUserId, int plannedRoleId, SignUpType signUpType)
+        public bool IsRoleSignUpAllowed(ulong liebUserId, int plannedRoleId, SignUpType signUpType)
         {
             if(signUpType == SignUpType.Backup || signUpType == SignUpType.Flex || signUpType == SignUpType.SignedOff)
             {
@@ -205,7 +205,7 @@ namespace Lieb.Data
             return signUps.Where(s => s.LiebUserId == liebUserId && s.SignUpType == SignUpType.SignedUp).Any();
         }
 
-        public bool IsRoleSignUpAllowed(int raidId, int liebUserId, int plannedRoleId, SignUpType signUpType, bool moveFlexUser)
+        public bool IsRoleSignUpAllowed(int raidId, ulong liebUserId, int plannedRoleId, SignUpType signUpType, bool moveFlexUser)
         {
             using var context = _contextFactory.CreateDbContext();
             Raid? raid = context.Raids
@@ -243,7 +243,7 @@ namespace Lieb.Data
             }
         }
 
-        private async Task<bool> IsRoleSignUpAllowed(Raid raid, int liebUserId, int plannedRoleId, SignUpType signUpType, bool moveFlexUser, List<int> checkedRoleIds)
+        private async Task<bool> IsRoleSignUpAllowed(Raid raid, ulong liebUserId, int plannedRoleId, SignUpType signUpType, bool moveFlexUser, List<int> checkedRoleIds)
         {
             if (IsRoleSignUpAllowed(liebUserId, plannedRoleId, signUpType))
                 return true;
@@ -257,7 +257,7 @@ namespace Lieb.Data
                 return false;
             }
 
-            foreach (int userId in raid.SignUps.Where(s => s.RaidRoleId == plannedRoleId && s.SignUpType == SignUpType.SignedUp).Select(s => s.LiebUserId))
+            foreach (ulong userId in raid.SignUps.Where(s => s.RaidRoleId == plannedRoleId && s.SignUpType == SignUpType.SignedUp).Select(s => s.LiebUserId))
             {
                 foreach (RaidSignUp signUp in raid.SignUps.Where(s => s.LiebUserId == userId && s.SignUpType == SignUpType.Flex))
                 {
@@ -275,7 +275,7 @@ namespace Lieb.Data
             return false;
         }
 
-        public bool IsRaidSignUpAllowed(int liebUserId, int raidId, out string errorMessage)
+        public bool IsRaidSignUpAllowed(ulong liebUserId, int raidId, out string errorMessage)
         {
             errorMessage = string.Empty;
             using var context = _contextFactory.CreateDbContext();
@@ -293,7 +293,7 @@ namespace Lieb.Data
                 .Include(u => u.GuildWars2Accounts)
                 .ThenInclude(a => a.EquippedBuilds)
                 .AsNoTracking()
-                .FirstOrDefault(r => r.LiebUserId == liebUserId);
+                .FirstOrDefault(r => r.Id == liebUserId);
             if (user == null)
             {
                 errorMessage = "User not found.";

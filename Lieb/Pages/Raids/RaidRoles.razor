@@ -99,7 +99,7 @@
     [Parameter]
     public bool _isRaidSignUpAllowed { get; set; }
 
-    private int _liebUserId { get; set; } = -1;
+    private ulong _liebUserId { get; set; } = 0;
 
     private List<GuildWars2Account> _usableAccounts;
 
@@ -125,7 +125,7 @@
             {
                 _usableAccounts = _user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Count > 0).ToList();
             }
-            _liebUserId = _user.LiebUserId;
+            _liebUserId = _user.Id;
         }
         _expandableRoles = new List<ExpandableRole>();
         foreach(RaidRole role in _raid.Roles)

@@ -14,7 +14,7 @@
         public int RaidSignUpId { get; set; }
 
         public int RaidId { get; set; }
-        public int LiebUserId { get; set; }
+        public ulong LiebUserId { get; set; }
         public int GuildWars2AccountId { get; set; }
         public int RaidRoleId { get; set; }
 

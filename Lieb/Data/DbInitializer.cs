@@ -40,11 +40,11 @@ namespace Lieb.Data
             GuildWars2Account bloodseeker = new GuildWars2Account() { AccountName = "Bloodseeker.2043" };
             var users = new LiebUser[]
             {
-                //new LiebUser{DiscordUserId=0, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
-                new LiebUser{DiscordUserId=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
+                new LiebUser{Id=0, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
+                //new LiebUser{Id=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
 #if DEBUG
-                new LiebUser{DiscordUserId=1, Name="Lisa", GuildWars2Accounts = new List<GuildWars2Account>(){ hierpiepts}},
-                new LiebUser{DiscordUserId=2, Name="Simon", GuildWars2Accounts = new List<GuildWars2Account>(){ bloodseeker}}
+                new LiebUser{Id=1, Name="Lisa", GuildWars2Accounts = new List<GuildWars2Account>(){ hierpiepts}},
+                new LiebUser{Id=2, Name="Simon", GuildWars2Accounts = new List<GuildWars2Account>(){ bloodseeker}}
 #endif
             };
 
@@ -59,18 +59,18 @@ namespace Lieb.Data
 
             var assignments = new RoleAssignment[]
             {
-                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = AdminRoleId },
-                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = GuildLeadRoleId },
-                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = RaidLeadRoleId },
-                new RoleAssignment{LiebUserId = users[0].LiebUserId, LiebRoleId = UserRoleId }
+                new RoleAssignment{LiebUserId = users[0].Id, LiebRoleId = AdminRoleId },
+                new RoleAssignment{LiebUserId = users[0].Id, LiebRoleId = GuildLeadRoleId },
+                new RoleAssignment{LiebUserId = users[0].Id, LiebRoleId = RaidLeadRoleId },
+                new RoleAssignment{LiebUserId = users[0].Id, LiebRoleId = UserRoleId }
 #if DEBUG
-                ,new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = AdminRoleId },
-                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = GuildLeadRoleId },
-                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = RaidLeadRoleId },
-                new RoleAssignment{LiebUserId = users[1].LiebUserId, LiebRoleId = UserRoleId },
-                new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = GuildLeadRoleId },
-                new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = RaidLeadRoleId },
-                new RoleAssignment{LiebUserId = users[2].LiebUserId, LiebRoleId = UserRoleId }
+                ,new RoleAssignment{LiebUserId = users[1].Id, LiebRoleId = AdminRoleId },
+                new RoleAssignment{LiebUserId = users[1].Id, LiebRoleId = GuildLeadRoleId },
+                new RoleAssignment{LiebUserId = users[1].Id, LiebRoleId = RaidLeadRoleId },
+                new RoleAssignment{LiebUserId = users[1].Id, LiebRoleId = UserRoleId },
+                new RoleAssignment{LiebUserId = users[2].Id, LiebRoleId = GuildLeadRoleId },
+                new RoleAssignment{LiebUserId = users[2].Id, LiebRoleId = RaidLeadRoleId },
+                new RoleAssignment{LiebUserId = users[2].Id, LiebRoleId = UserRoleId }
 #endif
             };
 
@@ -158,11 +158,11 @@ namespace Lieb.Data
 
             var signUps = new RaidSignUp[]
             {
-                new RaidSignUp{GuildWars2AccountId = linaith.GuildWars2AccountId, LiebUserId = users[0].LiebUserId, RaidRoleId = ele.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
-                new RaidSignUp{GuildWars2AccountId = hierpiepts.GuildWars2AccountId, LiebUserId = users[1].LiebUserId, RaidRoleId = flexTest1.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
-                new RaidSignUp{GuildWars2AccountId = bloodseeker.GuildWars2AccountId, LiebUserId = users[2].LiebUserId, RaidRoleId = flexTest2.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
-                new RaidSignUp{GuildWars2AccountId = hierpiepts.GuildWars2AccountId, LiebUserId = users[1].LiebUserId, RaidRoleId = flexTest2.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.Flex },
-                new RaidSignUp{GuildWars2AccountId = bloodseeker.GuildWars2AccountId, LiebUserId = users[2].LiebUserId, RaidRoleId = flexTest3.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.Flex }
+                new RaidSignUp{GuildWars2AccountId = linaith.GuildWars2AccountId, LiebUserId = users[0].Id, RaidRoleId = ele.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
+                new RaidSignUp{GuildWars2AccountId = hierpiepts.GuildWars2AccountId, LiebUserId = users[1].Id, RaidRoleId = flexTest1.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
+                new RaidSignUp{GuildWars2AccountId = bloodseeker.GuildWars2AccountId, LiebUserId = users[2].Id, RaidRoleId = flexTest2.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.SignedUp },
+                new RaidSignUp{GuildWars2AccountId = hierpiepts.GuildWars2AccountId, LiebUserId = users[1].Id, RaidRoleId = flexTest2.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.Flex },
+                new RaidSignUp{GuildWars2AccountId = bloodseeker.GuildWars2AccountId, LiebUserId = users[2].Id, RaidRoleId = flexTest3.RaidRoleId, RaidId = raid.RaidId, SignUpType = SignUpType.Flex }
             };
 
             context.RaidSignUps.AddRange(signUps);

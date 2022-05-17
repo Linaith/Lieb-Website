@@ -22,14 +22,14 @@ namespace Lieb.Data
                 .FirstOrDefault(a => a.GuildWars2AccountId == gw2AccountId);
         }
 
-        public async Task AddOrEditAccount(GuildWars2Account account, int userId)
+        public async Task AddOrEditAccount(GuildWars2Account account, ulong userId)
         {
             if (account != null)
             {
                 using var context = _contextFactory.CreateDbContext();
                 if (account.GuildWars2AccountId == 0)
                 {
-                    LiebUser? user = context.LiebUsers.FirstOrDefault(u => u.LiebUserId == userId);
+                    LiebUser? user = context.LiebUsers.FirstOrDefault(u => u.Id == userId);
                     if(user != null)
                     {
                         user.GuildWars2Accounts.Add(account);

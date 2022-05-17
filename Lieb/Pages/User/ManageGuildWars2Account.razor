@@ -161,7 +161,7 @@
 
     private async Task HandleValidSubmit()
     {
-        await GuildWars2AccountService.AddOrEditAccount(_account, _user.LiebUserId);
+        await GuildWars2AccountService.AddOrEditAccount(_account, _user.Id);
         _account = GuildWars2AccountService.GetAccount(_account.GuildWars2AccountId);
         _saveMessage = "changes saved successfully";
     }

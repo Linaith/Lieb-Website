@@ -1,12 +1,13 @@
 ﻿using Lieb.Models.GuildWars2;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Lieb.Models
 {
     public class LiebUser
     {
-        public int LiebUserId { get; set; }
-        public ulong DiscordUserId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public ulong Id { get; set; }
 
         [Required]
         [StringLength(40, ErrorMessage = "Name too long (40 character limit).")]

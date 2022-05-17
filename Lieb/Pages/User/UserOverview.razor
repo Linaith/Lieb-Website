@@ -63,7 +63,7 @@
     {
         <tr>    
             <td class="nav-item px-3">
-                @{string navLink = $"useredit/{@user.LiebUserId}";}
+                @{string navLink = $"useredit/{@user.Id}";}
                 <NavLink class="nav-link" href="@navLink">@user.Name</NavLink>
             </td>
             <td>@foreach(var account in user.GuildWars2Accounts){<div>@account.AccountName </div> }</td>

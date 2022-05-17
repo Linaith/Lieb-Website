@@ -188,7 +188,7 @@
         {
             _raid = RaidService.GetRaid(parsedId);
 
-            if (_raid != null && (_raid.RaidOwnerId == _user.LiebUserId 
+            if (_raid != null && (_raid.RaidOwnerId == _user.Id 
                 || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel))
             {
                 _startTime = await TimeZoneService.GetLocalDateTime(_raid.StartTimeUTC);
@@ -273,7 +273,7 @@
 
         if (_raid.RaidOwnerId == 0)
         {
-            _raid.RaidOwnerId = _user.LiebUserId;
+            _raid.RaidOwnerId = _user.Id;
         }
 
         await RaidService.AddOrEditRaid(_raid, _rolesToDelete, new List<RaidReminder>());

@@ -17,7 +17,7 @@
     @if (_user != null && _isRaidSignUpAllowed) 
     {
         <div class="signUpStatusTooltip">
-            @if(_raid.SignUps.Where(s => s.LiebUserId == _user.LiebUserId && s.SignUpType != SignUpType.SignedOff).Any())
+            @if(_raid.SignUps.Where(s => s.LiebUserId == _user.Id && s.SignUpType != SignUpType.SignedOff).Any())
             {
                 <span class="oi oi-badge" style="color:green"></span>  
                     <span class="tooltiptext">You are signed up</span>  
@@ -76,7 +76,7 @@
             <AuthorizeView>
                 <button class="controlButton raidButton" @onclick="() => SignOffClicked()">Sign Off</button>
 
-                @if (_raid.RaidOwnerId == _user.LiebUserId || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel)
+                @if (_raid.RaidOwnerId == _user.Id || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel)
                 {
                     <button class="controlButton raidButton" @onclick="() => EditClicked()">Edit</button>
                     @if (_raid.RaidType != RaidType.Planned)
@@ -108,7 +108,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        _isRaidSignUpAllowed = _user != null && RaidService.IsRaidSignUpAllowed(_user.LiebUserId, _raid.RaidId, out _errorMessage);
+        _isRaidSignUpAllowed = _user != null && RaidService.IsRaidSignUpAllowed(_user.Id, _raid.RaidId, out _errorMessage);
 
         _startTime = await TimeZoneService.GetLocalDateTime(_raid.StartTimeUTC);
         _endTime = await TimeZoneService.GetLocalDateTime(_raid.EndTimeUTC);
@@ -117,7 +117,7 @@
 
     async Task SignOffClicked()
     {
-        await RaidService.SignOff(_raid.RaidId, _user.LiebUserId);
+        await RaidService.SignOff(_raid.RaidId, _user.Id);
         _raid = RaidService.GetRaid(_raid.RaidId);
     }
 

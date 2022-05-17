@@ -6,7 +6,7 @@
 
 
         public int LiebRoleId { get; set; }
-        public int LiebUserId { get; set; }
+        public ulong LiebUserId { get; set; }
         public LiebRole LiebRole { get; set; }
         public LiebUser LiebUser { get; set; }
     }

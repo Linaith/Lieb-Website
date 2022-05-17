@@ -210,7 +210,7 @@
         {
             _template = RaidTemplateService.GetTemplate(parsedId);
 
-            if (_template != null && (_template.RaidOwnerId == _user.LiebUserId 
+            if (_template != null && (_template.RaidOwnerId == _user.Id 
                 || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel))
             {
                 _startTime = _template.StartTime;
@@ -290,7 +290,7 @@
 
         if (_template.RaidOwnerId == 0)
         {
-            _template.RaidOwnerId = _user.LiebUserId;
+            _template.RaidOwnerId = _user.Id;
         }
 
         await RaidTemplateService.AddOrEditTemplate(_template, _rolesToDelete, new List<RaidReminder>());

@@ -43,7 +43,7 @@ namespace Lieb.Data
                 //new LiebUser{Id=0, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
                 new LiebUser{Id=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
 #if DEBUG
-                new LiebUser{Id=1, Name="Lisa", GuildWars2Accounts = new List<GuildWars2Account>(){ hierpiepts}},
+                new LiebUser{Id=194455125769715713, Name="Lisa", GuildWars2Accounts = new List<GuildWars2Account>(){ hierpiepts}},
                 new LiebUser{Id=2, Name="Simon", GuildWars2Accounts = new List<GuildWars2Account>(){ bloodseeker}}
 #endif
             };

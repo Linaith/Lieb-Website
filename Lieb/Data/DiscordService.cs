@@ -171,7 +171,10 @@ namespace Lieb.Data
             }
 
             using var context = _contextFactory.CreateDbContext();
-            context.Update(raid.DiscordRaidMessages);
+            foreach(DiscordRaidMessage message in raid.DiscordRaidMessages)
+            {
+                context.Update(message);
+            }
             await context.SaveChangesAsync();
         }
 
@@ -192,6 +195,7 @@ namespace Lieb.Data
             foreach(RaidRole role in raid.Roles)
             {
                 ApiRaid.Role apiRole = new ApiRaid.Role(){
+                    RoleId = role.RaidRoleId,
                     Description = role.Description,
                     Name = role.Name,
                     Spots = role.Spots

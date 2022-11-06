@@ -2,9 +2,11 @@ using Discord;
 using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
+using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Reflection;
+using DiscordBot.Services;
 
 namespace DiscordBot
 {
@@ -28,12 +30,31 @@ namespace DiscordBot
             builder.Services.AddSingleton<DiscordSocketClient>();
             builder.Services.AddSingleton<CommandService>();
             builder.Services.AddSingleton<CommandHandler>();
+            builder.Services.AddSingleton<HttpService>();
 
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddHttpClient(Constants.HTTP_CLIENT_NAME , httpClient =>
+            {
+                httpClient.BaseAddress = new Uri("https://localhost:7216/");
+
+                httpClient.DefaultRequestHeaders.Add(
+                    HeaderNames.Accept, "application/vnd.github.v3+json");
+                httpClient.DefaultRequestHeaders.Add(
+                    HeaderNames.UserAgent, "HttpRequestsSample");
+            }).ConfigurePrimaryHttpMessageHandler(() => {
+                            var handler = new HttpClientHandler();
+                            if (builder.Environment.IsDevelopment())
+                            {
+                                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+                            }
+                            return handler;
+                        });
+
 
             var app = builder.Build();
 

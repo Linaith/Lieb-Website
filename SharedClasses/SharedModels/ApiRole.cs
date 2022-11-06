@@ -7,6 +7,8 @@ namespace SharedClasses.SharedModels
 
         public string Description { get; set; } = String.Empty;
 
-        public bool IsSignUpAllowed{ get; set; } = false;
+        public bool IsSignUpAllowed { get; set; } = false;
+
+        public int roleId {get; set;}
     }
 }

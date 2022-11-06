@@ -33,18 +33,12 @@ namespace DiscordBot.Messages
 
         public async Task<ApiRaid> PostRaidMessage(ApiRaid raid)
         {
-            var menuBuilder = new SelectMenuBuilder()
-               .WithPlaceholder("Select an option")
-               .WithCustomId("menu-1")
-               .WithMinValues(1)
-               .WithMaxValues(1)
-               .AddOption("Option A", "opt-a", "Option B is lying!")
-               .AddOption("Option B", "opt-b", "Option A is telling the truth!");
-
             var builder = new ComponentBuilder()
-                .WithButton("SignUp", $"{Constants.ComponentIds.SIGN_UP}-{raid.RaidId.ToString()}", ButtonStyle.Secondary)
-                .WithButton("SignOff", $"{Constants.ComponentIds.SIGN_OFF}-{raid.RaidId.ToString()}", ButtonStyle.Secondary);
-                //.WithSelectMenu(menuBuilder);
+                .WithButton("SignUp", $"{Constants.ComponentIds.SIGN_UP_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Success)
+                .WithButton("Maybe", $"{Constants.ComponentIds.MAYBE_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Secondary)
+                .WithButton("Backup", $"{Constants.ComponentIds.BACKUP_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Secondary)
+                .WithButton("Flex", $"{Constants.ComponentIds.FLEX_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Secondary)
+                .WithButton("SignOff", $"{Constants.ComponentIds.SIGN_OFF_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Danger);
 
             MessageComponent components = builder.Build();
             Embed raidMessage = CreateRaidMessage(raid);
@@ -62,7 +56,8 @@ namespace DiscordBot.Messages
                             Embed = raidMessage,
                             Components = components
                         };
-                        await messageChannel.ModifyMessageAsync(message.MessageId, new Action<MessageProperties>(x => x = properties));
+                        IUserMessage discordMessage = (IUserMessage)await messageChannel.GetMessageAsync(message.MessageId);
+                        await discordMessage.ModifyAsync(msg => msg.Embed = raidMessage);
                     }
                     else
                     {
@@ -105,7 +100,7 @@ namespace DiscordBot.Messages
             Dictionary<string, string> fieldList = new Dictionary<string, string>();
 
             embed.AddField("Signed up", $"({raid.Roles.Sum(r => r.Users.Count)}/{raid.Roles.Sum(r => r.Spots)}):");
-            foreach (ApiRaid.Role role in raid.Roles)
+            foreach (ApiRaid.Role role in raid.Roles.OrderBy(x => x.RoleId))
             {
                 //print signed up users
                 string signedUpUsers = PrintUsers(role);

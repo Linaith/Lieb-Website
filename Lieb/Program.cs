@@ -1,7 +1,12 @@
-﻿using Discord.OAuth2;
+﻿using Discord;
+using Discord.Commands;
+using Discord.OAuth2;
+using Discord.WebSocket;
 using Lieb.Data;
+using Lieb.Discord;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +15,8 @@ builder.Services.AddRazorPages();
 
 #if DEBUG
 builder.Services.AddDbContextFactory<LiebContext>(opt =>
-        opt.UseSqlServer(builder.Configuration.GetConnectionString("LiebContext")).EnableSensitiveDataLogging(), ServiceLifetime.Transient);
+        //opt.UseSqlServer(builder.Configuration.GetConnectionString("LiebContext")).EnableSensitiveDataLogging(), ServiceLifetime.Transient);
+        opt.UseSqlite(builder.Configuration.GetConnectionString("LiebContext")));
 #else
 builder.Services.AddDbContextFactory<LiebContext>(opt =>
         opt.UseMySql(builder.Configuration.GetConnectionString("LiebContext"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("LiebContext"))), ServiceLifetime.Transient);
@@ -27,8 +33,21 @@ builder.Services.AddScoped<GuildWars2AccountService>();
 builder.Services.AddScoped<GuildWars2BuildService>();
 builder.Services.AddScoped<RaidRandomizerService>();
 builder.Services.AddScoped<TimeZoneService>();
+builder.Services.AddScoped<DiscordService>();
 builder.Services.AddHostedService<TimerService>();
+/*
+#region discord
+//DiscordSocketClient client = new DiscordSocketClient();
 
+//client.Log += Log;
+var token = File.ReadAllText("token.txt");
+
+await client.LoginAsync(TokenType.Bot, token);
+await client.StartAsync();
+builder.Services.AddSingleton(client);
+builder.Services.AddSingleton<CommandService>();
+builder.Services.AddSingleton<CommandHandler>();
+#endregion discord*/
 
 builder.Services.AddAuthentication(opt =>
 {
@@ -60,6 +79,24 @@ builder.Services.AddAuthorization(options =>
         Constants.Roles.Admin.Name }));
 });
 
+builder.Services.AddHttpClient(Constants.HttpClientName , httpClient =>
+{
+    httpClient.BaseAddress = new Uri("http://localhost:5240/");
+
+    // using Microsoft.Net.Http.Headers;
+    // The GitHub API requires two headers.
+    httpClient.DefaultRequestHeaders.Add(
+        HeaderNames.Accept, "application/vnd.github.v3+json");
+    httpClient.DefaultRequestHeaders.Add(
+        HeaderNames.UserAgent, "HttpRequestsSample");
+}).ConfigurePrimaryHttpMessageHandler(() => {
+                  var handler = new HttpClientHandler();
+                  if (builder.Environment.IsDevelopment())
+                  {
+                      handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+                  }
+                  return handler;
+              });
 
 var app = builder.Build();
 

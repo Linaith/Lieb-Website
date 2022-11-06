@@ -7,10 +7,12 @@ namespace Lieb.Data
     public class RaidService
     {
         private readonly IDbContextFactory<LiebContext> _contextFactory;
+        private readonly DiscordService _discordService;
 
-        public RaidService(IDbContextFactory<LiebContext> contextFactory)
+        public RaidService(IDbContextFactory<LiebContext> contextFactory, DiscordService discordService)
         {
             _contextFactory = contextFactory;
+            _discordService = discordService;
         }
 
         public List<Raid> GetRaids()
@@ -26,6 +28,7 @@ namespace Lieb.Data
                 .ThenInclude(s => s.GuildWars2Account)
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.RaidRole)
+                .Include(r => r.DiscordRaidMessages)
                 .ToList();
         }
 
@@ -42,10 +45,11 @@ namespace Lieb.Data
                 .ThenInclude(s => s.GuildWars2Account)
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.RaidRole)
+                .Include(r => r.DiscordRaidMessages)
                 .FirstOrDefault(r => r.RaidId == raidId);
         }
 
-        public async Task AddOrEditRaid(Raid raid, List<RaidRole> rolesToDelete, List<RaidReminder> remindersToDelete)
+        public async Task AddOrEditRaid(Raid raid, List<RaidRole> rolesToDelete, List<RaidReminder> remindersToDelete, List<DiscordRaidMessage> messagesToDelete)
         {
             if (raid != null)
             {
@@ -60,6 +64,7 @@ namespace Lieb.Data
                     context.Update(raid);
                     context.RaidRoles.RemoveRange(rolesToDelete);
                     context.RaidReminders.RemoveRange(remindersToDelete);
+                    context.DiscordRaidMessages.RemoveRange(messagesToDelete);
 
                     //move users back to "Random" role
                     if (raid.RaidType != RaidType.Planned)
@@ -74,6 +79,7 @@ namespace Lieb.Data
 
                     await context.SaveChangesAsync();
                 }
+                _discordService.PostRaidMessage(raid.RaidId);
             }
         }
 
@@ -88,6 +94,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
             context.Raids.Remove(raid);
             await context.SaveChangesAsync();
+            _discordService.DeleteRaidMessages(raid);
         }
 
         public async Task SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)
@@ -115,6 +122,7 @@ namespace Lieb.Data
                 });
                 await context.SaveChangesAsync();
             }
+            _discordService.PostRaidMessage(raidId);
         }
 
         public async Task SignOff(int raidId, ulong liebUserId)
@@ -138,8 +146,8 @@ namespace Lieb.Data
                     signUp.RaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
                 }
             }
-
             await context.SaveChangesAsync();
+            _discordService.PostRaidMessage(raidId);
         }
 
         public async Task ChangeAccount(int raidId, ulong liebUserId, int guildWars2AccountId)
@@ -151,6 +159,7 @@ namespace Lieb.Data
                 signUp.GuildWars2AccountId = guildWars2AccountId;
             }
             await context.SaveChangesAsync();
+            _discordService.PostRaidMessage(raidId);
         }
 
         public void ChangeSignUpType(int raidId, ulong liebUserId, int plannedRoleId, SignUpType signUpType)
@@ -180,6 +189,7 @@ namespace Lieb.Data
                 signUp.SignUpType = signUpType;
             }
             context.SaveChanges();
+            _discordService.PostRaidMessage(raidId);
         }
 
         public bool IsRoleSignUpAllowed(ulong liebUserId, int plannedRoleId, SignUpType signUpType)
@@ -334,9 +344,8 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             List<Raid> raids = context.Raids
                 .Include(r => r.Reminders)
-                .Where(raid => raid.Reminders.Where(reminder => !reminder.Sent && raid.StartTimeUTC.AddHours(-reminder.HoursBeforeRaid) < DateTime.UtcNow).Any())
                 .ToList();
-
+            
             foreach(Raid raid in raids)
             {
                 foreach(RaidReminder reminder in raid.Reminders.Where(reminder => !reminder.Sent && raid.StartTimeUTC.AddHours(-reminder.HoursBeforeRaid) < DateTime.UtcNow))

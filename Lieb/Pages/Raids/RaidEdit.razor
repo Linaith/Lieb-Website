@@ -5,8 +5,10 @@
 @using Lieb.Models.GuildWars2.Raid
 @using System.ComponentModel.DataAnnotations
 @using System.Security.Claims
+@using SharedClasses.SharedModels
 @inject RaidService RaidService
 @inject UserService UserService
+@inject DiscordService DiscordService
 @inject TimeZoneService TimeZoneService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -143,6 +145,46 @@
         </p>
     }
     
+    <p>
+        <label>
+            Discord Messages:
+        </label>
+        <button type=button @onclick="() => AddDiscordMessageClicked()">Add message</button>
+        <table>
+            <tr>
+                <th>Server</th>
+                <th>Channel</th>
+            </tr>
+            @foreach( DiscordRaidMessage message in _raid.DiscordRaidMessages)
+            {
+                bool disableEdit = message.DiscordRaidMessageId != 0;
+                <tr>
+                    <td>
+                        <InputSelect @bind-Value="message.DiscordGuildId" disabled="@disableEdit"> 
+                            @foreach(DiscordServer item in _discordServers)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </InputSelect>
+                    </td>
+                    <td>
+                        <InputSelect @bind-Value="message.DiscordChannelId" disabled="@disableEdit"> 
+                            @if(message.DiscordGuildId > 0)
+                            {
+                                List<DiscordChannel> channels = _discordServers.Where(s => s.Id == message.DiscordGuildId).FirstOrDefault(new DiscordServer()).Channels;
+                                @foreach(DiscordChannel item in channels)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            }
+                        </InputSelect>
+                    </td>
+                    <td><button type=button @onclick="() => DeleteMessageClicked(message)">Delete</button></td>
+                </tr>
+            }
+        </table> 
+    </p>
+    
     <ValidationSummary />
     <label class="validation-message" >@_errorMessage</label>
     <button type="submit">Submit</button>
@@ -168,6 +210,10 @@
     private DateTimeOffset _freeForAllTime;
 
     private List<RaidRole> _rolesToDelete = new List<RaidRole>();
+    private List<RaidReminder> _remindersToDelete = new List<RaidReminder>();
+    private List<DiscordRaidMessage> _messagesToDelete = new List<DiscordRaidMessage>();
+
+    private List<DiscordServer> _discordServers = new List<DiscordServer>();
 
 
 
@@ -206,6 +252,8 @@
         {
             _raid = new Raid();
         }
+
+        _discordServers = await DiscordService.GetServers();
     }
 
     async Task AddRoleClicked()
@@ -221,6 +269,20 @@
             _rolesToDelete.Add(role);
         }
         _raid.Roles.Remove(role);
+    }
+    
+    async Task AddDiscordMessageClicked()
+    {
+        _raid.DiscordRaidMessages.Add(new DiscordRaidMessage());
+    }
+
+    async Task DeleteMessageClicked(DiscordRaidMessage message)
+    {
+        if(message.DiscordRaidMessageId != 0)
+        {
+            _messagesToDelete.Add(message);
+        }
+        _raid.DiscordRaidMessages.Remove(message);
     }
 
     async Task DeleteRaidClicked()
@@ -276,7 +338,7 @@
             _raid.RaidOwnerId = _user.Id;
         }
 
-        await RaidService.AddOrEditRaid(_raid, _rolesToDelete, new List<RaidReminder>());
+        await RaidService.AddOrEditRaid(_raid, _rolesToDelete, _remindersToDelete, _messagesToDelete);
         NavigationManager.NavigateTo("raidoverview");
     }
 }

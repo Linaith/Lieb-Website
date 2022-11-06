@@ -23,8 +23,14 @@ namespace Lieb.Models.GuildWars2.Raid
         [Required]
         public double HoursBeforeRaid { get; set; }
 
-        public ulong ChannelId { get; set; }
+        public ulong DiscordServerId { get; set; }
+
+        public ulong DiscordChannelId { get; set; }
 
         public bool Sent { get; set; } = false;
+        
+        public int RaidId { get; set; }
+
+        public Raid Raid { get; set; }
     }
 }

@@ -67,7 +67,8 @@ namespace Lieb.Models.GuildWars2.Raid
             {
                 this.Reminders.Add(new RaidReminder()
                 {
-                    ChannelId = reminder.ChannelId,
+                    DiscordServerId = reminder.DiscordServerId,
+                    DiscordChannelId = reminder.DiscordChannelId,
                     HoursBeforeRaid = reminder.HoursBeforeRaid,
                     Message = reminder.Message,
                     Sent = reminder.Sent,

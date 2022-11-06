@@ -2,6 +2,7 @@
 {
     public static class Constants
     {
+        public const string HttpClientName = "Discord";
         public const string ClaimType = "Role";
         public static readonly int RaidEditPowerLevel = Roles.Moderator.PowerLevel;
 

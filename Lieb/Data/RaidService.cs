@@ -333,6 +333,7 @@ namespace Lieb.Data
 
             if(raid.EndTimeUTC < DateTimeOffset.UtcNow)
             {
+                errorMessage = $"The raid already ended.";
                 return false;
             }
 

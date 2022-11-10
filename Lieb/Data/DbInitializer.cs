@@ -40,8 +40,8 @@ namespace Lieb.Data
             GuildWars2Account bloodseeker = new GuildWars2Account() { AccountName = "Bloodseeker.2043" };
             var users = new LiebUser[]
             {
-                //new LiebUser{Id=0, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
-                new LiebUser{Id=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
+                new LiebUser{Id=0, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
+                //new LiebUser{Id=194863625477816321, Name="Sarah", Birthday=DateTime.Parse("1992-01-15"), GuildWars2Accounts = new List<GuildWars2Account>(){ linaith, sarah} },
 #if DEBUG
                 new LiebUser{Id=194455125769715713, Name="Lisa", GuildWars2Accounts = new List<GuildWars2Account>(){ hierpiepts}},
                 new LiebUser{Id=2, Name="Simon", GuildWars2Accounts = new List<GuildWars2Account>(){ bloodseeker}}
@@ -193,6 +193,16 @@ namespace Lieb.Data
             };
 
             context.Equipped.AddRange(equippedBuilds);
+            context.SaveChanges();
+
+            var discordMessage = new DiscordRaidMessage()
+            {
+                DiscordChannelId = 666954070388637697,
+                DiscordGuildId = 666953424734257182,
+                DiscordMessageId = 1040355092630614087,
+                RaidId = raid.RaidId
+            };
+            context.DiscordRaidMessages.Add(discordMessage);
             context.SaveChanges();
 
 #endif

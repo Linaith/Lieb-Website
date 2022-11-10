@@ -4,6 +4,7 @@
     {
         public const string HttpClientName = "Discord";
         public const string ClaimType = "Role";
+        public const string GW2_ACCOUNT_REGEX = "^[a-zA-z ]{3,27}\\.[0-9]{4}$";
         public static readonly int RaidEditPowerLevel = Roles.Moderator.PowerLevel;
 
         public static class Roles

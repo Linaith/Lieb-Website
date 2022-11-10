@@ -323,7 +323,7 @@
         }
 
         _raid.StartTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date + _startTime.TimeOfDay);
-        if(_startTime.TimeOfDay > _endTime.TimeOfDay)
+        if(_startTime.TimeOfDay <= _endTime.TimeOfDay)
         {
             _raid.EndTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date + _endTime.TimeOfDay);
         }

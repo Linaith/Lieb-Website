@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Lieb.Data;
 
 namespace Lieb.Models.GuildWars2
 {
@@ -9,7 +10,7 @@ namespace Lieb.Models.GuildWars2
         public string ApiKey { get; set; } = string.Empty;
 
         [Required]
-        [RegularExpression("^[a-zA-z ]{3,27}\\.[0-9]{4}$", ErrorMessage = "Invalid Account Name")]
+        [RegularExpression(Constants.GW2_ACCOUNT_REGEX, ErrorMessage = "Invalid Account Name")]
         public string AccountName { get; set; } = string.Empty;
 
         public ICollection<Equipped> EquippedBuilds { get; set; } = new List<Equipped>();

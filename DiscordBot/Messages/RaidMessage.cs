@@ -88,8 +88,10 @@ namespace DiscordBot.Messages
 
         private void AddMessageDetails(ApiRaid raid, ref EmbedBuilder embed)
         {
-            embed.AddField("Date", $"{raid.StartTimeUTC.ToLocalTime().DateTime.ToLongDateString()}");
-            embed.AddField("Time", $"from: {raid.StartTimeUTC.ToLocalTime().DateTime.ToShortTimeString()}  to: {raid.EndTimeUTC.ToLocalTime().DateTime.ToShortTimeString()}");
+            //embed.AddField("Date", $"{raid.StartTimeUTC.ToLocalTime().DateTime.ToLongDateString()}");
+            //embed.AddField("Time", $"from: {raid.StartTimeUTC.ToLocalTime().DateTime.ToShortTimeString()}  to: {raid.EndTimeUTC.ToLocalTime().DateTime.ToShortTimeString()}");
+            embed.AddField("Start ", $"<t:{raid.StartTimeUTC.ToUnixTimeSeconds()}:F>");
+            embed.AddField("End", $"<t:{raid.EndTimeUTC.ToUnixTimeSeconds()}:F>");
             embed.AddField("Organisator", raid.Organizer, true);
             embed.AddField("Guild", raid.Guild, true);
             embed.AddField("Voice chat", raid.VoiceChat, true);

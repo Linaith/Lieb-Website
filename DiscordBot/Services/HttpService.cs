@@ -1,5 +1,6 @@
 using SharedClasses.SharedModels;
 using System.Net.Http;
+using Microsoft.AspNetCore.Mvc;
 using static System.Net.Mime.MediaTypeNames;
 using System.Text.Json;
 using System.Text;
@@ -18,6 +19,37 @@ namespace DiscordBot.Services
             {
                 PropertyNameCaseInsensitive = true
             };
+        }
+
+        public async Task<bool> DoesUserExist(ulong userId)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/DoesUserExist/{userId}");
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using var contentStream =
+                    await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                return await JsonSerializer.DeserializeAsync<bool>(contentStream, _serializerOptions);
+            }
+            return false;
+        }
+
+        public async Task<Tuple<bool, string>> IsSignUpAllowed(int raidId, ulong userId)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/IsSignUpAllowed/{raidId}/{userId}");
+
+            if (!httpResponseMessage.IsSuccessStatusCode)
+            {
+                ProblemDetails problemDetails = await httpResponseMessage.Content.ReadFromJsonAsync<ProblemDetails>(_serializerOptions) ?? new ProblemDetails();
+                string errorMessage = string.IsNullOrEmpty(problemDetails.Detail) ? string.Empty : problemDetails.Detail; 
+                return new Tuple<bool, string>(false, errorMessage);
+            }
+            return new Tuple<bool, string>(true, string.Empty);
         }
 
         public async Task<List<ApiRole>> GetRoles(int raidId, ulong userId)
@@ -71,6 +103,26 @@ namespace DiscordBot.Services
                 Application.Json);
 
             var httpResponseMessage = await httpClient.PostAsync(requestUri, raidItemJson);
+        }
+
+        public async Task<Tuple<bool, string>> CreateAccount(ApiRaid.Role.User user)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var raidItemJson = new StringContent(
+                JsonSerializer.Serialize(user),
+                Encoding.UTF8,
+                Application.Json);
+
+            var httpResponseMessage = await httpClient.PostAsync("DiscordBot/CreateAccount", raidItemJson);
+
+            if (!httpResponseMessage.IsSuccessStatusCode)
+            {
+                ProblemDetails problemDetails = await httpResponseMessage.Content.ReadFromJsonAsync<ProblemDetails>(_serializerOptions) ?? new ProblemDetails();
+                string errorMessage = string.IsNullOrEmpty(problemDetails.Detail) ? string.Empty : problemDetails.Detail; 
+                return new Tuple<bool, string>(false, errorMessage);
+            }
+            return new Tuple<bool, string>(true, string.Empty);
         }
 
     }

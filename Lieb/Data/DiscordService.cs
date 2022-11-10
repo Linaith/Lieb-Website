@@ -204,11 +204,15 @@ namespace Lieb.Data
 
                 foreach(RaidSignUp signUp in raid.SignUps.Where(x => x.RaidRoleId == role.RaidRoleId))
                 {
-                    apiRole.Users.Add(new ApiRaid.Role.User(){
-                        AccountName = signUp.GuildWars2Account.AccountName,
-                        Status = signUp.SignUpType.ToString(),
-                        UserName = signUp.LiebUser.Name
-                    });
+                    if(signUp.SignUpType != SignUpType.SignedOff)
+                    {
+                        string status = signUp.SignUpType != SignUpType.SignedUp ? signUp.SignUpType.ToString() : string.Empty;
+                        apiRole.Users.Add(new ApiRaid.Role.User(){
+                            AccountName = signUp.GuildWars2Account.AccountName,
+                            Status = status,
+                            UserName = signUp.LiebUser.Name
+                        });
+                    }
                 }
                 apiRaid.Roles.Add(apiRole);
             }

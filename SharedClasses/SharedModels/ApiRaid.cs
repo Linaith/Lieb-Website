@@ -49,6 +49,8 @@ namespace SharedClasses.SharedModels
 
             public class User
             {
+                public ulong UserId {get; set;}
+
                 public string UserName { get; set; } = string.Empty;
 
                 public string AccountName { get; set; } = string.Empty;

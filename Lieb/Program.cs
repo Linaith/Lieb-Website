@@ -1,9 +1,5 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.OAuth2;
-using Discord.WebSocket;
+﻿using Discord.OAuth2;
 using Lieb.Data;
-using Lieb.Discord;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;

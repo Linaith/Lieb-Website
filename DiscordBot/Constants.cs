@@ -12,6 +12,10 @@
             public const string SIGN_OFF_BUTTON = "signOffButton";
             
             public const string SIGN_UP_DROP_DOWN = "signUpDropDown";
+
+            public const string NAME_TEXT_BOX = "nameTextbox";
+            public const string ACCOUNT_TEXT_BOX = "accountTextBox";
+            public const string CREATE_ACCOUNT_MODAL = "createAccountModal";
         }
 
         public class SlashCommands

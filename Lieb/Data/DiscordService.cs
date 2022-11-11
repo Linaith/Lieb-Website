@@ -243,7 +243,10 @@ namespace Lieb.Data
             apiReminder.UserIds = new List<ulong>();
             foreach(RaidSignUp signUp in raid.SignUps)
             {
-                apiReminder.UserIds.Add(signUp.LiebUserId);
+                if(signUp.LiebUserId > 0)
+                {
+                    apiReminder.UserIds.Add(signUp.LiebUserId);
+                }
             }
             return apiReminder;
         }

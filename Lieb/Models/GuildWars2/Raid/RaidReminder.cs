@@ -18,7 +18,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         [Required]
         [StringLength(1000, ErrorMessage = "Message too long (1000 character limit).")]
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
 
         [Required]
         public double HoursBeforeRaid { get; set; }

@@ -38,7 +38,6 @@ namespace Lieb.Controllers
         [Route("[action]/{raidId}/{userId}")]
         public ActionResult IsSignUpAllowed(int raidId, ulong userId)
         {
-            Raid raid = _raidService.GetRaid(raidId);
             if(!_raidService.IsRaidSignUpAllowed(userId, raidId, out string errorMessage))
             {
                 return Problem(errorMessage);

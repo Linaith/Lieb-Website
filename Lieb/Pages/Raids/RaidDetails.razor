@@ -17,7 +17,7 @@
     @if (_user != null && _isRaidSignUpAllowed) 
     {
         <div class="signUpStatusTooltip">
-            @if(_raid.SignUps.Where(s => s.LiebUserId == _user.Id && s.SignUpType != SignUpType.SignedOff).Any())
+            @if(_raid.SignUps.Where(s => s.LiebUserId == _user.Id && s.SignUpType != SignUpType.SignedOff && s.LiebUserId > 0).Any())
             {
                 <span class="oi oi-badge" style="color:green"></span>  
                     <span class="tooltiptext">You are signed up</span>  

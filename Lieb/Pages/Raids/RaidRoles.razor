@@ -31,7 +31,7 @@
     </thead>
     <tbody>
         @{
-            bool isSignedUp = _raid.SignUps.Where(s => s.LiebUserId == _liebUserId && s.SignUpType != SignUpType.SignedOff).Any();
+            bool isSignedUp = _raid.SignUps.Where(s => s.LiebUserId == _liebUserId && s.SignUpType != SignUpType.SignedOff && s.LiebUserId > 0).Any();
         }
         @foreach (ExpandableRole role in _expandableRoles.OrderBy(r => r.Role.RaidRoleId))
         {
@@ -141,7 +141,7 @@
     {
         if(_raid.SignUps.Where(s => s.LiebUserId == _liebUserId).Any() && signUpType != SignUpType.Flex)
         {
-            RaidService.ChangeSignUpType(_raid.RaidId, _liebUserId, role.RaidRoleId, signUpType);
+            await RaidService.ChangeSignUpType(_raid.RaidId, _liebUserId, role.RaidRoleId, signUpType);
         }
         else
         {

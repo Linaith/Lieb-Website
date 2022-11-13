@@ -12,11 +12,12 @@
     public class RaidSignUp
     {
         public int RaidSignUpId { get; set; }
-
+        public bool IsExternalUser {get { return LiebUserId == 0;}}
         public int RaidId { get; set; }
         public ulong LiebUserId { get; set; }
         public int GuildWars2AccountId { get; set; }
         public int RaidRoleId { get; set; }
+        public string ExternalUserName {get; set;} = string.Empty;
 
         public SignUpType SignUpType { get; set; }
 

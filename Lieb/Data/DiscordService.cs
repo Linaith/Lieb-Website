@@ -26,43 +26,44 @@ namespace Lieb.Data
 
         public async Task PostRaidMessage(int raidId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            Raid raid = context.Raids
-                .Include(r => r.Roles)
-                .Include(r => r.SignUps)
-                .ThenInclude(s => s.LiebUser)
-                .Include(r => r.SignUps)
-                .ThenInclude(s => s.GuildWars2Account)
-                .Include(r => r.SignUps)
-                .ThenInclude(s => s.RaidRole)
-                .Include(r => r.DiscordRaidMessages)
-                .FirstOrDefault(r => r.RaidId == raidId);
-                await PostRaidMessage(raid);
-        }
-
-        public async Task PostRaidMessage(Raid raid)
-        {
-            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
-
-            ApiRaid apiRaid = ConvertRaid(raid);
-
-            var raidItemJson = new StringContent(
-                JsonSerializer.Serialize(apiRaid),
-                Encoding.UTF8,
-                Application.Json);
-
-            string json = JsonSerializer.Serialize(apiRaid);
-
-            var httpResponseMessage = await httpClient.PostAsync("raid/PostRaidMessage", raidItemJson);
-
-            if (httpResponseMessage.IsSuccessStatusCode)
+            try
             {
-                using var contentStream =
-                    await httpResponseMessage.Content.ReadAsStreamAsync();
-                
-                ApiRaid returnedRaid = await JsonSerializer.DeserializeAsync<ApiRaid>(contentStream, _serializerOptions);
-                await UpdateDiscordMessages(returnedRaid.DisocrdMessages, raid);
+                using var context = _contextFactory.CreateDbContext();
+                Raid raid = context.Raids
+                    .Include(r => r.Roles)
+                    .Include(r => r.SignUps)
+                    .ThenInclude(s => s.LiebUser)
+                    .Include(r => r.SignUps)
+                    .ThenInclude(s => s.GuildWars2Account)
+                    .Include(r => r.SignUps)
+                    .ThenInclude(s => s.RaidRole)
+                    .Include(r => r.DiscordRaidMessages)
+                    .ToList()
+                    .FirstOrDefault(r => r.RaidId == raidId, new Raid());
+
+                var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+
+                ApiRaid apiRaid = ConvertRaid(raid);
+
+                var raidItemJson = new StringContent(
+                    JsonSerializer.Serialize(apiRaid),
+                    Encoding.UTF8,
+                    Application.Json);
+
+                string json = JsonSerializer.Serialize(apiRaid);
+
+                var httpResponseMessage = await httpClient.PostAsync("raid/PostRaidMessage", raidItemJson);
+
+                if (httpResponseMessage.IsSuccessStatusCode)
+                {
+                    using var contentStream =
+                        await httpResponseMessage.Content.ReadAsStreamAsync();
+                    
+                    ApiRaid returnedRaid = await JsonSerializer.DeserializeAsync<ApiRaid>(contentStream, _serializerOptions);
+                    await UpdateDiscordMessages(returnedRaid.DisocrdMessages, raid);
+                }
             }
+            catch {}
         }
 
         public async Task DeleteRaidMessages(Raid raid)
@@ -72,18 +73,22 @@ namespace Lieb.Data
 
         public async Task DeleteRaidMessages(IEnumerable<DiscordRaidMessage> messages)
         {
-            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+            try
+            {
+                var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
 
-            IEnumerable<ApiRaid.DiscordMessage> apiMessages = ConvertMessages(messages);
+                IEnumerable<ApiRaid.DiscordMessage> apiMessages = ConvertMessages(messages);
 
-            var messageItemJson = new StringContent(
-                JsonSerializer.Serialize(apiMessages),
-                Encoding.UTF8,
-                Application.Json);
+                var messageItemJson = new StringContent(
+                    JsonSerializer.Serialize(apiMessages),
+                    Encoding.UTF8,
+                    Application.Json);
 
-            var httpResponseMessage = await httpClient.PostAsync("raid/DeleteRaidMessage", messageItemJson);
+                var httpResponseMessage = await httpClient.PostAsync("raid/DeleteRaidMessage", messageItemJson);
 
-            httpResponseMessage.EnsureSuccessStatusCode();
+                httpResponseMessage.EnsureSuccessStatusCode();
+            }
+            catch {}
         }
 
         public async Task<List<DiscordServer>> GetServers()
@@ -102,62 +107,67 @@ namespace Lieb.Data
                     return await JsonSerializer.DeserializeAsync<List<DiscordServer>>(contentStream, _serializerOptions);
                 }
             }
-            catch(Exception e)
-            {
-
-            }
+            catch {}
             return new List<DiscordServer>();
         }
 
         public async Task SendUserReminder(RaidReminder reminder)
         {
-            using var context = _contextFactory.CreateDbContext();
-            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
-
-            Raid raid = context.Raids
-                .Include(r => r.SignUps)
-                .ThenInclude(s => s.LiebUser)
-                .FirstOrDefault(r => r.RaidId == reminder.RaidId);
-
-            if(raid == null) return;
-
-            ApiUserReminder apiReminder = ConvertUserReminder(reminder, raid);
-
-            var raidItemJson = new StringContent(
-                JsonSerializer.Serialize(apiReminder),
-                Encoding.UTF8,
-                Application.Json);
-
-            var httpResponseMessage = await httpClient.PostAsync("raid/SendUserReminder", raidItemJson);
-
-            if (httpResponseMessage.IsSuccessStatusCode)
+            try
             {
-                reminder.Sent = true;
-                context.Update(reminder);
-                await context.SaveChangesAsync();
+                using var context = _contextFactory.CreateDbContext();
+                var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+
+                Raid raid = context.Raids
+                    .Include(r => r.SignUps)
+                    .ThenInclude(s => s.LiebUser)
+                    .FirstOrDefault(r => r.RaidId == reminder.RaidId);
+
+                if(raid == null) return;
+
+                ApiUserReminder apiReminder = ConvertUserReminder(reminder, raid);
+
+                var raidItemJson = new StringContent(
+                    JsonSerializer.Serialize(apiReminder),
+                    Encoding.UTF8,
+                    Application.Json);
+
+                var httpResponseMessage = await httpClient.PostAsync("raid/SendUserReminder", raidItemJson);
+
+                if (httpResponseMessage.IsSuccessStatusCode)
+                {
+                    reminder.Sent = true;
+                    context.Update(reminder);
+                    await context.SaveChangesAsync();
+                }
             }
+            catch {}
         }
 
         public async Task SendChannelReminder(RaidReminder reminder)
         {
-            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+            try
+            {
+                var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
 
-            ApiChannelReminder apiReminder = ConvertChannelReminder(reminder);
+                ApiChannelReminder apiReminder = ConvertChannelReminder(reminder);
 
-            var raidItemJson = new StringContent(
-                JsonSerializer.Serialize(apiReminder),
-                Encoding.UTF8,
-                Application.Json);
+                var raidItemJson = new StringContent(
+                    JsonSerializer.Serialize(apiReminder),
+                    Encoding.UTF8,
+                    Application.Json);
 
-            var httpResponseMessage = await httpClient.PostAsync("raid/SendChannelReminder", raidItemJson);
+                var httpResponseMessage = await httpClient.PostAsync("raid/SendChannelReminder", raidItemJson);
 
-            if (httpResponseMessage.IsSuccessStatusCode)
-            {                
-                reminder.Sent = true;
-                using var context = _contextFactory.CreateDbContext();
-                context.Update(reminder);
-                await context.SaveChangesAsync();
+                if (httpResponseMessage.IsSuccessStatusCode)
+                {                
+                    reminder.Sent = true;
+                    using var context = _contextFactory.CreateDbContext();
+                    context.Update(reminder);
+                    await context.SaveChangesAsync();
+                }
             }
+            catch {}
         }
 
         private async Task UpdateDiscordMessages(IEnumerable<ApiRaid.DiscordMessage> messages, Raid raid)
@@ -206,12 +216,24 @@ namespace Lieb.Data
                 {
                     if(signUp.SignUpType != SignUpType.SignedOff)
                     {
-                        string status = signUp.SignUpType != SignUpType.SignedUp ? signUp.SignUpType.ToString() : string.Empty;
-                        apiRole.Users.Add(new ApiRaid.Role.User(){
-                            AccountName = signUp.GuildWars2Account.AccountName,
-                            Status = status,
-                            UserName = signUp.LiebUser.Name
-                        });
+                        if(signUp.IsExternalUser)
+                        {
+                            string status = signUp.SignUpType != SignUpType.SignedUp ? signUp.SignUpType.ToString() : string.Empty;
+                            apiRole.Users.Add(new ApiRaid.Role.User(){
+                                AccountName = string.Empty,
+                                Status = status,
+                                UserName = signUp.ExternalUserName
+                            });
+                        }
+                        else
+                        {
+                            string status = signUp.SignUpType != SignUpType.SignedUp ? signUp.SignUpType.ToString() : string.Empty;
+                            apiRole.Users.Add(new ApiRaid.Role.User(){
+                                AccountName = signUp.GuildWars2Account.AccountName,
+                                Status = status,
+                                UserName = signUp.LiebUser.Name
+                            });
+                        }
                     }
                 }
                 apiRaid.Roles.Add(apiRole);

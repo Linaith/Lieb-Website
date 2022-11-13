@@ -234,8 +234,8 @@
         {
             _raid = RaidService.GetRaid(parsedId);
 
-            if (_raid != null && (_raid.RaidOwnerId == _user.Id 
-                || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel))
+            if (_raid.RaidOwnerId == _user.Id 
+                || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel)
             {
                 _startTime = await TimeZoneService.GetLocalDateTime(_raid.StartTimeUTC);
                 _endTime = await TimeZoneService.GetLocalDateTime(_raid.EndTimeUTC);
@@ -301,13 +301,7 @@
         {
             if(!_raid.Roles.Where(r => r.IsRandomSignUpRole).Any())
             {
-                _raid.Roles.Add(new RaidRole()
-                {
-                    Spots = 10,
-                    Name = "Random",
-                    Description = _raid.RaidType.ToString(),
-                    IsRandomSignUpRole = true
-                });
+                _raid.Roles.Add(RaidService.CreateRandomSignUpRole(_raid.RaidType));
             }
 
             foreach(RaidRole role in _raid.Roles.Where(r => !r.IsRandomSignUpRole))

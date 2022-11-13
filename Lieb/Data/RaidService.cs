@@ -46,7 +46,8 @@ namespace Lieb.Data
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.RaidRole)
                 .Include(r => r.DiscordRaidMessages)
-                .FirstOrDefault(r => r.RaidId == raidId);
+                .ToList()
+                .FirstOrDefault(r => r.RaidId == raidId, new Raid());
         }
 
         public async Task AddOrEditRaid(Raid raid, List<RaidRole> rolesToDelete, List<RaidReminder> remindersToDelete, List<DiscordRaidMessage> messagesToDelete)
@@ -69,7 +70,7 @@ namespace Lieb.Data
                     //move users back to "Random" role
                     if (raid.RaidType != RaidType.Planned)
                     {
-                        RaidRole randomRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
+                        RaidRole randomRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole, CreateRandomSignUpRole(raid.RaidType));
                         foreach (RaidSignUp signUp in raid.SignUps)
                         {
                             signUp.RaidRole = randomRole;
@@ -79,7 +80,7 @@ namespace Lieb.Data
 
                     await context.SaveChangesAsync();
                 }
-                _discordService.PostRaidMessage(raid.RaidId);
+                await _discordService.PostRaidMessage(raid.RaidId);
             }
         }
 
@@ -94,7 +95,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
             context.Raids.Remove(raid);
             await context.SaveChangesAsync();
-            _discordService.DeleteRaidMessages(raid);
+            await _discordService.DeleteRaidMessages(raid);
         }
 
         public async Task SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)
@@ -108,24 +109,48 @@ namespace Lieb.Data
             List<RaidSignUp> signUps = context.RaidSignUps.Where(r => r.RaidId == raidId && r.LiebUserId == liebUserId).ToList();
             if (signUpType != SignUpType.Flex && signUps.Where(r => r.SignUpType != SignUpType.Flex).Any())
             {
-                ChangeSignUpType(raidId, liebUserId, plannedRoleId, signUpType);
+                await ChangeSignUpType(raidId, liebUserId, plannedRoleId, signUpType);
             }
             else if (!signUps.Where(r => r.RaidRoleId == plannedRoleId).Any())
             {
-                context.RaidSignUps.Add(new RaidSignUp()
+                RaidSignUp signUp = new RaidSignUp()
                 {
                     GuildWars2AccountId = guildWars2AccountId,
                     RaidId = raidId,
                     LiebUserId = liebUserId,
                     RaidRoleId = plannedRoleId,
                     SignUpType = signUpType
-                });
+                };
+                context.RaidSignUps.Add(signUp);
                 await context.SaveChangesAsync();
+                await LogSignUp(signUp);
             }
-            _discordService.PostRaidMessage(raidId);
+            await _discordService.PostRaidMessage(raidId);
         }
 
-        public async Task SignOff(int raidId, ulong liebUserId)
+        public async Task SignUpExternalUser(int raidId, string userName, int plannedRoleId, SignUpType signUpType, ulong signedUpByUserId)
+        {
+            if (!IsRoleSignUpAllowed(raidId, ulong.MaxValue, plannedRoleId, signUpType, true))
+            {
+                return;
+            }
+            using var context = _contextFactory.CreateDbContext();
+
+            
+            RaidSignUp signUp = new RaidSignUp()
+            {
+                RaidId = raidId,
+                ExternalUserName = userName,
+                RaidRoleId = plannedRoleId,
+                SignUpType = signUpType
+            };
+            context.RaidSignUps.Add(signUp);
+            await context.SaveChangesAsync();
+            await LogSignUp(signUp, signedUpByUserId);
+            await _discordService.PostRaidMessage(raidId);
+        }
+
+        public async Task SignOff(int raidId, ulong liebUserId, ulong signedOffByUserId = 0)
         {
             using var context = _contextFactory.CreateDbContext();
             //remove Flex Sign Ups
@@ -143,11 +168,29 @@ namespace Lieb.Data
                 if(raid != null && raid.RaidType != RaidType.Planned && !signUp.RaidRole.IsRandomSignUpRole)
                 {
                     context.RaidRoles.Remove(signUp.RaidRole);
-                    signUp.RaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
+                    signUp.RaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole, CreateRandomSignUpRole(raid.RaidType));
                 }
+                await LogSignUp(signUp, signedOffByUserId);
             }
             await context.SaveChangesAsync();
-            _discordService.PostRaidMessage(raidId);
+            await _discordService.PostRaidMessage(raidId);
+        }
+
+        public async Task SignOffExternalUser(int raidId, string userName, ulong signedOffByUserId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            
+            List<RaidSignUp> signUps = context.RaidSignUps.Where(x => x.RaidId == raidId && x.ExternalUserName == userName).ToList();
+            context.RaidSignUps.RemoveRange(signUps);
+            
+            await context.SaveChangesAsync();
+            RaidSignUp signUp = signUps.FirstOrDefault();
+            if(signUp != null)
+            {
+                signUp.SignUpType = SignUpType.SignedOff;
+                await LogSignUp(signUp, signedOffByUserId);
+            }
+            await _discordService.PostRaidMessage(raidId);
         }
 
         public async Task ChangeAccount(int raidId, ulong liebUserId, int guildWars2AccountId)
@@ -159,10 +202,10 @@ namespace Lieb.Data
                 signUp.GuildWars2AccountId = guildWars2AccountId;
             }
             await context.SaveChangesAsync();
-            _discordService.PostRaidMessage(raidId);
+            await _discordService.PostRaidMessage(raidId);
         }
 
-        public void ChangeSignUpType(int raidId, ulong liebUserId, int plannedRoleId, SignUpType signUpType)
+        public async Task ChangeSignUpType(int raidId, ulong liebUserId, int plannedRoleId, SignUpType signUpType, bool postChanges = true)
         {
             if (!IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true))
             {
@@ -187,9 +230,13 @@ namespace Lieb.Data
             {
                 signUp.RaidRoleId = plannedRoleId;
                 signUp.SignUpType = signUpType;
+                await LogSignUp(signUp);
             }
             context.SaveChanges();
-            _discordService.PostRaidMessage(raidId);
+            if(postChanges)
+            {
+                await _discordService.PostRaidMessage(raidId);
+            }
         }
 
         public bool IsRoleSignUpAllowed(ulong liebUserId, int plannedRoleId, SignUpType signUpType)
@@ -276,7 +323,7 @@ namespace Lieb.Data
                     {
                         if (moveFlexUser)
                         {
-                            ChangeSignUpType(raid.RaidId, userId, signUp.RaidRoleId, SignUpType.SignedUp);
+                            await ChangeSignUpType(raid.RaidId, userId, signUp.RaidRoleId, SignUpType.SignedUp, false);
                         }
                         return true;
                     }
@@ -340,20 +387,60 @@ namespace Lieb.Data
             return true;
         }
 
-        public void SendReminders()
+        private async Task LogSignUp(RaidSignUp signUp, ulong signedUpBy = 0)
+        {
+            RaidSignUpHistory history = new RaidSignUpHistory()
+            {
+                RaidId = signUp.RaidId,
+                UserId = signUp.LiebUserId,
+                SignUpType = signUp.SignUpType,
+                Time = DateTimeOffset.UtcNow,
+                UserName = signUp.ExternalUserName,
+                GuildWars2AccountId = signUp.GuildWars2AccountId
+            };
+            if(signedUpBy != 0)
+            {
+                history.UserId = signedUpBy;
+            }
+            using var context = _contextFactory.CreateDbContext();
+            await context.RaidSignUpHistories.AddAsync(history);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task SendReminders()
         {
             using var context = _contextFactory.CreateDbContext();
+            DateTimeOffset now = DateTimeOffset.UtcNow;
             List<Raid> raids = context.Raids
                 .Include(r => r.Reminders)
                 .ToList();
             
-            foreach(Raid raid in raids)
+            foreach(Raid raid in raids.Where(r => r.StartTimeUTC > now))
             {
                 foreach(RaidReminder reminder in raid.Reminders.Where(reminder => !reminder.Sent && raid.StartTimeUTC.AddHours(-reminder.HoursBeforeRaid) < DateTime.UtcNow))
                 {
-                    //TODO send reminders -> this is a Discord Problem...
+                    switch(reminder.Type)
+                    {
+                        case RaidReminder.ReminderType.User:
+                            await _discordService.SendUserReminder(reminder);
+                            break;
+                        case RaidReminder.ReminderType.Channel:
+                            await _discordService.SendChannelReminder(reminder);
+                            break;
+                    }
                 }
             }
+        }
+
+        public RaidRole CreateRandomSignUpRole(RaidType raidType)
+        {
+            return new RaidRole()
+                {
+                    Spots = 10,
+                    Name = "Random",
+                    Description = raidType.ToString(),
+                    IsRandomSignUpRole = true
+                };
         }
     }
 }

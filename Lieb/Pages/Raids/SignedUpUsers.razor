@@ -13,12 +13,12 @@
         {
             <tr>
                 @{
-                    bool isUser = signUp.LiebUserId == _liebUserId;
+                    bool isLoggedInUser = signUp.LiebUserId == _liebUserId;
                     string signUpStatus = string.Empty;
                     @if (signUp.SignUpType != SignUpType.SignedUp && _signUpTypes.Count > 1) signUpStatus = $" - {signUp.SignUpType}";
                 }
 
-                @if (isUser && _usableAccounts.Count > 1 && signUp.SignUpType != SignUpType.Flex)
+                @if (isLoggedInUser && _usableAccounts.Count > 1 && signUp.SignUpType != SignUpType.Flex)
                 {
                     <td>
                         <select class="accountselect" value=@signUp.GuildWars2AccountId @onchange="args => _Parent.ChangeAccount(args)">
@@ -29,9 +29,19 @@
                         </select> @signUpStatus 
                     </td>
                 }
-                else if(isUser && _showUserColor)
+                else if(isLoggedInUser && _showUserColor)
                 {
                     <td class="nametooltip username">
+                        @signUp.GuildWars2Account.AccountName @signUpStatus
+                        @if(_showToolTip)
+                        {
+                            <span class="tooltiptext">@signUp.LiebUser.Name</span>
+                        }
+                    </td> 
+                }
+                else if(!signUp.IsExternalUser)
+                {
+                    <td class="nametooltip">
                         @signUp.GuildWars2Account.AccountName @signUpStatus
                         @if(_showToolTip)
                         {
@@ -42,10 +52,10 @@
                 else
                 {
                     <td class="nametooltip">
-                        @signUp.GuildWars2Account.AccountName @signUpStatus
+                        @signUp.ExternalUserName @signUpStatus
                         @if(_showToolTip)
                         {
-                            <span class="tooltiptext">@signUp.LiebUser.Name</span>
+                            <span class="tooltiptext">external user</span>
                         }
                     </td> 
                 }

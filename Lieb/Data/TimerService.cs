@@ -20,7 +20,7 @@ namespace Lieb.Data
             return Task.CompletedTask;
         }
 
-        private void CheckRaids(object? state)
+        private async void CheckRaids(object? state)
         {
             using (var scope = _services.CreateScope())
             {
@@ -41,7 +41,7 @@ namespace Lieb.Data
                 var raidService =
                     scope.ServiceProvider
                         .GetRequiredService<RaidService>();
-                raidService.SendReminders();
+                await raidService.SendReminders();
             }
         }
 

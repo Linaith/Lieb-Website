@@ -410,24 +410,22 @@ namespace Lieb.Data
         public async Task SendReminders()
         {
             using var context = _contextFactory.CreateDbContext();
-            DateTimeOffset now = DateTimeOffset.UtcNow;
-            List<Raid> raids = context.Raids
-                .Include(r => r.Reminders)
+            List<RaidReminder> reminders = context.RaidReminders
+                .Include(r => r.Raid)
+                .Where(r => !r.Sent)
                 .ToList();
-            
-            foreach(Raid raid in raids.Where(r => r.StartTimeUTC > now))
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            foreach(RaidReminder reminder in reminders.Where(r => r.ReminderTime < now))
             {
-                foreach(RaidReminder reminder in raid.Reminders.Where(reminder => !reminder.Sent && raid.StartTimeUTC.AddHours(-reminder.HoursBeforeRaid) < DateTime.UtcNow))
+                switch(reminder.Type)
                 {
-                    switch(reminder.Type)
-                    {
-                        case RaidReminder.ReminderType.User:
-                            await _discordService.SendUserReminder(reminder);
-                            break;
-                        case RaidReminder.ReminderType.Channel:
-                            await _discordService.SendChannelReminder(reminder);
-                            break;
-                    }
+                    case RaidReminder.ReminderType.User:
+                        await _discordService.SendUserReminder(reminder);
+                        break;
+                    case RaidReminder.ReminderType.Channel:
+                        await _discordService.SendChannelReminder(reminder);
+                        break;
                 }
             }
         }

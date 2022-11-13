@@ -60,7 +60,8 @@ namespace Lieb.Models.GuildWars2.Raid
                 {
                     Description = role.Description,
                     Name = role.Name,
-                    Spots = role.Spots
+                    Spots = role.Spots,
+                    IsRandomSignUpRole = role.IsRandomSignUpRole
                 });
             }
             foreach (RaidReminder reminder in template.Reminders)
@@ -69,10 +70,11 @@ namespace Lieb.Models.GuildWars2.Raid
                 {
                     DiscordServerId = reminder.DiscordServerId,
                     DiscordChannelId = reminder.DiscordChannelId,
-                    HoursBeforeRaid = reminder.HoursBeforeRaid,
+                    ReminderTime = reminder.ReminderTime,
                     Message = reminder.Message,
                     Sent = reminder.Sent,
-                    Type = reminder.Type
+                    Type = reminder.Type,
+                    RaidId = reminder.RaidId
                 });
             }
             foreach (DiscordRaidMessage message in template.DiscordRaidMessages)

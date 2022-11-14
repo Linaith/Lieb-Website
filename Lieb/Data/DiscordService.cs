@@ -111,21 +111,27 @@ namespace Lieb.Data
             return new List<DiscordServer>();
         }
 
-        public async Task SendUserReminder(RaidReminder reminder)
+        public async Task SendUserReminder(RaidReminder reminder, Raid raid)
+        {
+            if (await SendMessageToRaidUsers(reminder.Message, raid))
+            {
+                using var context = _contextFactory.CreateDbContext();
+                reminder.Sent = true;
+                context.Update(reminder);
+                await context.SaveChangesAsync();
+            }
+        }
+
+
+        public async Task<bool> SendMessageToRaidUsers(string message, Raid raid)
         {
             try
             {
-                using var context = _contextFactory.CreateDbContext();
                 var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
 
-                Raid raid = context.Raids
-                    .Include(r => r.SignUps)
-                    .ThenInclude(s => s.LiebUser)
-                    .FirstOrDefault(r => r.RaidId == reminder.RaidId);
+                if(raid == null) return false;
 
-                if(raid == null) return;
-
-                ApiUserReminder apiReminder = ConvertUserReminder(reminder, raid);
+                ApiUserReminder apiReminder = ConvertUserReminder(message, raid);
 
                 var raidItemJson = new StringContent(
                     JsonSerializer.Serialize(apiReminder),
@@ -134,14 +140,10 @@ namespace Lieb.Data
 
                 var httpResponseMessage = await httpClient.PostAsync("raid/SendUserReminder", raidItemJson);
 
-                if (httpResponseMessage.IsSuccessStatusCode)
-                {
-                    reminder.Sent = true;
-                    context.Update(reminder);
-                    await context.SaveChangesAsync();
-                }
+                return httpResponseMessage.IsSuccessStatusCode;
             }
             catch {}
+            return false;
         }
 
         public async Task SendChannelReminder(RaidReminder reminder)
@@ -256,11 +258,11 @@ namespace Lieb.Data
             return apiMessages;
         }
 
-        private ApiUserReminder ConvertUserReminder(RaidReminder reminder, Raid raid)
+        private ApiUserReminder ConvertUserReminder(string message, Raid raid)
         {
             ApiUserReminder apiReminder = new ApiUserReminder()
             {
-                Message = reminder.Message
+                Message = message
             };
             apiReminder.UserIds = new List<ulong>();
             foreach(RaidSignUp signUp in raid.SignUps)

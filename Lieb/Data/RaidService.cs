@@ -96,6 +96,10 @@ namespace Lieb.Data
             context.Raids.Remove(raid);
             await context.SaveChangesAsync();
             await _discordService.DeleteRaidMessages(raid);
+            if(raid.EndTimeUTC > DateTimeOffset.UtcNow)
+            {
+                await _discordService.SendMessageToRaidUsers($"Raid \"{raid.Title}\": was deleted.", raid);
+            }
         }
 
         public async Task SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)
@@ -415,13 +419,13 @@ namespace Lieb.Data
                 .Where(r => !r.Sent)
                 .ToList();
 
-            DateTimeOffset now = DateTimeOffset.UtcNow;
-            foreach(RaidReminder reminder in reminders.Where(r => r.ReminderTime < now))
+            DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+            foreach(RaidReminder reminder in reminders.Where(r => r.ReminderTimeUTC < utcNow))
             {
                 switch(reminder.Type)
                 {
                     case RaidReminder.ReminderType.User:
-                        await _discordService.SendUserReminder(reminder);
+                        await _discordService.SendUserReminder(reminder, reminder.Raid);
                         break;
                     case RaidReminder.ReminderType.Channel:
                         await _discordService.SendChannelReminder(reminder);

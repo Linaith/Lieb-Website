@@ -21,7 +21,7 @@ namespace Lieb.Models.GuildWars2.Raid
         public string Message { get; set; } = string.Empty;
 
         [Required]
-        public DateTimeOffset ReminderTime { get; set; } = DateTime.Now;
+        public DateTimeOffset ReminderTimeUTC { get; set; } = DateTime.Now;
 
         public ulong DiscordServerId { get; set; }
 

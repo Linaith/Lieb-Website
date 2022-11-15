@@ -68,40 +68,75 @@ namespace Lieb.Controllers
         [Route("[action]")]
         public async Task SignUp(ApiSignUp signUp)
         {
-            int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
-            await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.SignedUp);
+            if(signUp.userId != 0)
+            {
+                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
+                await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.SignedUp, signUp.signedUpByUserId);
+            }
+            else
+            {
+                await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.SignedUp, signUp.signedUpByUserId);
+            }
         }
 
         [HttpPost]
         [Route("[action]")]
         public async Task SignUpMaybe(ApiSignUp signUp)
         {
-            int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
-            await _raidService.SignUp(signUp.raidId, signUp.userId, signUp.gw2AccountId, signUp.roleId, SignUpType.Maybe);
+            if(signUp.userId != 0)
+            {
+                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
+                await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Maybe, signUp.signedUpByUserId);
+            }
+            else
+            {
+                await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.Maybe, signUp.signedUpByUserId);
+            }
         }
 
         [HttpPost]
         [Route("[action]")]
         public async Task SignUpBackup(ApiSignUp signUp)
         {
-            int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
-            await _raidService.SignUp(signUp.raidId, signUp.userId, signUp.gw2AccountId, signUp.roleId, SignUpType.Backup);
+            if(signUp.userId != 0)
+            {
+                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
+                await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Backup, signUp.signedUpByUserId);
+            }
+            else
+            {
+                await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.Backup, signUp.signedUpByUserId);
+            }
         }
 
         [HttpPost]
         [Route("[action]")]
         public async Task SignUpFlex(ApiSignUp signUp)
         {
-            int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
-            await _raidService.SignUp(signUp.raidId, signUp.userId, signUp.gw2AccountId, signUp.roleId, SignUpType.Flex);
+            if(signUp.userId != 0)
+            {
+                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
+                await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Flex, signUp.signedUpByUserId);
+            }
+            else
+            {
+                await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.Flex, signUp.signedUpByUserId);
+            }
         }
 
         [HttpPost]
         [Route("[action]")]
         public async Task SignOff(ApiSignUp signUp)
         {
-            int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
-            await _raidService.SignOff(signUp.raidId, signUp.userId);
+            if(signUp.userId != 0)
+            {
+                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
+                await _raidService.SignOff(signUp.raidId, signUp.userId, signUp.signedUpByUserId);
+            }
+            else
+            {
+                await _raidService.SignOffExternalUser(signUp.raidId, signUp.userName, signUp.signedUpByUserId);
+            }
         }
 
         [HttpPost]
@@ -120,6 +155,15 @@ namespace Lieb.Controllers
             await _userService.CreateUser(user.UserId, user.UserName);
             await _gw2AccountService.AddOrEditAccount(gw2Account, user.UserId);
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("[action]/{raidId}")]
+        public ActionResult<ApiRaid> GetRaid(int raidId)
+        {
+            Raid raid = _raidService.GetRaid(raidId);
+
+            return DiscordService.ConvertRaid(raid);
         }
     }
 }

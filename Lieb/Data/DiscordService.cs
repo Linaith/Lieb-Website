@@ -196,7 +196,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        private ApiRaid ConvertRaid(Raid raid)
+        public static ApiRaid ConvertRaid(Raid raid)
         {
             ApiRaid apiRaid = new ApiRaid(){
                 Title = raid.Title,
@@ -239,7 +239,8 @@ namespace Lieb.Data
                             apiRole.Users.Add(new ApiRaid.Role.User(){
                                 AccountName = signUp.GuildWars2Account.AccountName,
                                 Status = status,
-                                UserName = signUp.LiebUser.Name
+                                UserName = signUp.LiebUser.Name,
+                                UserId = signUp.LiebUserId
                             });
                         }
                     }
@@ -249,7 +250,7 @@ namespace Lieb.Data
             return apiRaid;
         }
 
-        private List<ApiRaid.DiscordMessage> ConvertMessages(IEnumerable<DiscordRaidMessage> messages)
+        public static List<ApiRaid.DiscordMessage> ConvertMessages(IEnumerable<DiscordRaidMessage> messages)
         {
             List<ApiRaid.DiscordMessage> apiMessages = new List<ApiRaid.DiscordMessage>();
             foreach(DiscordRaidMessage message in messages)
@@ -264,7 +265,7 @@ namespace Lieb.Data
             return apiMessages;
         }
 
-        private ApiUserReminder ConvertUserReminder(string message, Raid raid)
+        public static ApiUserReminder ConvertUserReminder(string message, Raid raid)
         {
             ApiUserReminder apiReminder = new ApiUserReminder()
             {
@@ -281,7 +282,7 @@ namespace Lieb.Data
             return apiReminder;
         }
 
-        private ApiChannelReminder ConvertChannelReminder(ulong discordServerId, ulong discordChannelId, string message)
+        public static ApiChannelReminder ConvertChannelReminder(ulong discordServerId, ulong discordChannelId, string message)
         {
             return new ApiChannelReminder()
             {

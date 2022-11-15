@@ -125,5 +125,21 @@ namespace DiscordBot.Services
             return new Tuple<bool, string>(true, string.Empty);
         }
 
+        public async Task<ApiRaid> GetRaid(int raidId)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/GetRaid/{raidId}");
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using var contentStream =
+                    await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                return await JsonSerializer.DeserializeAsync<ApiRaid>(contentStream, _serializerOptions);
+            }
+            return new ApiRaid();
+        }
+
     }
 }

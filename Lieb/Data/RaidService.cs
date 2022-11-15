@@ -102,7 +102,7 @@ namespace Lieb.Data
             }
         }
 
-        public async Task SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType)
+        public async Task SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType, ulong signedUpByUserId = 0)
         {
             if (!IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true))
             {
@@ -127,7 +127,7 @@ namespace Lieb.Data
                 };
                 context.RaidSignUps.Add(signUp);
                 await context.SaveChangesAsync();
-                await LogSignUp(signUp);
+                await LogSignUp(signUp, signedUpByUserId);
             }
             await _discordService.PostRaidMessage(raidId);
         }

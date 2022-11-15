@@ -77,7 +77,7 @@ namespace DiscordBot
             await commandHandler.InstallCommandsAsync();
 
             _client.Log += Log;
-            //_client.Ready += Client_Ready;
+            _client.Ready += Client_Ready;
 
             //  You can assign your bot token to a string, and pass that in to connect.
             //  This is, however, insecure, particularly if you plan to have your code hosted in a public repository.
@@ -113,13 +113,49 @@ namespace DiscordBot
             var guild = _client.GetGuild(666953424734257182);
 
             // Next, lets create our slash command builder. This is like the embed builder but for slash commands.
-            var guildCommand = new SlashCommandBuilder();
+            var guildCommand = new SlashCommandBuilder()
+                .WithName(Constants.SlashCommands.RAID)
+                .WithDescription("Raid commands")
+                .AddOption(new SlashCommandOptionBuilder()
+                    .WithName(Constants.SlashCommands.USER)
+                    .WithDescription("Add or remove users")
+                    .WithType(ApplicationCommandOptionType.SubCommandGroup)
+                    .AddOption(new SlashCommandOptionBuilder()
+                        .WithName(Constants.SlashCommands.ADD_USER_COMMAND)
+                        .WithDescription("Sign up existing user")
+                        .WithType(ApplicationCommandOptionType.SubCommand)
+                        .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
+                        .AddOption(Constants.SlashCommands.OptionNames.USER, ApplicationCommandOptionType.User, "The user you want to sign up", isRequired: true)
+                        )
 
-            // Note: Names have to be all lowercase and match the regular expression ^[\w-]{3,32}$
-            guildCommand.WithName("first-command");
-
-            // Descriptions can have a max length of 100.
-            guildCommand.WithDescription("This is my first guild slash command!");
+                    .AddOption(new SlashCommandOptionBuilder()
+                        .WithName(Constants.SlashCommands.REMOVE_USER_COMMAND)
+                        .WithDescription("Sign off existing user")
+                        .WithType(ApplicationCommandOptionType.SubCommand)
+                        .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
+                        .AddOption(Constants.SlashCommands.OptionNames.USER, ApplicationCommandOptionType.User, "The user you want to sign off", isRequired: true)
+                        )
+                    .AddOption(new SlashCommandOptionBuilder()
+                        .WithName(Constants.SlashCommands.ADD_EXTERNAL_USER_COMMAND)
+                        .WithDescription("Sign up non existing user")
+                        .WithType(ApplicationCommandOptionType.SubCommand)
+                        .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
+                        )
+                    .AddOption(new SlashCommandOptionBuilder()
+                        .WithName(Constants.SlashCommands.REMOVE_EXTERNAL_USER_COMMAND)
+                        .WithDescription("Sign off non existing user")
+                        .WithType(ApplicationCommandOptionType.SubCommand)
+                        .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
+                        .AddOption(Constants.SlashCommands.OptionNames.USER_NAME, ApplicationCommandOptionType.String, "The user name you want to sign off", isRequired: true)
+                        )
+                    )
+                .AddOption(new SlashCommandOptionBuilder()
+                    .WithName(Constants.SlashCommands.SEND_MESSAGE_COMMAND)
+                    .WithDescription("Send message to all signed up users")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
+                    .AddOption(Constants.SlashCommands.OptionNames.MESSAGE, ApplicationCommandOptionType.String, "The message you want to send", isRequired: true)
+                    );
 
 
             try

@@ -8,11 +8,11 @@ namespace DiscordBot.Messages
 {
     public class SignUpMessage
     {
-        public static MessageComponent buildMessage(List<ApiRole> roles, int raidId, string buttonType, bool allRoles)
+        public static MessageComponent buildMessage(List<ApiRole> roles, int raidId, string buttonType, bool allRoles, ulong userIdToSignUp = 0)
         {
             var signUpSelect = new SelectMenuBuilder()
                 .WithPlaceholder("Select an option")
-                .WithCustomId($"{Constants.ComponentIds.SIGN_UP_DROP_DOWN}-{raidId}-{buttonType}")
+                .WithCustomId($"{Constants.ComponentIds.SIGN_UP_DROP_DOWN}-{raidId}-{buttonType}-{userIdToSignUp}")
                 .WithMinValues(1)
                 .WithMaxValues(1);
             

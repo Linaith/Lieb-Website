@@ -7,5 +7,7 @@ namespace SharedClasses.SharedModels
         public ulong userId {get; set;}
         public int gw2AccountId {get; set;}
         public int roleId {get; set;}
+        public ulong signedUpByUserId {get; set;}
+        public string userName {get; set;} = string.Empty;
     }
 }

@@ -104,9 +104,9 @@ namespace Lieb.Data
             Dictionary<ulong, GuildWars2Build> signedUpUsers= new Dictionary<ulong, GuildWars2Build>();
             foreach (RaidSignUp signUp in raid.SignUps)
             {
-                if (signUp.GuildWars2Account.EquippedBuilds.Count > 0)
+                if (!signUp.IsExternalUser && signUp.GuildWars2Account.EquippedBuilds.Count > 0)
                 {
-                    signedUpUsers.Add(signUp.LiebUserId, signUp.GuildWars2Account.EquippedBuilds.ToList()[_random.Next(signUp.GuildWars2Account.EquippedBuilds.Count - 1)].GuildWars2Build);
+                    signedUpUsers.Add(signUp.LiebUserId.Value, signUp.GuildWars2Account.EquippedBuilds.ToList()[_random.Next(signUp.GuildWars2Account.EquippedBuilds.Count - 1)].GuildWars2Build);
                 }
             }
             BalanceRoles(raid, signedUpUsers);

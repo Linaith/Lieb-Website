@@ -35,10 +35,21 @@ namespace Lieb.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{raidId}/{userId}")]
-        public ActionResult IsSignUpAllowed(int raidId, ulong userId)
+        [Route("[action]/{raidId}/{userId}/{ignoreRole}")]
+        public ActionResult IsSignUpAllowed(int raidId, ulong userId, bool ignoreRole)
         {
-            if(!_raidService.IsRaidSignUpAllowed(userId, raidId, out string errorMessage))
+            if(!_raidService.IsRaidSignUpAllowed(userId, raidId, out string errorMessage, ignoreRole))
+            {
+                return Problem(errorMessage);
+            }
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("[action]/{raidId}")]
+        public ActionResult IsExternalSignUpAllowed(int raidId)
+        {
+            if(!_raidService.IsExternalSignUpAllowed(raidId, out string errorMessage))
             {
                 return Problem(errorMessage);
             }

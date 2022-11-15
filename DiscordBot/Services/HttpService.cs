@@ -37,11 +37,26 @@ namespace DiscordBot.Services
             return false;
         }
 
-        public async Task<Tuple<bool, string>> IsSignUpAllowed(int raidId, ulong userId)
+        public async Task<Tuple<bool, string>> IsSignUpAllowed(int raidId, ulong userId, bool ignoreRole = false)
         {
             var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
 
-            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/IsSignUpAllowed/{raidId}/{userId}");
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/IsSignUpAllowed/{raidId}/{userId}/{ignoreRole}");
+
+            if (!httpResponseMessage.IsSuccessStatusCode)
+            {
+                ProblemDetails problemDetails = await httpResponseMessage.Content.ReadFromJsonAsync<ProblemDetails>(_serializerOptions) ?? new ProblemDetails();
+                string errorMessage = string.IsNullOrEmpty(problemDetails.Detail) ? string.Empty : problemDetails.Detail; 
+                return new Tuple<bool, string>(false, errorMessage);
+            }
+            return new Tuple<bool, string>(true, string.Empty);
+        }
+
+        public async Task<Tuple<bool, string>> IsExternalSignUpAllowed(int raidId)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/IsExternalSignUpAllowed/{raidId}");
 
             if (!httpResponseMessage.IsSuccessStatusCode)
             {

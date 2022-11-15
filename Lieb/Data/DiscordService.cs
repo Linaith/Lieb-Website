@@ -240,7 +240,7 @@ namespace Lieb.Data
                                 AccountName = signUp.GuildWars2Account.AccountName,
                                 Status = status,
                                 UserName = signUp.LiebUser.Name,
-                                UserId = signUp.LiebUserId
+                                UserId = signUp.LiebUserId.Value
                             });
                         }
                     }
@@ -274,9 +274,9 @@ namespace Lieb.Data
             apiReminder.UserIds = new List<ulong>();
             foreach(RaidSignUp signUp in raid.SignUps)
             {
-                if(signUp.LiebUserId > 0)
+                if(signUp.LiebUserId.HasValue)
                 {
-                    apiReminder.UserIds.Add(signUp.LiebUserId);
+                    apiReminder.UserIds.Add(signUp.LiebUserId.Value);
                 }
             }
             return apiReminder;

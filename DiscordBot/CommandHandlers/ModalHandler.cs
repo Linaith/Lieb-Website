@@ -65,6 +65,7 @@ namespace DiscordBot.CommandHandlers
                         roleId = roleId
                     };
                     await _httpService.SignUp(signUpExternal);
+                    await modal.RespondAsync($"signed up {userName}", ephemeral: true);
                     break;
             }
         }

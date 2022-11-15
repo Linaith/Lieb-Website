@@ -97,6 +97,12 @@ namespace DiscordBot.CommandHandlers
                 List<ApiRole> roles = await _httpService.GetRoles(raidId, user.Id);    
                 if(await _httpService.DoesUserExist(user.Id))
                 {                
+                    Tuple<bool, string> signUpAllowed = await _httpService.IsSignUpAllowed(raidId, user.Id, true);
+                    if(!signUpAllowed.Item1)
+                    {
+                        await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
+                        return;
+                    }
                     await command.RespondAsync("Please choose a role.", components: SignUpMessage.buildMessage(roles, raidId, Constants.ComponentIds.SIGN_UP_BUTTON, false, user.Id) , ephemeral: true);
                 }
                 else
@@ -117,6 +123,13 @@ namespace DiscordBot.CommandHandlers
 
         private async Task SignUpExternalUser(SocketSlashCommand command, int raidId, List<ApiRole> roles)
         {
+            Tuple<bool, string> signUpAllowed = await _httpService.IsExternalSignUpAllowed(raidId);
+            if(!signUpAllowed.Item1)
+            {
+                await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
+                return;
+            }
+
             var signUpSelect = new SelectMenuBuilder()
                 .WithPlaceholder("Select an option")
                 .WithCustomId($"{Constants.ComponentIds.SIGN_UP_EXTERNAL_DROP_DOWN}-{raidId}")

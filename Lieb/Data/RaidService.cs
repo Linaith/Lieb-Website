@@ -117,14 +117,7 @@ namespace Lieb.Data
             }
             else if (!signUps.Where(r => r.RaidRoleId == plannedRoleId).Any())
             {
-                RaidSignUp signUp = new RaidSignUp()
-                {
-                    GuildWars2AccountId = guildWars2AccountId,
-                    RaidId = raidId,
-                    LiebUserId = liebUserId,
-                    RaidRoleId = plannedRoleId,
-                    SignUpType = signUpType
-                };
+                RaidSignUp signUp = new RaidSignUp(raidId, liebUserId, guildWars2AccountId, plannedRoleId, signUpType);
                 string userName = context.LiebUsers.FirstOrDefault(l => l.Id == liebUserId)?.Name;
                 context.RaidSignUps.Add(signUp);
                 await context.SaveChangesAsync();
@@ -142,13 +135,7 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
 
             
-            RaidSignUp signUp = new RaidSignUp()
-            {
-                RaidId = raidId,
-                ExternalUserName = userName,
-                RaidRoleId = plannedRoleId,
-                SignUpType = signUpType
-            };
+            RaidSignUp signUp = new RaidSignUp(raidId, userName, plannedRoleId, signUpType);
             context.RaidSignUps.Add(signUp);
             await context.SaveChangesAsync();
             await LogSignUp(signUp, userName, signedUpByUserId);
@@ -235,7 +222,14 @@ namespace Lieb.Data
             {
                 signUp.RaidRoleId = plannedRoleId;
                 signUp.SignUpType = signUpType;
-                await LogSignUp(signUp, signUp.LiebUser.Name);
+                if(signUp.IsExternalUser)
+                {
+                    await LogSignUp(signUp, signUp.ExternalUserName);
+                }
+                else
+                {
+                    await LogSignUp(signUp, signUp.LiebUser.Name);
+                }
             }
             context.SaveChanges();
             if(postChanges)
@@ -337,7 +331,7 @@ namespace Lieb.Data
             return false;
         }
 
-        public bool IsRaidSignUpAllowed(ulong liebUserId, int raidId, out string errorMessage)
+        public bool IsRaidSignUpAllowed(ulong liebUserId, int raidId, out string errorMessage, bool ignoreRole = false)
         {
             errorMessage = string.Empty;
             using var context = _contextFactory.CreateDbContext();
@@ -374,7 +368,7 @@ namespace Lieb.Data
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(raid.RequiredRole) 
+            if (!ignoreRole && !string.IsNullOrEmpty(raid.RequiredRole) 
                 && !user.RoleAssignments.Where(a => a.LiebRole.RoleName == raid.RequiredRole).Any() 
                 && raid.FreeForAllTimeUTC.UtcDateTime > DateTimeOffset.UtcNow)
             {
@@ -392,9 +386,37 @@ namespace Lieb.Data
             return true;
         }
 
+        public bool IsExternalSignUpAllowed(int raidId, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            using var context = _contextFactory.CreateDbContext();
+            Raid? raid = context.Raids
+                .AsNoTracking()
+                .FirstOrDefault(r => r.RaidId == raidId);
+            if(raid == null)
+            {
+                errorMessage = "Raid not found.";
+                return false;
+            }
+
+            if (raid.RaidType != RaidType.Planned)
+            {
+                errorMessage = "Random raids need an Account with equipped builds.";
+                return false;
+            }
+
+            if(raid.EndTimeUTC < DateTimeOffset.UtcNow)
+            {
+                errorMessage = $"The raid already ended.";
+                return false;
+            }
+
+            return true;
+        }
+
         private async Task LogSignUp(RaidSignUp signUp, string userName, ulong signedUpBy = 0)
         {
-            ulong userId = signedUpBy > 0 ? signedUpBy : signUp.LiebUserId;
+            ulong userId = signedUpBy > 0 ? signedUpBy : signUp.LiebUserId.Value;
             RaidLog log = RaidLog.CreateSignUpLog(userId, signUp, userName);
 
             using var context = _contextFactory.CreateDbContext();

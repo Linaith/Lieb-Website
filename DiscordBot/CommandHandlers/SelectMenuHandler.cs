@@ -38,7 +38,7 @@ namespace DiscordBot.CommandHandlers
                         ulong.TryParse(ids[3],out userId);
                     }
                     await ManageSignUp(ids[2], parsedRaidId, component, userId);
-                    await component.RespondAsync("successfully signed up");
+                    await component.RespondAsync("successfully signed up", ephemeral: true);
                     break;
                 case Constants.ComponentIds.SIGN_UP_EXTERNAL_DROP_DOWN:
                     await component.RespondWithModalAsync(CreateUserNameModal(parsedRaidId, int.Parse(component.Data.Values.First())));

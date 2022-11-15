@@ -24,7 +24,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public ICollection<RaidSignUp> SignUps { get; set; } = new HashSet<RaidSignUp>();
 
-        public ICollection<RaidSignUpHistory> SignUpHistory { get; set; } = new HashSet<RaidSignUpHistory>();
+        public ICollection<RaidLog> RaidLogs { get; set; } = new HashSet<RaidLog>();
 
         public Raid() { }
 

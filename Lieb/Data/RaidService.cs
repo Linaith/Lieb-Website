@@ -20,7 +20,7 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             return context.Raids
                 .Include(r => r.Roles)
-                .Include(r => r.SignUpHistory)
+                .Include(r => r.RaidLogs)
                 .Include(r => r.Reminders)
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.LiebUser)
@@ -37,7 +37,7 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             return context.Raids
                 .Include(r => r.Roles)
-                .Include(r => r.SignUpHistory)
+                .Include(r => r.RaidLogs)
                 .Include(r => r.Reminders)
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.LiebUser)
@@ -90,7 +90,7 @@ namespace Lieb.Data
             Raid raid = GetRaid(raidId);
             context.RaidSignUps.RemoveRange(raid.SignUps);
             context.RaidRoles.RemoveRange(raid.Roles);
-            context.RaidSignUpHistories.RemoveRange(raid.SignUpHistory);
+            context.RaidLogs.RemoveRange(raid.RaidLogs);
             context.RaidReminders.RemoveRange(raid.Reminders);
             await context.SaveChangesAsync();
             context.Raids.Remove(raid);
@@ -125,9 +125,10 @@ namespace Lieb.Data
                     RaidRoleId = plannedRoleId,
                     SignUpType = signUpType
                 };
+                string userName = context.LiebUsers.FirstOrDefault(l => l.Id == liebUserId)?.Name;
                 context.RaidSignUps.Add(signUp);
                 await context.SaveChangesAsync();
-                await LogSignUp(signUp, signedUpByUserId);
+                await LogSignUp(signUp, userName, signedUpByUserId);
             }
             await _discordService.PostRaidMessage(raidId);
         }
@@ -150,7 +151,7 @@ namespace Lieb.Data
             };
             context.RaidSignUps.Add(signUp);
             await context.SaveChangesAsync();
-            await LogSignUp(signUp, signedUpByUserId);
+            await LogSignUp(signUp, userName, signedUpByUserId);
             await _discordService.PostRaidMessage(raidId);
         }
 
@@ -162,7 +163,7 @@ namespace Lieb.Data
             context.RaidSignUps.RemoveRange(signUps);
 
             //change to SignedOff
-            RaidSignUp? signUp = context.RaidSignUps.FirstOrDefault(x => x.RaidId == raidId && x.LiebUserId == liebUserId && x.SignUpType != SignUpType.Flex);
+            RaidSignUp? signUp = context.RaidSignUps.Include(s => s.LiebUser).FirstOrDefault(x => x.RaidId == raidId && x.LiebUserId == liebUserId && x.SignUpType != SignUpType.Flex);
             if (signUp != null)
             {
                 signUp.SignUpType = SignUpType.SignedOff;
@@ -174,7 +175,7 @@ namespace Lieb.Data
                     context.RaidRoles.Remove(signUp.RaidRole);
                     signUp.RaidRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole, CreateRandomSignUpRole(raid.RaidType));
                 }
-                await LogSignUp(signUp, signedOffByUserId);
+                await LogSignUp(signUp, signUp.LiebUser.Name, signedOffByUserId);
             }
             await context.SaveChangesAsync();
             await _discordService.PostRaidMessage(raidId);
@@ -192,7 +193,7 @@ namespace Lieb.Data
             if(signUp != null)
             {
                 signUp.SignUpType = SignUpType.SignedOff;
-                await LogSignUp(signUp, signedOffByUserId);
+                await LogSignUp(signUp, userName, signedOffByUserId);
             }
             await _discordService.PostRaidMessage(raidId);
         }
@@ -218,7 +219,7 @@ namespace Lieb.Data
 
             using var context = _contextFactory.CreateDbContext();
 
-            List<RaidSignUp> signUps = context.RaidSignUps.Where(x => x.RaidId == raidId && x.LiebUserId == liebUserId).ToList();
+            List<RaidSignUp> signUps = context.RaidSignUps.Where(x => x.RaidId == raidId && x.LiebUserId == liebUserId).Include(s => s.LiebUser).ToList();
 
             RaidSignUp? signUp = signUps.FirstOrDefault(x => x.SignUpType != SignUpType.Flex);
             RaidSignUp? flexSignUp = signUps.FirstOrDefault(x => x.SignUpType == SignUpType.Flex && x.RaidRoleId == plannedRoleId);
@@ -234,7 +235,7 @@ namespace Lieb.Data
             {
                 signUp.RaidRoleId = plannedRoleId;
                 signUp.SignUpType = signUpType;
-                await LogSignUp(signUp);
+                await LogSignUp(signUp, signUp.LiebUser.Name);
             }
             context.SaveChanges();
             if(postChanges)
@@ -391,23 +392,13 @@ namespace Lieb.Data
             return true;
         }
 
-        private async Task LogSignUp(RaidSignUp signUp, ulong signedUpBy = 0)
+        private async Task LogSignUp(RaidSignUp signUp, string userName, ulong signedUpBy = 0)
         {
-            RaidSignUpHistory history = new RaidSignUpHistory()
-            {
-                RaidId = signUp.RaidId,
-                UserId = signUp.LiebUserId,
-                SignUpType = signUp.SignUpType,
-                Time = DateTimeOffset.UtcNow,
-                UserName = signUp.ExternalUserName,
-                GuildWars2AccountId = signUp.GuildWars2AccountId
-            };
-            if(signedUpBy != 0)
-            {
-                history.UserId = signedUpBy;
-            }
+            ulong userId = signedUpBy > 0 ? signedUpBy : signUp.LiebUserId;
+            RaidLog log = RaidLog.CreateSignUpLog(userId, signUp, userName);
+
             using var context = _contextFactory.CreateDbContext();
-            await context.RaidSignUpHistories.AddAsync(history);
+            await context.RaidLogs.AddAsync(log);
             await context.SaveChangesAsync();
         }
 

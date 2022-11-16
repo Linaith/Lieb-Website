@@ -1,0 +1,71 @@
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2.Raid
+@using SharedClasses.SharedModels
+
+<p>
+    <label>
+        Discord Messages:
+    </label>
+    <button type=button @onclick="() => AddDiscordMessageClicked()">Add message</button>
+    <table>
+        <tr>
+            <th>Server</th>
+            <th>Channel</th>
+        </tr>
+        @foreach( DiscordRaidMessage message in _raid.DiscordRaidMessages)
+        {
+            bool disableEdit = message.DiscordRaidMessageId != 0;
+            <tr>
+                <td>
+                    <InputSelect @bind-Value="message.DiscordGuildId" disabled="@disableEdit"> 
+                        @foreach(DiscordServer item in _discordServers)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td>
+                    <InputSelect @bind-Value="message.DiscordChannelId" disabled="@disableEdit"> 
+                        @if(message.DiscordGuildId > 0)
+                        {
+                            List<DiscordChannel> channels = _discordServers.Where(s => s.Id == message.DiscordGuildId).FirstOrDefault(new DiscordServer()).Channels;
+                            @foreach(DiscordChannel item in channels)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </td>
+                <td><button type=button @onclick="() => DeleteMessageClicked(message)">Delete</button></td>
+            </tr>
+        }
+    </table> 
+</p>
+
+
+@code {
+
+    [Parameter]
+    public Raid _raid { get; set; }
+
+    [Parameter]
+    public List<DiscordServer> _discordServers {get; set; }
+        
+    [Parameter]
+    public List<DiscordRaidMessage> _messagesToDelete {get; set; }
+    
+    async Task AddDiscordMessageClicked()
+    {
+        _raid.DiscordRaidMessages.Add(new DiscordRaidMessage());
+    }
+
+    async Task DeleteMessageClicked(DiscordRaidMessage message)
+    {
+        if(message.DiscordRaidMessageId != 0)
+        {
+            _messagesToDelete.Add(message);
+        }
+        _raid.DiscordRaidMessages.Remove(message);
+    }
+}

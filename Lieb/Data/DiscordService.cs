@@ -4,6 +4,7 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Text.Json;
 using System.Text;
 using Lieb.Models.GuildWars2.Raid;
+using Lieb.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -22,6 +23,32 @@ namespace Lieb.Data
             {
                 PropertyNameCaseInsensitive = true
             };
+        }
+
+        public DiscordSettings GetDiscordSettings(ulong discordServerId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.DiscordSettings
+                .ToList()
+                .FirstOrDefault(s => s.DiscordSettingsId == discordServerId, new DiscordSettings());
+        }
+
+        public async Task AddOrEditDiscordSettings(DiscordSettings discordSettings)
+        {
+            if (discordSettings != null)
+            {
+                using var context = _contextFactory.CreateDbContext();
+                if(!context.DiscordSettings.Where(s => s.DiscordSettingsId == discordSettings.DiscordSettingsId).Any())
+                {
+                    context.DiscordSettings.Add(discordSettings);
+                    await context.SaveChangesAsync();
+                }
+                else
+                {
+                    context.Update(discordSettings);
+                    await context.SaveChangesAsync();
+                }
+            }
         }
 
         public async Task PostRaidMessage(int raidId)

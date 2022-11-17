@@ -1,0 +1,39 @@
+@page "/discordoverview"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@using SharedClasses.SharedModels
+@inject DiscordService DiscordService
+
+
+<h3>Discord Overview</h3>
+
+
+<AuthorizeView Policy="@Constants.Roles.Admin.Name">
+    <Authorized>
+        <table>
+            <tr>
+                <th>Servers</th>
+            </tr>
+            @foreach (DiscordServer server in _discordServers)
+            {
+                <tr>    
+                    <td class="nav-item px-3">
+                        @{string navLink = $"discordsettings/{@server.Id}";}
+                        <NavLink class="nav-link" href="@navLink">@server.Name</NavLink>
+                    </td>
+                </tr>
+            }
+        </table> 
+    </Authorized>
+</AuthorizeView>
+
+@code 
+{
+    private List<DiscordServer> _discordServers = new List<DiscordServer>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _discordServers = await DiscordService.GetServers();
+    }
+}

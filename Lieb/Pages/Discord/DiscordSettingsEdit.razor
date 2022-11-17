@@ -1,0 +1,82 @@
+@page "/discordsettings/{_serverIdString}"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@using SharedClasses.SharedModels
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@inject DiscordService DiscordService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>User Edit</h3>
+
+            
+<AuthorizeView Policy="@Constants.Roles.Admin.Name" Context="authorizationContext">
+    <Authorized>
+        <EditForm Model="@_discordSettings" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+            <p> Log Channel
+                <InputSelect @bind-Value="_discordSettings.DiscordLogChannel"> 
+                    @{
+                        List<DiscordChannel> channels = _discordServers.FirstOrDefault(s => s.Id == _serverId, new DiscordServer()).Channels;
+                        <option value="0">No Server Logs</option>
+                        @foreach(DiscordChannel item in channels)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    }
+                </InputSelect>
+            </p>
+            <p>
+                <label>
+                    <InputCheckbox @bind-Value="_discordSettings.ChangeUserNames" />
+                    Change User Names
+                </label>
+            </p>
+            <ValidationSummary />
+        <button type="submit">Submit</button>
+
+        </EditForm>
+    </Authorized>
+</AuthorizeView>
+
+
+
+@code {
+
+    [Parameter]
+    public string _serverIdString { get; set; }
+
+    private ulong _serverId {get; set; }
+
+    private List<DiscordServer> _discordServers {get; set;} = new List<DiscordServer>();
+
+    public DiscordSettings _discordSettings {get; set;} = new DiscordSettings();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if(!string.IsNullOrEmpty(_serverIdString) && ulong.TryParse(_serverIdString, out ulong id))
+        {
+            _serverId = id;
+            _discordServers = await DiscordService.GetServers();
+            _discordSettings = DiscordService.GetDiscordSettings(_serverId);
+            if(_discordSettings.DiscordSettingsId == 0)
+            {
+                _discordSettings.DiscordSettingsId = _serverId;
+            }
+        }
+        else
+        {
+            NavigationManager.NavigateTo("discordoverview");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        DiscordService.AddOrEditDiscordSettings(_discordSettings);
+        NavigationManager.NavigateTo("discordoverview");
+    }
+}

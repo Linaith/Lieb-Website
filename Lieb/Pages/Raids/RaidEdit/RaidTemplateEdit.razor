@@ -5,8 +5,10 @@
 @using Lieb.Models.GuildWars2.Raid
 @using System.ComponentModel.DataAnnotations
 @using System.Security.Claims
+@using SharedClasses.SharedModels
 @inject RaidTemplateService RaidTemplateService
 @inject UserService UserService
+@inject DiscordService DiscordService
 @inject TimeZoneService TimeZoneService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -164,7 +166,7 @@
         </p>
     }
     
-    <DiscordMessageEdit _raid=@_raid _discordServers=@_discordServers _messagesToDelete=@_messagesToDelete ></DiscordMessageEdit>
+    <DiscordMessageEdit _raid=@_template _discordServers=@_discordServers _messagesToDelete=@_messagesToDelete ></DiscordMessageEdit>
     <StaticReminderEdit _raidReminders=@_staticReminders _discordServers=@_discordServers _remindersToDelete=@_remindersToDelete ></StaticReminderEdit>
     <DynamicReminderEdit _raidReminders=@_dynamicReminders _discordServers=@_discordServers _remindersToDelete=@_remindersToDelete ></DynamicReminderEdit>
     
@@ -239,7 +241,7 @@
                     }
                     else
                     {
-                        _dynamicReminders.Add(new DynamicRaidReminder(reminder, _template.StartTimeUTC));
+                        _dynamicReminders.Add(new DynamicRaidReminder(reminder, _template.StartTime));
                     }
                 }
             }
@@ -320,16 +322,16 @@
             _template.RaidOwnerId = _user.Id;
         }
 
-        _raid.Reminders.Clear();
+        _template.Reminders.Clear();
         foreach(DynamicRaidReminder reminder in _dynamicReminders)
         {
-            reminder.ReminderTimeUTC = _raid.StartTimeUTC - new TimeSpan(reminder.DaysBeforeRaid, reminder.HoursBeforeRaid, reminder.MinutesBeforeRaid, 0);
-            _raid.Reminders.Add(reminder);
+            reminder.ReminderTimeUTC = _template.StartTime - new TimeSpan(reminder.DaysBeforeRaid, reminder.HoursBeforeRaid, reminder.MinutesBeforeRaid, 0);
+            _template.Reminders.Add(reminder);
         }
         foreach(StaticRaidReminder reminder in _staticReminders)
         {
             reminder.ReminderTimeUTC = await TimeZoneService.GetUTCDateTime(reminder.ReminderDate.Date + reminder.ReminderTime.TimeOfDay);
-            _raid.Reminders.Add(reminder);
+            _template.Reminders.Add(reminder);
         }
 
         await RaidTemplateService.AddOrEditTemplate(_template, _rolesToDelete, _remindersToDelete, _messagesToDelete);

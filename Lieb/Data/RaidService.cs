@@ -429,6 +429,7 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             List<RaidReminder> reminders = context.RaidReminders
                 .Include(r => r.Raid)
+                .ThenInclude(r => r.SignUps)
                 .Where(r => !r.Sent)
                 .ToList();
 

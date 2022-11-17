@@ -5,14 +5,15 @@
 
 <p>
     <label>
-        Raid Reminders:
+        Static Raid Reminders:
     </label>
     <button type=button @onclick="() => AddReminderClicked()">Add reminder</button>
     <table>
         <tr>
+            <th>Date</th>
             <th>Time</th>
             <th>Type</th>
-            @if(_raid.Reminders.Where(r => r.Type == RaidReminder.ReminderType.Channel).Any())
+            @if(_raidReminders.Where(r => r.Type == RaidReminder.ReminderType.Channel).Any())
             {
                 <th>Server</th>
                 <th>Channel</th>
@@ -24,12 +25,20 @@
             }
             <th>Message</th>
         </tr>
-        @foreach( RaidReminder reminder in _raid.Reminders)
+        @foreach( StaticRaidReminder reminder in _raidReminders)
         {
             bool hidden = reminder.Type == RaidReminder.ReminderType.User;
             <tr>
                 <td>
-                    TODO: Time
+                    <label>
+                        <InputDate @bind-Value="reminder.ReminderDate" />
+                    </label>
+                </td>
+
+                <td>
+                    <label>
+                        <input type="time" @bind="reminder.ReminderTime" />
+                    </label>
                 </td>
                 <td>
                     <InputSelect @bind-Value="reminder.Type"> 
@@ -72,7 +81,7 @@
 @code {
 
     [Parameter]
-    public Raid _raid { get; set; }
+    public List<StaticRaidReminder> _raidReminders { get; set; }
 
     [Parameter]
     public List<DiscordServer> _discordServers {get; set; }
@@ -82,19 +91,18 @@
     
     async Task AddReminderClicked()
     {
-        _raid.Reminders.Add(new RaidReminder()
+        _raidReminders.Add(new StaticRaidReminder()
         {
-            RaidId = _raid.RaidId,
             Type = RaidReminder.ReminderType.User
         });
     }
 
-    async Task DeleteReminderClicked(RaidReminder reminder)
+    async Task DeleteReminderClicked(StaticRaidReminder reminder)
     {
         if(reminder.RaidReminderId != 0)
         {
             _remindersToDelete.Add(reminder);
         }
-        _raid.Reminders.Remove(reminder);
+        _raidReminders.Remove(reminder);
     }
 }

@@ -147,7 +147,8 @@
     
     
     <DiscordMessageEdit _raid=@_raid _discordServers=@_discordServers _messagesToDelete=@_messagesToDelete ></DiscordMessageEdit>
-    <ReminderEdit _raid=@_raid _discordServers=@_discordServers _remindersToDelete=@_remindersToDelete ></ReminderEdit>
+    <StaticReminderEdit _raidReminders=@_staticReminders _discordServers=@_discordServers _remindersToDelete=@_remindersToDelete ></StaticReminderEdit>
+    <DynamicReminderEdit _raidReminders=@_dynamicReminders _discordServers=@_discordServers _remindersToDelete=@_remindersToDelete ></DynamicReminderEdit>
     
     <ValidationSummary />
     <label class="validation-message" >@_errorMessage</label>
@@ -176,6 +177,9 @@
     private List<RaidRole> _rolesToDelete = new List<RaidRole>();
     private List<RaidReminder> _remindersToDelete = new List<RaidReminder>();
     private List<DiscordRaidMessage> _messagesToDelete = new List<DiscordRaidMessage>();
+
+    private List<StaticRaidReminder> _staticReminders = new List<StaticRaidReminder>();
+    private List<DynamicRaidReminder> _dynamicReminders = new List<DynamicRaidReminder>();
 
     private List<DiscordServer> _discordServers = new List<DiscordServer>();
 
@@ -206,15 +210,30 @@
                 _raidDate = _startTime.Date;
                 _freeForAllTime = await TimeZoneService.GetLocalDateTime(_raid.FreeForAllTimeUTC);
                 _freeForAllDate = _freeForAllTime.Date;
+                foreach(RaidReminder reminder in _raid.Reminders)
+                {
+                    if(reminder.TimeType == RaidReminder.ReminderTimeType.Static)
+                    {
+                        DateTimeOffset reminderTime = await TimeZoneService.GetLocalDateTime(reminder.ReminderTimeUTC);
+                        DateTimeOffset reminderDate = (await TimeZoneService.GetLocalDateTime(reminder.ReminderTimeUTC)).Date;
+                        _staticReminders.Add(new StaticRaidReminder(reminder, reminderDate, reminderTime));
+                    }
+                    else
+                    {
+                        _dynamicReminders.Add(new DynamicRaidReminder(reminder, _raid.StartTimeUTC));
+                    }
+                }
             }
             else
             {
                 _raid = new Raid();
+                _dynamicReminders.Add(DynamicRaidReminder.Create30MinReminder());
             }
         }
         else
         {
             _raid = new Raid();
+            _dynamicReminders.Add(DynamicRaidReminder.Create30MinReminder());
         }
 
         _discordServers = await DiscordService.GetServers();
@@ -280,6 +299,18 @@
         if (_raid.RaidOwnerId == 0)
         {
             _raid.RaidOwnerId = _user.Id;
+        }
+
+        _raid.Reminders.Clear();
+        foreach(DynamicRaidReminder reminder in _dynamicReminders)
+        {
+            reminder.ReminderTimeUTC = _raid.StartTimeUTC - new TimeSpan(reminder.DaysBeforeRaid, reminder.HoursBeforeRaid, reminder.MinutesBeforeRaid, 0);
+            _raid.Reminders.Add(reminder);
+        }
+        foreach(StaticRaidReminder reminder in _staticReminders)
+        {
+            reminder.ReminderTimeUTC = await TimeZoneService.GetUTCDateTime(reminder.ReminderDate.Date + reminder.ReminderTime.TimeOfDay);
+            _raid.Reminders.Add(reminder);
         }
 
         await RaidService.AddOrEditRaid(_raid, _rolesToDelete, _remindersToDelete, _messagesToDelete);

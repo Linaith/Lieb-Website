@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System;
 
 namespace Lieb.Models.GuildWars2.Raid
 {
@@ -10,11 +11,21 @@ namespace Lieb.Models.GuildWars2.Raid
             Channel = 2
         }
 
+        public enum ReminderTimeType
+        {
+            Static = 1,
+            Dynamic = 2
+        }
+
         public int RaidReminderId { get; set; }
 
         [Required]
         [Range(1, 2, ErrorMessage = "Please select a reminder type")]
         public ReminderType Type { get; set; }
+
+        [Required]
+        [Range(1, 2, ErrorMessage = "Please select a reminder type")]
+        public ReminderTimeType TimeType { get; set; }
 
         [Required]
         [StringLength(1000, ErrorMessage = "Message too long (1000 character limit).")]
@@ -32,5 +43,67 @@ namespace Lieb.Models.GuildWars2.Raid
         public int RaidId { get; set; }
 
         public Raid Raid { get; set; }
+    }
+
+    public class StaticRaidReminder : RaidReminder
+    {
+        public DateTimeOffset ReminderDate {get; set; } = DateTime.Now.Date;
+        public DateTimeOffset ReminderTime {get; set; }
+
+        
+        public StaticRaidReminder()
+        {
+            TimeType = ReminderTimeType.Static;
+        }
+
+        public StaticRaidReminder(RaidReminder reminder, DateTimeOffset reminderDate, DateTimeOffset remindertime)
+        {
+            var properties = reminder.GetType().GetProperties();
+            properties.ToList().ForEach(property =>
+            {
+                var value = reminder.GetType().GetProperty(property.Name).GetValue(reminder, null);
+                this.GetType().GetProperty(property.Name).SetValue(this, value, null);
+            });
+            ReminderDate = reminderDate;
+            ReminderTime = remindertime;
+        }
+    }
+
+    public class DynamicRaidReminder : RaidReminder
+    {
+        public int DaysBeforeRaid {get; set; }
+        public int HoursBeforeRaid {get; set; }
+        public int MinutesBeforeRaid {get; set; }
+
+        public DynamicRaidReminder()
+        {
+            TimeType = ReminderTimeType.Dynamic;
+        }
+
+        public DynamicRaidReminder(RaidReminder reminder, DateTimeOffset raidStartTimeUTC)
+        {
+            var properties = reminder.GetType().GetProperties();
+            properties.ToList().ForEach(property =>
+            {
+                var value = reminder.GetType().GetProperty(property.Name).GetValue(reminder, null);
+                this.GetType().GetProperty(property.Name).SetValue(this, value, null);
+            });
+            TimeSpan reminderOffset = raidStartTimeUTC - reminder.ReminderTimeUTC;
+            DaysBeforeRaid = (int)reminderOffset.TotalDays;
+            HoursBeforeRaid = (int)(reminderOffset.TotalHours % 24);
+            MinutesBeforeRaid = (int)(reminderOffset.TotalMinutes % 60);
+        }
+
+        public static DynamicRaidReminder Create30MinReminder()
+        {
+            return new DynamicRaidReminder(){
+                DaysBeforeRaid = 0,
+                HoursBeforeRaid = 0,
+                MinutesBeforeRaid = 30,
+                Message = "The raid starts in 30 minutes.",
+                TimeType = ReminderTimeType.Dynamic,
+                Type = ReminderType.User                
+            };
+        }
     }
 }

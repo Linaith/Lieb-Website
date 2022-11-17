@@ -69,7 +69,11 @@ namespace DiscordBot.Controllers
         {
             foreach(ulong userId in reminder.UserIds)
             {
-                await _client.GetUser(userId).SendMessageAsync(reminder.Message);
+                var user = await _client.GetUserAsync(userId);
+                if(user != null)
+                {
+                    await user.SendMessageAsync(reminder.Message);
+                }
             }
         }
 

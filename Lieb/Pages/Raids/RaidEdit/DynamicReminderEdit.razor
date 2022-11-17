@@ -1,0 +1,101 @@
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2.Raid
+@using SharedClasses.SharedModels
+
+<p>
+    <label>
+        Dynamic Raid Reminders:
+    </label>
+    <button type=button @onclick="() => AddReminderClicked()">Add reminder</button>
+    <table>
+        <tr>
+            <th>Days</th>
+            <th>Hours</th>
+            <th>Minutes</th>
+            <th>Type</th>
+            @if(_raidReminders.Where(r => r.Type == RaidReminder.ReminderType.Channel).Any())
+            {
+                <th>Server</th>
+                <th>Channel</th>
+            }
+            else
+            {
+                <th></th>
+                <th></th>
+            }
+            <th>Message</th>
+        </tr>
+        @foreach( DynamicRaidReminder reminder in _raidReminders)
+        {
+            bool hidden = reminder.Type == RaidReminder.ReminderType.User;
+            <tr>
+                <td><InputNumber @bind-Value="reminder.DaysBeforeRaid" /></td>
+                <td><InputNumber @bind-Value="reminder.HoursBeforeRaid" /></td>
+                <td><InputNumber @bind-Value="reminder.MinutesBeforeRaid" /></td>
+                <td>
+                    <InputSelect @bind-Value="reminder.Type"> 
+                        @foreach(RaidReminder.ReminderType type in Enum.GetValues(typeof(RaidReminder.ReminderType)))
+                        {
+                            <option value="@type">@type.ToString()</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td>
+                    <InputSelect @bind-Value="reminder.DiscordServerId" hidden="@hidden"> 
+                        @foreach(DiscordServer item in _discordServers)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td>
+                    <InputSelect @bind-Value="reminder.DiscordChannelId" hidden="@hidden"> 
+                        @if(reminder.DiscordServerId > 0)
+                        {
+                            List<DiscordChannel> channels = _discordServers.Where(s => s.Id == reminder.DiscordServerId).FirstOrDefault(new DiscordServer()).Channels;
+                            @foreach(DiscordChannel item in channels)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </td>
+                <td>
+                    <InputText @bind-Value="reminder.Message" />
+                </td>
+                <td><button type=button @onclick="() => DeleteReminderClicked(reminder)">Delete</button></td>
+            </tr>
+        }
+    </table> 
+</p>
+
+
+@code {
+
+    [Parameter]
+    public List<DynamicRaidReminder> _raidReminders { get; set; }
+
+    [Parameter]
+    public List<DiscordServer> _discordServers {get; set; }
+        
+    [Parameter]
+    public List<RaidReminder> _remindersToDelete {get; set; }
+    
+    async Task AddReminderClicked()
+    {
+        _raidReminders.Add(new DynamicRaidReminder()
+        {
+            Type = RaidReminder.ReminderType.User
+        });
+    }
+
+    async Task DeleteReminderClicked(DynamicRaidReminder reminder)
+    {
+        if(reminder.RaidReminderId != 0)
+        {
+            _remindersToDelete.Add(reminder);
+        }
+        _raidReminders.Remove(reminder);
+    }
+}

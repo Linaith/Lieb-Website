@@ -272,13 +272,15 @@ namespace Lieb.Data
                 Message = message
             };
             apiReminder.UserIds = new List<ulong>();
+            HashSet<ulong> userIds = new HashSet<ulong>();
             foreach(RaidSignUp signUp in raid.SignUps)
             {
                 if(signUp.LiebUserId.HasValue)
                 {
-                    apiReminder.UserIds.Add(signUp.LiebUserId.Value);
+                    userIds.Add(signUp.LiebUserId.Value);
                 }
             }
+            apiReminder.UserIds = userIds.ToList();
             return apiReminder;
         }
 

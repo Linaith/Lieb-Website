@@ -92,6 +92,7 @@ namespace Lieb.Data
             context.RaidRoles.RemoveRange(raid.Roles);
             context.RaidLogs.RemoveRange(raid.RaidLogs);
             context.RaidReminders.RemoveRange(raid.Reminders);
+            context.DiscordRaidMessages.RemoveRange(raid.DiscordRaidMessages);
             await context.SaveChangesAsync();
             context.Raids.Remove(raid);
             await context.SaveChangesAsync();

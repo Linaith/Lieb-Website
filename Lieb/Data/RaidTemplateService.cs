@@ -31,7 +31,7 @@ namespace Lieb.Data
                 .FirstOrDefault(t => t.RaidTemplateId == raidTemplateId);
         }
 
-        public async Task AddOrEditTemplate(RaidTemplate template, List<RaidRole> rolesToDelete, List<RaidReminder> remindersToDelete)
+        public async Task AddOrEditTemplate(RaidTemplate template, List<RaidRole> rolesToDelete, List<RaidReminder> remindersToDelete, List<DiscordRaidMessage> messagesToDelete)
         {
             if (template != null)
             {
@@ -45,6 +45,7 @@ namespace Lieb.Data
                     context.Update(template);
                     context.RaidRoles.RemoveRange(rolesToDelete);
                     context.RaidReminders.RemoveRange(remindersToDelete);
+                    context.DiscordRaidMessages.RemoveRange(messagesToDelete);
                 }
                 await context.SaveChangesAsync();
             }
@@ -56,6 +57,7 @@ namespace Lieb.Data
             RaidTemplate template = GetTemplate(raidTemplateId);
             context.RaidRoles.RemoveRange(template.Roles);
             context.RaidReminders.RemoveRange(template.Reminders);
+            context.DiscordRaidMessages.RemoveRange(template.DiscordRaidMessages);
             await context.SaveChangesAsync();
             context.RaidTemplates.Remove(template);
             await context.SaveChangesAsync();
@@ -67,6 +69,7 @@ namespace Lieb.Data
             RaidTemplate? template = await context.RaidTemplates
                 .Include(r => r.Roles)
                 .Include(r => r.Reminders)
+                .Include(r => r.DiscordRaidMessages)
                 .FirstOrDefaultAsync(t => t.RaidTemplateId == raidTempalteId);
             if(template == null)
             {

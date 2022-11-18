@@ -4,7 +4,8 @@ namespace Lieb.Data
 {
     public class TimerService : IHostedService, IDisposable 
     {
-        private Timer _timer = null!;
+        private Timer _minuteTimer = null!;
+        private Timer _fiveMinuteTimer = null!;
         private IServiceProvider _services;
 
         public TimerService(IServiceProvider services)
@@ -14,8 +15,10 @@ namespace Lieb.Data
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
-            _timer = new Timer(CheckRaids, null, TimeSpan.Zero,
+            _minuteTimer = new Timer(CheckRaids, null, TimeSpan.Zero,
                 TimeSpan.FromMinutes(1));
+            _fiveMinuteTimer = new Timer(CleanUpRaids, null, TimeSpan.Zero,
+                TimeSpan.FromMinutes(5));
 
             return Task.CompletedTask;
         }
@@ -45,16 +48,29 @@ namespace Lieb.Data
             }
         }
 
+        private async void CleanUpRaids(object? state)
+        {
+            using (var scope = _services.CreateScope())
+            {
+                var raidService =
+                    scope.ServiceProvider
+                        .GetRequiredService<RaidService>();
+                await raidService.CleanUpRaids();
+            }
+        }
+
         public Task StopAsync(CancellationToken stoppingToken)
         {
-            _timer?.Change(Timeout.Infinite, 0);
+            _minuteTimer?.Change(Timeout.Infinite, 0);
+            _fiveMinuteTimer?.Change(Timeout.Infinite, 0);
 
             return Task.CompletedTask;
         }
 
         public void Dispose()
         {
-            _timer?.Dispose();
+            _minuteTimer?.Dispose();
+            _fiveMinuteTimer?.Dispose();
         }
     }
 }

@@ -424,7 +424,7 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             await context.RaidLogs.AddAsync(log);
             await context.SaveChangesAsync();
-            
+
             await SendDiscordSignUpLogMessage(signUp, userName, signedUpBy);
         }
 
@@ -482,6 +482,25 @@ namespace Lieb.Data
                         await _discordService.SendChannelReminder(reminder);
                         break;
                 }
+            }
+        }
+
+        public async Task CleanUpRaids()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            List<Raid> raids = GetRaids();
+
+            DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+            foreach(Raid raid in raids.Where(r => r.EndTimeUTC < utcNow.AddYears(-1)))
+            {
+                await DeleteRaid(raid.RaidId);
+            }
+            foreach(Raid raid in raids.Where(r => r.EndTimeUTC < utcNow.AddHours(-1)))
+            {
+                await _discordService.DeleteRaidMessages(raid);
+                context.RaidReminders.RemoveRange(raid.Reminders);
+                context.DiscordRaidMessages.RemoveRange(raid.DiscordRaidMessages);
+                await context.SaveChangesAsync();
             }
         }
 

@@ -96,6 +96,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
             context.Raids.Remove(raid);
             await context.SaveChangesAsync();
+
             await _discordService.DeleteRaidMessages(raid);
             if(raid.EndTimeUTC > DateTimeOffset.UtcNow)
             {
@@ -422,6 +423,41 @@ namespace Lieb.Data
 
             using var context = _contextFactory.CreateDbContext();
             await context.RaidLogs.AddAsync(log);
+            await context.SaveChangesAsync();
+            
+            await SendDiscordSignUpLogMessage(signUp, userName, signedUpBy);
+        }
+
+        public async Task SendDiscordSignUpLogMessage(RaidSignUp signUp, string userName, ulong signedUpBy = 0)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            Raid raid = context.Raids
+                .Include(r => r.DiscordRaidMessages)
+                .ToList()
+                .FirstOrDefault(r => r.RaidId == signUp.RaidId, new Raid());
+
+            if(raid.DiscordRaidMessages.Count > 0)
+            {
+                string signedUpByUserName = userName;
+                if(signedUpBy > 0)
+                {
+                    LiebUser signedUpByUser = context.LiebUsers
+                        .ToList()
+                        .FirstOrDefault(u => u.Id == signedUpBy, new LiebUser());
+                    signedUpByUserName = signedUpByUser.Name;
+                }
+
+                string message = $"{raid.Title}: {signedUpByUserName} signed up {userName} as {signUp.SignUpType.ToString()}";
+                foreach(DiscordRaidMessage discordMessage in raid.DiscordRaidMessages)
+                {
+                    DiscordSettings settings = _discordService.GetDiscordSettings(discordMessage.DiscordGuildId);
+                    if(settings.DiscordLogChannel > 0)
+                    {
+                        await _discordService.SendChannelMessage(discordMessage.DiscordGuildId, settings.DiscordLogChannel, message);
+                    }
+                }
+            }
             await context.SaveChangesAsync();
         }
 

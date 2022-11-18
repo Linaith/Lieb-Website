@@ -313,7 +313,7 @@
             _raid.Reminders.Add(reminder);
         }
 
-        await RaidService.AddOrEditRaid(_raid, _rolesToDelete, _remindersToDelete, _messagesToDelete);
+        await RaidService.AddOrEditRaid(_raid, _rolesToDelete, _remindersToDelete, _messagesToDelete, _user.Id);
         NavigationManager.NavigateTo("raidoverview");
     }
 }

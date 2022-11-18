@@ -334,7 +334,7 @@
             _template.Reminders.Add(reminder);
         }
 
-        await RaidTemplateService.AddOrEditTemplate(_template, _rolesToDelete, _remindersToDelete, _messagesToDelete);
+        await RaidTemplateService.AddOrEditTemplate(_template, _rolesToDelete, _remindersToDelete, _messagesToDelete, _user.Id);
         NavigationManager.NavigateTo("raidtemplateoverview");
     }
 }

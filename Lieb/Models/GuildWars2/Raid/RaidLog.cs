@@ -34,6 +34,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public static RaidLog CreateRaidLog(ulong userId, Raid raid)
         {
+            raid.RaidLogs.Clear();
             return new RaidLog()
             {
                 Type = LogType.Raid,
@@ -59,6 +60,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public static RaidLog CreateRaidTemplateLog(ulong userId, RaidTemplate template)
         {
+            template.TemplateLogs.Clear();
             return new RaidLog()
             {
                 Type = LogType.RaidTemplate,

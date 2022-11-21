@@ -31,19 +31,6 @@ builder.Services.AddScoped<RaidRandomizerService>();
 builder.Services.AddScoped<TimeZoneService>();
 builder.Services.AddScoped<DiscordService>();
 builder.Services.AddHostedService<TimerService>();
-/*
-#region discord
-//DiscordSocketClient client = new DiscordSocketClient();
-
-//client.Log += Log;
-var token = File.ReadAllText("token.txt");
-
-await client.LoginAsync(TokenType.Bot, token);
-await client.StartAsync();
-builder.Services.AddSingleton(client);
-builder.Services.AddSingleton<CommandService>();
-builder.Services.AddSingleton<CommandHandler>();
-#endregion discord*/
 
 builder.Services.AddAuthentication(opt =>
 {

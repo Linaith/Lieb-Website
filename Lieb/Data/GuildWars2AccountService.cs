@@ -7,10 +7,12 @@ namespace Lieb.Data
     public class GuildWars2AccountService
     {
         private readonly IDbContextFactory<LiebContext> _contextFactory;
+        private readonly DiscordService _discordService;
 
-        public GuildWars2AccountService(IDbContextFactory<LiebContext> contextFactory)
+        public GuildWars2AccountService(IDbContextFactory<LiebContext> contextFactory, DiscordService discordService)
         {
             _contextFactory = contextFactory;
+            _discordService = discordService;
         }
 
         public GuildWars2Account GetAccount(int gw2AccountId)
@@ -29,17 +31,29 @@ namespace Lieb.Data
                 using var context = _contextFactory.CreateDbContext();
                 if (account.GuildWars2AccountId == 0)
                 {
-                    LiebUser? user = context.LiebUsers.FirstOrDefault(u => u.Id == userId);
+                    LiebUser? user = context.LiebUsers.Include(u => u.GuildWars2Accounts).FirstOrDefault(u => u.Id == userId);
                     if(user != null)
                     {
                         user.GuildWars2Accounts.Add(account);
+                        await context.SaveChangesAsync();
+                        if(user.GuildWars2Accounts.Count == 1)
+                        {
+                            user.MainGW2Account = account.GuildWars2AccountId;
+                            await _discordService.RenameUser(userId, user.Name, account.AccountName);
+                        }
+                        await context.SaveChangesAsync();
                     }
                 }
                 else
                 {
                     context.Update(account);
+                    await context.SaveChangesAsync();
+                    LiebUser? user = context.LiebUsers.Include(u => u.GuildWars2Accounts).FirstOrDefault(u => u.Id == userId);
+                    if(user != null && user.MainGW2Account == account.GuildWars2AccountId)
+                    {
+                        await _discordService.RenameUser(userId, user.Name, account.AccountName);
+                    }
                 }
-                await context.SaveChangesAsync();
             }
         }
 
@@ -50,9 +64,18 @@ namespace Lieb.Data
             if (account != null)
             {
                 context.Equipped.RemoveRange(account.EquippedBuilds);
+                context.RaidSignUps.RemoveRange(context.RaidSignUps.Where(s => s.GuildWars2AccountId == accountId));
                 await context.SaveChangesAsync();
                 context.GuildWars2Accounts.Remove(account);
+                LiebUser? user = context.LiebUsers.Include(u => u.GuildWars2Accounts).FirstOrDefault(u => u.GuildWars2Accounts.Contains(account));
                 await context.SaveChangesAsync();
+                if(user != null && user.MainGW2Account == account.GuildWars2AccountId)
+                {
+                    GuildWars2Account newMain = user.GuildWars2Accounts.FirstOrDefault(new GuildWars2Account());
+                    user.MainGW2Account = newMain.GuildWars2AccountId;
+                    await context.SaveChangesAsync();
+                    await _discordService.RenameUser(user.Id, user.Name, newMain.AccountName);
+                }
             }
         }
 

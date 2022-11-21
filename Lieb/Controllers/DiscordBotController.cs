@@ -18,12 +18,14 @@ namespace Lieb.Controllers
         RaidService _raidService;
         UserService _userService;
         GuildWars2AccountService _gw2AccountService;
+        DiscordService _discordService;
 
-        public DiscordBotController(RaidService raidService, UserService userService, GuildWars2AccountService gw2AccountService)
+        public DiscordBotController(RaidService raidService, UserService userService, GuildWars2AccountService gw2AccountService, DiscordService discordService)
         {
             _raidService = raidService;
             _userService = userService;
             _gw2AccountService = gw2AccountService;
+            _discordService = discordService;
         }
 
         [HttpGet]
@@ -81,7 +83,7 @@ namespace Lieb.Controllers
         {
             if(signUp.userId != 0)
             {
-                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
+                int accountId = _userService.GetMainAccount(signUp.userId).GuildWars2AccountId;
                 await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.SignedUp, signUp.signedUpByUserId);
             }
             else
@@ -96,7 +98,7 @@ namespace Lieb.Controllers
         {
             if(signUp.userId != 0)
             {
-                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
+                int accountId = _userService.GetMainAccount(signUp.userId).GuildWars2AccountId;
                 await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Maybe, signUp.signedUpByUserId);
             }
             else
@@ -111,7 +113,7 @@ namespace Lieb.Controllers
         {
             if(signUp.userId != 0)
             {
-                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
+                int accountId = _userService.GetMainAccount(signUp.userId).GuildWars2AccountId;
                 await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Backup, signUp.signedUpByUserId);
             }
             else
@@ -126,7 +128,7 @@ namespace Lieb.Controllers
         {
             if(signUp.userId != 0)
             {
-                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
+                int accountId = _userService.GetMainAccount(signUp.userId).GuildWars2AccountId;
                 await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Flex, signUp.signedUpByUserId);
             }
             else
@@ -141,7 +143,6 @@ namespace Lieb.Controllers
         {
             if(signUp.userId != 0)
             {
-                int accountId = _userService.GetLiebUserGW2AccountOnly(signUp.userId).GuildWars2Accounts.FirstOrDefault(new GuildWars2Account()).GuildWars2AccountId;
                 await _raidService.SignOff(signUp.raidId, signUp.userId, signUp.signedUpByUserId);
             }
             else
@@ -175,6 +176,13 @@ namespace Lieb.Controllers
             Raid raid = _raidService.GetRaid(raidId);
 
             return DiscordService.ConvertRaid(raid);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public List<ulong> GetUserRenameServers()
+        {
+            return _discordService.GetUserRenameServers();
         }
     }
 }

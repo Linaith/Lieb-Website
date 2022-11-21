@@ -156,5 +156,20 @@ namespace DiscordBot.Services
             return new ApiRaid();
         }
 
+        public async Task<List<ulong>> GetUserRenameServers()
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/GetUserRenameServers");
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using var contentStream =
+                    await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                return await JsonSerializer.DeserializeAsync<List<ulong>>(contentStream, _serializerOptions);
+            }
+            return new List<ulong>();
+        }
     }
 }

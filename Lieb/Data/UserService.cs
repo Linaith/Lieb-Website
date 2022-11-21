@@ -7,10 +7,12 @@ namespace Lieb.Data
     public class UserService
     {
         private readonly IDbContextFactory<LiebContext> _contextFactory;
+        private readonly DiscordService _discordService;
 
-        public UserService(IDbContextFactory<LiebContext> contextFactory)
+        public UserService(IDbContextFactory<LiebContext> contextFactory, DiscordService discordService)
         {
             _contextFactory = contextFactory;
+            _discordService = discordService;
         }
 
         public List<LiebUser> GetLiebUsers()
@@ -56,6 +58,16 @@ namespace Lieb.Data
                 return new LiebUser();
         }
 
+        public GuildWars2Account GetMainAccount(ulong userId)
+        {
+                using var context = _contextFactory.CreateDbContext();
+                LiebUser user = context.LiebUsers
+                    .Include(u => u.GuildWars2Accounts)
+                    .ToList()
+                    .FirstOrDefault(u => u.Id == userId, new LiebUser());
+                return user.GuildWars2Accounts.FirstOrDefault(g => g.GuildWars2AccountId == user.MainGW2Account, new GuildWars2Account());
+        }
+
         public async Task CreateUser(ulong discordId, string userName)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -94,6 +106,7 @@ namespace Lieb.Data
                 userToChange.Birthday = user.Birthday;
             }
             await context.SaveChangesAsync();
+            await _discordService.RenameUser(user.Id, user.Name, GetMainAccount(user.Id).AccountName);
         }
 
         public async Task UpdateBannedUntil(ulong userId, DateTime? date)

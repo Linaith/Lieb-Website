@@ -3,6 +3,7 @@
 @using Lieb.Models.GuildWars2
 @using Lieb.Models.GuildWars2.Raid
 @inject RaidService RaidService
+@inject UserService UserService
 
 <table class="table">
     @{
@@ -145,7 +146,8 @@
         }
         else
         {
-            await RaidService.SignUp(_raid.RaidId, _liebUserId, _usableAccounts.FirstOrDefault().GuildWars2AccountId, role.RaidRoleId, signUpType);
+            int gw2AccountId =  UserService.GetMainAccount(_liebUserId).GuildWars2AccountId;
+            await RaidService.SignUp(_raid.RaidId, _liebUserId, gw2AccountId, role.RaidRoleId, signUpType);
         }
         _Parent.HasChanged();
     }

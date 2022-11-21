@@ -11,11 +11,13 @@ namespace DiscordBot.CommandHandlers
 {
     public class ModalHandler
     {
+        private readonly DiscordSocketClient _client;
         private readonly HttpService _httpService;
         private readonly HandlerFunctions _handlerFunctions;
 
-        public ModalHandler(HttpService httpService)
+        public ModalHandler(DiscordSocketClient client, HttpService httpService)
         {
+            _client = client;
             _httpService = httpService;
             _handlerFunctions = new HandlerFunctions(_httpService);
         }
@@ -31,13 +33,7 @@ namespace DiscordBot.CommandHandlers
                     string account = components.First(x => x.CustomId == Constants.ComponentIds.ACCOUNT_TEXT_BOX).Value;
 
                     //create Account
-                    ApiRaid.Role.User user = new ApiRaid.Role.User()
-                    {
-                        UserName = name,
-                        AccountName = account,
-                        UserId = modal.User.Id
-                    };
-                    Tuple<bool, string> createAccountResult = await _httpService.CreateAccount(user);
+                    Tuple<bool, string> createAccountResult = await _handlerFunctions.CreateAccount(modal, _client, name, account);
                     if(!createAccountResult.Item1)
                     {
                         await modal.RespondAsync(createAccountResult.Item2, ephemeral: true);

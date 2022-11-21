@@ -28,7 +28,7 @@ namespace DiscordBot
             _slashCommandHandler = new SlashCommandHandler(_client, _httpService);
             _buttonHandler = new ButtonHandler(_httpService);
             _selectMenuHandler = new SelectMenuHandler(_httpService);
-            _modalHandler = new ModalHandler(_httpService);
+            _modalHandler = new ModalHandler(_client, _httpService);
         }
 
         public async Task InstallCommandsAsync()

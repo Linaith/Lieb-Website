@@ -88,5 +88,12 @@ namespace DiscordBot.Controllers
                 await messageChannel.SendMessageAsync(reminder.Message);
             }
         }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task RenameUser(ApiRenameUser user)
+        {
+            await DiscordBot.CommandHandlers.HandlerFunctions.RenameUser(_client, user.userId, user.Name, user.Account, user.ServerIds);
+        }
     }
 }

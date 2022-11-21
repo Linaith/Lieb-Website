@@ -51,6 +51,15 @@ namespace Lieb.Data
             }
         }
 
+        public List<ulong> GetUserRenameServers()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.DiscordSettings
+                .Where(s => s.ChangeUserNames)
+                .Select(s => s.DiscordSettingsId)
+                .ToList();
+        }
+
         public async Task PostRaidMessage(int raidId)
         {
             try
@@ -319,6 +328,32 @@ namespace Lieb.Data
                 DiscordChannelId = discordChannelId,
                 Message = message
             };
+        }
+
+        public async Task RenameUser(ulong userId, string name, string account)
+        {
+            try
+            {
+                var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+
+                ApiRenameUser renameUser = new ApiRenameUser()
+                {
+                    userId = userId,
+                    Name = name, 
+                    Account = account,
+                    ServerIds = GetUserRenameServers()
+                };
+
+                var messageItemJson = new StringContent(
+                    JsonSerializer.Serialize(renameUser),
+                    Encoding.UTF8,
+                    Application.Json);
+
+                var httpResponseMessage = await httpClient.PostAsync("raid/RenameUser", messageItemJson);
+
+                httpResponseMessage.EnsureSuccessStatusCode();
+            }
+            catch {}
         }
     }
 }

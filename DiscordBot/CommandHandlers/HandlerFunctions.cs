@@ -39,6 +39,42 @@ namespace DiscordBot.CommandHandlers
             }
             return true;
         }
+
+        public async Task<Tuple<bool, string>> CreateAccount(SocketInteraction interaction, DiscordSocketClient client, string name, string account)
+        {
+            //create Account
+            ApiRaid.Role.User user = new ApiRaid.Role.User()
+            {
+                UserName = name,
+                AccountName = account,
+                UserId = interaction.User.Id
+            };
+            Tuple<bool, string> createAccountResult = await _httpService.CreateAccount(user);
+            if(createAccountResult.Item1)
+            {
+                List<ulong> serverList = await _httpService.GetUserRenameServers();
+                await RenameUser(client, interaction.User.Id, name, account, serverList);
+            }
+            return createAccountResult;
+        }
+
+
+        public static async Task RenameUser(DiscordSocketClient client, ulong userId, string name, string account, List<ulong> serverList)
+        {
+            string nickname = $"{name} | {account}";
+            foreach(ulong serverId in serverList)
+            {
+                SocketGuild guild = client.Guilds.FirstOrDefault(g => g.Id == serverId);
+                if(guild != null)
+                {
+                    SocketGuildUser user = guild.GetUser(userId);
+                    if(user != null)
+                    {
+                        await user.ModifyAsync(p => p.Nickname = nickname);
+                    }
+                }
+            }
+        }
         
         //to avoid error messages because of no response...
         public async Task Respond(SocketInteraction component)

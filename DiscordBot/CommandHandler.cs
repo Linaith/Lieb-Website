@@ -18,6 +18,7 @@ namespace DiscordBot
         private readonly ButtonHandler _buttonHandler;
         private readonly SelectMenuHandler _selectMenuHandler;
         private readonly ModalHandler _modalHandler;
+        private readonly UserHandler _userHandler;
 
         // Retrieve client and CommandService instance via ctor
         public CommandHandler(DiscordSocketClient client, CommandService commands, HttpService httpService)
@@ -29,6 +30,7 @@ namespace DiscordBot
             _buttonHandler = new ButtonHandler(_httpService);
             _selectMenuHandler = new SelectMenuHandler(_httpService);
             _modalHandler = new ModalHandler(_client, _httpService);
+            _userHandler = new UserHandler(_client, _httpService);
         }
 
         public async Task InstallCommandsAsync()
@@ -37,6 +39,7 @@ namespace DiscordBot
             _client.ButtonExecuted += _buttonHandler.Handler;
             _client.SelectMenuExecuted += _selectMenuHandler.Handler;
             _client.ModalSubmitted += _modalHandler.Handler;
+            _client.UserJoined += _userHandler.HandleUserJoined;
         }
     }
 }

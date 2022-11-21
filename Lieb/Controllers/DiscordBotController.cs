@@ -184,5 +184,23 @@ namespace Lieb.Controllers
         {
             return _discordService.GetUserRenameServers();
         }
+
+        [HttpGet]
+        [Route("[action]/{userId}")]
+        public ActionResult<ApiRaid.Role.User> GetUser(ulong userId)
+        {
+            LiebUser user = _userService.GetLiebUser(userId);
+
+            if(user != null)
+            {
+                return Ok(new ApiRaid.Role.User(){
+                    UserId = user.Id,
+                    UserName = user.Name,
+                    AccountName = user.GuildWars2Accounts.FirstOrDefault(a => a.GuildWars2AccountId == user.MainGW2Account, new GuildWars2Account()).AccountName
+                });
+            }
+
+            return Problem("user not found");
+        }
     }
 }

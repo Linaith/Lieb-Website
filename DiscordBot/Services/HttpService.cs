@@ -171,5 +171,21 @@ namespace DiscordBot.Services
             }
             return new List<ulong>();
         }
+
+        public async Task<ApiRaid.Role.User> GetUser(ulong userId)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/GetUser/{userId}");
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using var contentStream =
+                    await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                return await JsonSerializer.DeserializeAsync<ApiRaid.Role.User>(contentStream, _serializerOptions);
+            }
+            return new ApiRaid.Role.User();
+        }
     }
 }

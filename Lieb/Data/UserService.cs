@@ -95,16 +95,7 @@ namespace Lieb.Data
         public async Task EditUser(LiebUser user)
         {
             using var context = _contextFactory.CreateDbContext();
-            LiebUser? userToChange = context.LiebUsers
-            .Include(u => u.GuildWars2Accounts)
-            .FirstOrDefault(u => u.Id == user.Id);
-
-            if(userToChange != null)
-            {
-                userToChange.Name = user.Name;
-                userToChange.Pronouns = user.Pronouns;
-                userToChange.Birthday = user.Birthday;
-            }
+            context.Update(user);
             await context.SaveChangesAsync();
             await _discordService.RenameUser(user.Id, user.Name, GetMainAccount(user.Id).AccountName);
         }

@@ -33,7 +33,7 @@
             "name": "DiscordBot",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
+            "preLaunchTask": "build-bot",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/DiscordBot/bin/Debug/net6.0/DiscordBot.dll",
             "args": [],

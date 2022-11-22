@@ -42,7 +42,7 @@ builder.Services.AddAuthentication(opt =>
     .AddDiscord(x =>
     {
         x.AppId = builder.Configuration["Discord:AppId"];
-        x.AppSecret = builder.Configuration["Discord:AppSecret"];
+        x.AppSecret = File.ReadAllText("discordAppSecret.txt");
 
         x.SaveTokens = true;
     });

@@ -22,6 +22,7 @@ Database/
 # Discord Tokens
 DiscordBot/token.txt
 DiscordBot/debugtoken.txt
+Lieb/discordAppSecret.txt
 
 # Build results
 [Dd]ebug/

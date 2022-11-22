@@ -19,6 +19,10 @@ mono_crash.*
 # Sqlite Database
 Database/
 
+# Discord Tokens
+DiscordBot/token.txt
+DiscordBot/debugtoken.txt
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

@@ -40,7 +40,7 @@ namespace DiscordBot
 
             builder.Services.AddHttpClient(Constants.HTTP_CLIENT_NAME , httpClient =>
             {
-                httpClient.BaseAddress = new Uri("https://localhost:7216/");
+                httpClient.BaseAddress = new Uri(builder.Configuration["HttpClients:LiebWebsite"]);
 
                 httpClient.DefaultRequestHeaders.Add(
                     HeaderNames.Accept, "application/vnd.github.v3+json");

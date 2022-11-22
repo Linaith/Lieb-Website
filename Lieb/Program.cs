@@ -64,7 +64,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddHttpClient(Constants.HttpClientName , httpClient =>
 {
-    httpClient.BaseAddress = new Uri("http://localhost:5240/");
+    httpClient.BaseAddress = new Uri(builder.Configuration["HttpClients:DiscordBot"]);
 
     // using Microsoft.Net.Http.Headers;
     // The GitHub API requires two headers.

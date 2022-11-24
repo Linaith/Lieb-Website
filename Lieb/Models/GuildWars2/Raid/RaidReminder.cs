@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System;
+using System.Text.Json.Serialization;
 
 namespace Lieb.Models.GuildWars2.Raid
 {
@@ -42,6 +42,7 @@ namespace Lieb.Models.GuildWars2.Raid
         
         public int RaidId { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public Raid Raid { get; set; }
     }
 

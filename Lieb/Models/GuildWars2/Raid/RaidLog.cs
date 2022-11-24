@@ -1,5 +1,6 @@
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Lieb.Models.GuildWars2.Raid
 {
@@ -28,14 +29,13 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public LiebUser User {get; set;}
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public Raid? Raid { get; set; }
 
         public RaidTemplate? RaidTemplate { get; set; }
 
         public static RaidLog CreateRaidLog(ulong userId, Raid raid)
         {
-            raid.RaidLogs.Clear();
-            raid.Reminders.Clear();
             return new RaidLog()
             {
                 Type = LogType.Raid,
@@ -61,8 +61,6 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public static RaidLog CreateRaidTemplateLog(ulong userId, RaidTemplate template)
         {
-            template.TemplateLogs.Clear();
-            template.Reminders.Clear();
             return new RaidLog()
             {
                 Type = LogType.RaidTemplate,

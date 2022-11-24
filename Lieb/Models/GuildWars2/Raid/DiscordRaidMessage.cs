@@ -1,4 +1,6 @@
-﻿namespace Lieb.Models.GuildWars2.Raid
+﻿using System.Text.Json.Serialization;
+
+namespace Lieb.Models.GuildWars2.Raid
 {
     public class DiscordRaidMessage
     {
@@ -6,6 +8,7 @@
 
         public int RaidId { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public Raid Raid { get; set; }
 
         public ulong DiscordMessageId { get; set; }

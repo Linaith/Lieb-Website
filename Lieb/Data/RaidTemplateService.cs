@@ -39,8 +39,6 @@ namespace Lieb.Data
                 if (template.RaidTemplateId == 0)
                 {
                     context.RaidTemplates.Add(template);
-                    RaidLog log = RaidLog.CreateRaidTemplateLog(changedBy, template);
-                    await context.RaidLogs.AddAsync(log);
                 }
                 else
                 {
@@ -48,9 +46,10 @@ namespace Lieb.Data
                     context.RaidRoles.RemoveRange(rolesToDelete);
                     context.RaidReminders.RemoveRange(remindersToDelete);
                     context.DiscordRaidMessages.RemoveRange(messagesToDelete);
-                    RaidLog log = RaidLog.CreateRaidTemplateLog(changedBy, template);
-                    await context.RaidLogs.AddAsync(log);
                 }
+                await context.SaveChangesAsync();
+                RaidLog log = RaidLog.CreateRaidTemplateLog(changedBy, template);
+                await context.RaidLogs.AddAsync(log);
                 await context.SaveChangesAsync();
             }
         }

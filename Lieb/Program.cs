@@ -9,14 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-#if DEBUG
 builder.Services.AddDbContextFactory<LiebContext>(opt =>
-        //opt.UseSqlServer(builder.Configuration.GetConnectionString("LiebContext")).EnableSensitiveDataLogging(), ServiceLifetime.Transient);
         opt.UseSqlite(builder.Configuration.GetConnectionString("LiebContext")));
-#else
-builder.Services.AddDbContextFactory<LiebContext>(opt =>
-        opt.UseMySql(builder.Configuration.GetConnectionString("LiebContext"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("LiebContext"))), ServiceLifetime.Transient);
-#endif
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

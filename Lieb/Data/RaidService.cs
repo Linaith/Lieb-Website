@@ -58,9 +58,6 @@ namespace Lieb.Data
                 if (raid.RaidId == 0)
                 {
                     context.Raids.Add(raid);
-                    RaidLog log = RaidLog.CreateRaidLog(changedBy, raid);
-                    await context.RaidLogs.AddAsync(log);
-                    await context.SaveChangesAsync();
                 }
                 else
                 {
@@ -79,11 +76,11 @@ namespace Lieb.Data
                         }
                         context.RaidRoles.RemoveRange(raid.Roles.Where(r => !r.IsRandomSignUpRole));
                     }
-
-                    RaidLog log = RaidLog.CreateRaidLog(changedBy, raid);
-                    await context.RaidLogs.AddAsync(log);
-                    await context.SaveChangesAsync();
                 }
+                await context.SaveChangesAsync();
+                RaidLog log = RaidLog.CreateRaidLog(changedBy, raid);
+                await context.RaidLogs.AddAsync(log);
+                await context.SaveChangesAsync();
                 await _discordService.PostRaidMessage(raid.RaidId);
             }
         }

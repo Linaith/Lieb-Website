@@ -35,6 +35,7 @@ namespace Lieb.Models.GuildWars2.Raid
         public static RaidLog CreateRaidLog(ulong userId, Raid raid)
         {
             raid.RaidLogs.Clear();
+            raid.Reminders.Clear();
             return new RaidLog()
             {
                 Type = LogType.Raid,
@@ -61,6 +62,7 @@ namespace Lieb.Models.GuildWars2.Raid
         public static RaidLog CreateRaidTemplateLog(ulong userId, RaidTemplate template)
         {
             template.TemplateLogs.Clear();
+            template.Reminders.Clear();
             return new RaidLog()
             {
                 Type = LogType.RaidTemplate,

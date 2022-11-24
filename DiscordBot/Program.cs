@@ -18,10 +18,7 @@ namespace DiscordBot
 
         public async Task MainAsync(string[] args)
         {
-            var dicordConfig = new DiscordSocketConfig()
-            {
-                
-            };
+            var dicordConfig = new DiscordSocketConfig();
 
             var builder = WebApplication.CreateBuilder(args);
 
@@ -87,8 +84,6 @@ namespace DiscordBot
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
-
-
             app.Run();
 
             // Block this task until the program is closed.
@@ -104,60 +99,21 @@ namespace DiscordBot
         
         public async Task Client_Ready()
         {
+            //test Discord
             var guild = _client.GetGuild(666953424734257182);
 
-            var guildCommand = new SlashCommandBuilder()
-                .WithName(Constants.SlashCommands.RAID)
-                .WithDescription("Raid commands")
-                .AddOption(new SlashCommandOptionBuilder()
-                    .WithName(Constants.SlashCommands.USER)
-                    .WithDescription("Add or remove users")
-                    .WithType(ApplicationCommandOptionType.SubCommandGroup)
-                    .AddOption(new SlashCommandOptionBuilder()
-                        .WithName(Constants.SlashCommands.ADD_USER_COMMAND)
-                        .WithDescription("Sign up existing user")
-                        .WithType(ApplicationCommandOptionType.SubCommand)
-                        .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
-                        .AddOption(Constants.SlashCommands.OptionNames.USER, ApplicationCommandOptionType.User, "The user you want to sign up", isRequired: true)
-                        )
-
-                    .AddOption(new SlashCommandOptionBuilder()
-                        .WithName(Constants.SlashCommands.REMOVE_USER_COMMAND)
-                        .WithDescription("Sign off existing user")
-                        .WithType(ApplicationCommandOptionType.SubCommand)
-                        .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
-                        .AddOption(Constants.SlashCommands.OptionNames.USER, ApplicationCommandOptionType.User, "The user you want to sign off", isRequired: true)
-                        )
-                    .AddOption(new SlashCommandOptionBuilder()
-                        .WithName(Constants.SlashCommands.ADD_EXTERNAL_USER_COMMAND)
-                        .WithDescription("Sign up non existing user")
-                        .WithType(ApplicationCommandOptionType.SubCommand)
-                        .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
-                        )
-                    .AddOption(new SlashCommandOptionBuilder()
-                        .WithName(Constants.SlashCommands.REMOVE_EXTERNAL_USER_COMMAND)
-                        .WithDescription("Sign off non existing user")
-                        .WithType(ApplicationCommandOptionType.SubCommand)
-                        .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
-                        .AddOption(Constants.SlashCommands.OptionNames.USER_NAME, ApplicationCommandOptionType.String, "The user name you want to sign off", isRequired: true)
-                        )
-                    )
-                .AddOption(new SlashCommandOptionBuilder()
-                    .WithName(Constants.SlashCommands.SEND_MESSAGE_COMMAND)
-                    .WithDescription("Send message to all signed up users")
-                    .WithType(ApplicationCommandOptionType.SubCommand)
-                    .AddOption(Constants.SlashCommands.OptionNames.RAID_ID, ApplicationCommandOptionType.Integer, "The Id of the Raid, found at the bottom of the raid message", isRequired: true)
-                    .AddOption(Constants.SlashCommands.OptionNames.MESSAGE, ApplicationCommandOptionType.String, "The message you want to send", isRequired: true)
-                    );
-
+            var guildCommand = SlashCommands.RaidSlashCommand.CreateRaidCommand();
 
             try
             {
-                // Now that we have our builder, we can call the CreateApplicationCommandAsync method to make our slash command.
-                await guild.CreateApplicationCommandAsync(guildCommand.Build());
+                //create guild commands for testing
+                //await guild.CreateApplicationCommandAsync(guildCommand.Build());
+                
+                //delete guild commands after testing
+                //await guild.DeleteApplicationCommandsAsync();
 
-                // Using the ready event is a simple implementation for the sake of the example. Suitable for testing and development.
-                // For a production bot, it is recommended to only run the CreateGlobalApplicationCommandAsync() once for each command.
+                //create global command, only do this once per command. Uncomment and execute before publishing.
+                //await _client.CreateGlobalApplicationCommandAsync(guildCommand.Build());
             }
             catch (HttpException exception)
             {
@@ -165,6 +121,5 @@ namespace DiscordBot
                 Console.WriteLine(json);
             }
         }
-
     }
 }

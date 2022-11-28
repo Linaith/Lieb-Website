@@ -187,5 +187,36 @@ namespace DiscordBot.Services
             }
             return new ApiRaid.Role.User();
         }
+
+        public async Task<List<ApiGuildWars2Account>> GetSignUpAccounts(ulong userId, int raidId)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/GetSignUpAccounts/{userId}/{raidId}");
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using var contentStream =
+                    await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                return await JsonSerializer.DeserializeAsync<List<ApiGuildWars2Account>>(contentStream, _serializerOptions);
+            }
+            return new List<ApiGuildWars2Account>();
+        }
+
+        public async Task<Tuple<bool, string>> IsSlashCommandAllowed(ulong userId, string command)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/IsSlashCommandAllowed/{userId}/{command}");
+
+            if (!httpResponseMessage.IsSuccessStatusCode)
+            {
+                ProblemDetails problemDetails = await httpResponseMessage.Content.ReadFromJsonAsync<ProblemDetails>(_serializerOptions) ?? new ProblemDetails();
+                string errorMessage = string.IsNullOrEmpty(problemDetails.Detail) ? string.Empty : problemDetails.Detail; 
+                return new Tuple<bool, string>(false, errorMessage);
+            }
+            return new Tuple<bool, string>(true, string.Empty);
+        }
     }
 }

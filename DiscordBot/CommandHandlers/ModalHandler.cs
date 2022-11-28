@@ -41,24 +41,26 @@ namespace DiscordBot.CommandHandlers
                     }
                     
                     //sign up
-                    if(ids.Length > 2 && int.TryParse(ids[1], out int parsedRaidId) && await _handlerFunctions.IsRaidSignUpAllowed(modal, parsedRaidId, ids[2]))
+                    CreateAccountModal.Parameters createAccountParameters = CreateAccountModal.ParseId(modal.Data.CustomId);
+                    if(await _handlerFunctions.IsRaidSignUpAllowed(modal, createAccountParameters.RaidId, createAccountParameters.ButtonId))
                     {
-                        List<ApiRole> roles = await _httpService.GetRoles(parsedRaidId, modal.User.Id);                    
-                        await modal.RespondAsync("Please choose a role.", components: SignUpMessage.buildMessage(roles, parsedRaidId, ids[2], false) , ephemeral: true);
+                        List<ApiRole> roles = await _httpService.GetRoles(createAccountParameters.RaidId, modal.User.Id);                    
+                        await modal.RespondAsync("Please choose a role.", 
+                            components: RoleSelectionMessage.buildMessage(roles, createAccountParameters.RaidId, createAccountParameters.ButtonId, false),
+                            ephemeral: true);
                         return;
                     }
                     await _handlerFunctions.Respond(modal);
                     break;
                 case Constants.ComponentIds.SIGN_UP_EXTERNAL_MODAL:
                     string userName = components.First(x => x.CustomId == Constants.ComponentIds.NAME_TEXT_BOX).Value;
-                    int raidId = int.Parse(ids[1]);
-                    int roleId = int.Parse(ids[2]);
+                    ExternalUserNameModal.Parameters modalParameters = ExternalUserNameModal.ParseId(modal.Data.CustomId);
                     ApiSignUp signUpExternal = new ApiSignUp()
                     {
-                        raidId = raidId,
+                        raidId = modalParameters.RaidId,
                         userName = userName,
                         signedUpByUserId = modal.User.Id,
-                        roleId = roleId
+                        roleId = modalParameters.RoleId
                     };
                     await _httpService.SignUp(signUpExternal);
                     await modal.RespondAsync($"signed up {userName}", ephemeral: true);

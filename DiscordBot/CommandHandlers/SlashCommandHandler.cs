@@ -26,11 +26,19 @@ namespace DiscordBot.CommandHandlers
 
         public async Task Handler(SocketSlashCommand command)
         {
-            switch (command.Data.Name)
+            Tuple<bool, string> commandExecutionAllowed = await _httpService.IsSlashCommandAllowed(command.User.Id, command.Data.Name);
+            if(commandExecutionAllowed.Item1)
             {
-                case Constants.SlashCommands.RAID:
-                    await HandleRaidCommands(command);
-                    break;
+                switch (command.Data.Name)
+                {
+                    case Constants.SlashCommands.RAID:
+                        await HandleRaidCommands(command);
+                        break;
+                }
+            }
+            else
+            {
+                await command.RespondAsync(commandExecutionAllowed.Item2, ephemeral:true);
             }
         }
 
@@ -103,7 +111,7 @@ namespace DiscordBot.CommandHandlers
                         await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
                         return;
                     }
-                    await command.RespondAsync("Please choose a role.", components: SignUpMessage.buildMessage(roles, raidId, Constants.ComponentIds.SIGN_UP_BUTTON, false, user.Id) , ephemeral: true);
+                    await command.RespondAsync("Please choose a role.", components: RoleSelectionMessage.buildMessage(roles, raidId, Constants.ComponentIds.SIGN_UP_BUTTON, false, user.Id) , ephemeral: true);
                 }
                 else
                 {
@@ -129,23 +137,7 @@ namespace DiscordBot.CommandHandlers
                 await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
                 return;
             }
-
-            var signUpSelect = new SelectMenuBuilder()
-                .WithPlaceholder("Select an option")
-                .WithCustomId($"{Constants.ComponentIds.SIGN_UP_EXTERNAL_DROP_DOWN}-{raidId}")
-                .WithMinValues(1)
-                .WithMaxValues(1);
-            
-            foreach(ApiRole role in roles)
-            {
-                if(role.IsSignUpAllowed)
-                signUpSelect.AddOption(role.Name, role.roleId.ToString(), role.Description);
-            }
-
-            var builder = new ComponentBuilder()
-                .WithSelectMenu(signUpSelect, 0);
-
-            await command.RespondAsync("Please choose a role.", components: builder.Build() , ephemeral: true);
+            await command.RespondAsync("Please choose a role.", components: ExternalRoleSelectionMessage.buildMessage(roles, raidId) , ephemeral: true);
         }
 
         private async Task SendMessages(string message, int raidId)

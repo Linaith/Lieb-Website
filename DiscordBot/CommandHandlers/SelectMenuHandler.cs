@@ -22,49 +22,63 @@ namespace DiscordBot.CommandHandlers
         public async Task Handler(SocketMessageComponent component)
         {
             string[] ids = component.Data.CustomId.Split('-');
-            List<ApiRole> roles = new List<ApiRole>();
-            int parsedRaidId = 0;
-            if(ids.Length > 1)
-            {
-                int.TryParse(ids[1],out parsedRaidId);
-            }
-
             switch(ids[0])
             {
                 case Constants.ComponentIds.SIGN_UP_DROP_DOWN:
-                    ulong userId = 0;
-                    if(ids.Length >= 4)
+                    RoleSelectionMessage.Parameters roleParameters = RoleSelectionMessage.ParseId(component.Data.CustomId);
+                    ulong userIdToSignUp = component.User.Id;;
+                    ulong signedUpByUserId = 0;
+                    if(roleParameters.UserIdToSignUp != 0)
                     {
-                        ulong.TryParse(ids[3],out userId);
+                        userIdToSignUp = roleParameters.UserIdToSignUp;
+                        signedUpByUserId = component.User.Id;
                     }
-                    await ManageSignUp(ids[2], parsedRaidId, component, userId);
-                    await component.RespondAsync("successfully signed up", ephemeral: true);
+                    await ManageSignUp(roleParameters.ButtonType, roleParameters.RaidId, component, userIdToSignUp, signedUpByUserId);
                     break;
                 case Constants.ComponentIds.SIGN_UP_EXTERNAL_DROP_DOWN:
-                    await component.RespondWithModalAsync(CreateUserNameModal(parsedRaidId, int.Parse(component.Data.Values.First())));
+                    ExternalRoleSelectionMessage.Parameters externalRoleParameters = ExternalRoleSelectionMessage.ParseId(component.Data.CustomId);
+                    await component.RespondWithModalAsync(ExternalUserNameModal.buildMessage(externalRoleParameters.RaidId, int.Parse(component.Data.Values.First())));
+                    break;
+                case Constants.ComponentIds.ACCOUNT_SELECT_DROP_DOWN:
+                    AccountSelectionMessage.Parameters accountParameters = AccountSelectionMessage.ParseId(component.Data.CustomId);
+                    int accountId = int.Parse(component.Data.Values.First());
+                    await SignUp(accountParameters.ButtonType, accountParameters.RaidId, accountParameters.RoleId, accountParameters.UserIdToSignUp, accountId, accountParameters.SignedUpByUserId);
+                    await component.RespondAsync("successfully signed up", ephemeral: true);
                     break;
             }
         }
 
-        private async Task ManageSignUp(string buttonType, int raidId, SocketMessageComponent component, ulong userIdToSignUp)
+        private async Task ManageSignUp(string buttonType, int raidId, SocketMessageComponent component, ulong userIdToSignUp, ulong signedUpByUserId = 0)
         {
             if(! int.TryParse(component.Data.Values.First(), out int parsedRoleId)) return;
 
-            ApiSignUp signUp = new ApiSignUp()
+            List<ApiGuildWars2Account> accounts = await _httpService.GetSignUpAccounts(userIdToSignUp, raidId);
+            if(accounts.Count == 1)
             {
-                raidId = raidId,
-                roleId = parsedRoleId
-            };
-
-            if(userIdToSignUp == 0)
+                ApiGuildWars2Account account = accounts.First();
+                await SignUp(buttonType, raidId, parsedRoleId, userIdToSignUp, account.GuildWars2AccountId, signedUpByUserId);
+                await component.RespondAsync("successfully signed up", ephemeral: true);
+            }
+            else if(accounts.Count > 1)
             {
-                signUp.userId = component.User.Id;
+                await component.RespondAsync("Please choose an account.", components: AccountSelectionMessage.buildMessage(accounts, raidId, buttonType, parsedRoleId, userIdToSignUp, signedUpByUserId) , ephemeral: true);
             }
             else
             {
-                signUp.userId = userIdToSignUp;
-                signUp.signedUpByUserId = component.User.Id;
+                await component.RespondAsync("no suitable Guild Wars 2 account found.", ephemeral: true);
             }
+        }
+
+        private async Task SignUp(string buttonType, int raidId, int roleId, ulong userIdToSignUp, int gw2AccountId, ulong signedUpByUserId = 0)
+        {
+            ApiSignUp signUp = new ApiSignUp()
+            {
+                raidId = raidId,
+                roleId = roleId,
+                gw2AccountId = gw2AccountId,
+                userId = userIdToSignUp,
+                signedUpByUserId = signedUpByUserId
+            };
 
             switch(buttonType)
             {
@@ -81,16 +95,6 @@ namespace DiscordBot.CommandHandlers
                     await _httpService.SignUpFlex(signUp);
                 break;
             }
-        }
-
-        private Modal CreateUserNameModal(int raidId, int roleId)
-        {
-            var mb = new ModalBuilder()
-                .WithTitle("Create Account")
-                .WithCustomId($"{Constants.ComponentIds.SIGN_UP_EXTERNAL_MODAL}-{raidId}-{roleId}")
-                .AddTextInput("Name", Constants.ComponentIds.NAME_TEXT_BOX, placeholder: "Name", required: true);
-
-            return mb.Build();
         }
     }
 }

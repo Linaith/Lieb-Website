@@ -13,6 +13,7 @@
             
             public const string SIGN_UP_DROP_DOWN = "signUpDropDown";
             public const string SIGN_UP_EXTERNAL_DROP_DOWN = "signUpExternalDropDown";
+            public const string ACCOUNT_SELECT_DROP_DOWN = "accountSelectDropDown";
 
             public const string NAME_TEXT_BOX = "nameTextbox";
             public const string ACCOUNT_TEXT_BOX = "accountTextBox";

@@ -34,7 +34,7 @@ namespace DiscordBot.CommandHandlers
                     if(await _handlerFunctions.IsRaidSignUpAllowed(component, parsedRaidId, ids[0]))
                     {
                         roles = await _httpService.GetRoles(parsedRaidId, component.User.Id);                    
-                        await component.RespondAsync("Please choose a role.", components: SignUpMessage.buildMessage(roles, parsedRaidId, ids[0], false) , ephemeral: true);
+                        await component.RespondAsync("Please choose a role.", components: RoleSelectionMessage.buildMessage(roles, parsedRaidId, ids[0], false) , ephemeral: true);
                     }
                 break;
                 case Constants.ComponentIds.MAYBE_BUTTON:
@@ -43,7 +43,7 @@ namespace DiscordBot.CommandHandlers
                     if(await _handlerFunctions.IsRaidSignUpAllowed(component, parsedRaidId, ids[0]))
                     {
                         roles = await _httpService.GetRoles(parsedRaidId, component.User.Id);                    
-                        await component.RespondAsync("Please choose a role.", components: SignUpMessage.buildMessage(roles, parsedRaidId, ids[0], true) , ephemeral: true);
+                        await component.RespondAsync("Please choose a role.", components: RoleSelectionMessage.buildMessage(roles, parsedRaidId, ids[0], true) , ephemeral: true);
                     }
                 break;
                 case Constants.ComponentIds.SIGN_OFF_BUTTON:

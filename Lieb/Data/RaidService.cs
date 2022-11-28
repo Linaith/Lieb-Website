@@ -116,8 +116,8 @@ namespace Lieb.Data
             List<RaidSignUp> signUps = context.RaidSignUps.Where(r => r.RaidId == raidId && r.LiebUserId == liebUserId).ToList();
             if (signUpType != SignUpType.Flex && signUps.Where(r => r.SignUpType != SignUpType.Flex).Any())
             {
-                await ChangeSignUpType(raidId, liebUserId, plannedRoleId, signUpType);
-                await ChangeAccount(raidId, liebUserId, guildWars2AccountId);
+                await ChangeSignUpType(raidId, liebUserId, plannedRoleId, signUpType, false);
+                await ChangeAccount(raidId, liebUserId, guildWars2AccountId, false);
             }
             else if (!signUps.Where(r => r.RaidRoleId == plannedRoleId).Any())
             {
@@ -189,7 +189,7 @@ namespace Lieb.Data
             await _discordService.PostRaidMessage(raidId);
         }
 
-        public async Task ChangeAccount(int raidId, ulong liebUserId, int guildWars2AccountId)
+        public async Task ChangeAccount(int raidId, ulong liebUserId, int guildWars2AccountId, bool postChanges = true)
         {
             using var context = _contextFactory.CreateDbContext();
             List<RaidSignUp> signUps = context.RaidSignUps.Where(x => x.RaidId == raidId && x.LiebUserId == liebUserId).ToList();
@@ -198,7 +198,10 @@ namespace Lieb.Data
                 signUp.GuildWars2AccountId = guildWars2AccountId;
             }
             await context.SaveChangesAsync();
-            await _discordService.PostRaidMessage(raidId);
+            if(postChanges)
+            {
+                await _discordService.PostRaidMessage(raidId);
+            }
         }
 
         public async Task ChangeSignUpType(int raidId, ulong liebUserId, int plannedRoleId, SignUpType signUpType, bool postChanges = true)

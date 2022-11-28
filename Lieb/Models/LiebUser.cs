@@ -19,6 +19,7 @@ namespace Lieb.Models
         public DateTime? Birthday { get; set; }
         public DateTime? BannedUntil { get; set; }
         public int MainGW2Account { get; set; }
+        public bool AlwaysSignUpWithMainAccount { get; set; } = false;
         public ICollection<GuildWars2Account> GuildWars2Accounts { get; set; } = new List<GuildWars2Account>();
         public ICollection<RoleAssignment> RoleAssignments { get; set; } = new List<RoleAssignment>();
     }

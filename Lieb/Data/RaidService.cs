@@ -117,6 +117,7 @@ namespace Lieb.Data
             if (signUpType != SignUpType.Flex && signUps.Where(r => r.SignUpType != SignUpType.Flex).Any())
             {
                 await ChangeSignUpType(raidId, liebUserId, plannedRoleId, signUpType);
+                await ChangeAccount(raidId, liebUserId, guildWars2AccountId);
             }
             else if (!signUps.Where(r => r.RaidRoleId == plannedRoleId).Any())
             {
@@ -415,6 +416,23 @@ namespace Lieb.Data
             }
 
             return true;
+        }
+
+        public bool IsRaidSlashCommandAllowed(ulong liebUserId, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser user = context.LiebUsers
+                                .Include(u => u.RoleAssignments)
+                                .ThenInclude(a => a.LiebRole)
+                                .FirstOrDefault(u => u.Id == liebUserId);
+            if (user != null && user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.Roles.RaidLead.PowerLevel)
+            {
+                return true;
+            }
+            errorMessage = "insufficient permissions";
+            return false;
         }
 
         private async Task LogSignUp(RaidSignUp signUp, string userName, ulong signedUpBy = 0)

@@ -83,7 +83,7 @@ namespace Lieb.Controllers
         {
             if(signUp.userId != 0)
             {
-                int accountId = _userService.GetMainAccount(signUp.userId).GuildWars2AccountId;
+                int accountId = _userService.GetSignUpAccount(signUp.userId, signUp.raidId, signUp.gw2AccountId);
                 await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.SignedUp, signUp.signedUpByUserId);
             }
             else
@@ -98,7 +98,7 @@ namespace Lieb.Controllers
         {
             if(signUp.userId != 0)
             {
-                int accountId = _userService.GetMainAccount(signUp.userId).GuildWars2AccountId;
+                int accountId = _userService.GetSignUpAccount(signUp.userId, signUp.raidId, signUp.gw2AccountId);
                 await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Maybe, signUp.signedUpByUserId);
             }
             else
@@ -113,7 +113,7 @@ namespace Lieb.Controllers
         {
             if(signUp.userId != 0)
             {
-                int accountId = _userService.GetMainAccount(signUp.userId).GuildWars2AccountId;
+                int accountId = _userService.GetSignUpAccount(signUp.userId, signUp.raidId, signUp.gw2AccountId);
                 await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Backup, signUp.signedUpByUserId);
             }
             else
@@ -128,7 +128,7 @@ namespace Lieb.Controllers
         {
             if(signUp.userId != 0)
             {
-                int accountId = _userService.GetMainAccount(signUp.userId).GuildWars2AccountId;
+                int accountId = _userService.GetSignUpAccount(signUp.userId, signUp.raidId, signUp.gw2AccountId);
                 await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Flex, signUp.signedUpByUserId);
             }
             else
@@ -201,6 +201,42 @@ namespace Lieb.Controllers
             }
 
             return Problem("user not found");
+        }
+
+        [HttpGet]
+        [Route("[action]/{userId}/{raidId}")]
+        public ActionResult<List<ApiGuildWars2Account>> GetSignUpAccounts(ulong userId, int raidId)
+        {
+            List<GuildWars2Account> accounts = _userService.GetDiscordSignUpAccounts(userId, raidId);
+            List<ApiGuildWars2Account> apiAccounts = new List<ApiGuildWars2Account>();
+
+            foreach(GuildWars2Account account in accounts)
+            {
+                apiAccounts.Add(new ApiGuildWars2Account(){
+                    AccountName = account.AccountName,
+                    GuildWars2AccountId = account.GuildWars2AccountId
+                });
+            }
+            return Ok(apiAccounts);
+        }
+
+        [HttpGet]
+        [Route("[action]/{userId}/{command}")]
+        public ActionResult IsSlashCommandAllowed(ulong userId, string command)
+        {
+            switch(command)
+            {
+                case SharedConstants.SlashCommands.RAID:
+                    if(!_raidService.IsRaidSlashCommandAllowed(userId, out string errorMessage))
+                    {
+                        return Problem(errorMessage);
+                    }
+                break;
+                default:
+                    return Problem("command not found on server");
+                break;
+            }
+            return Ok();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Lieb.Models;
 using Lieb.Models.GuildWars2;
+using Lieb.Models.GuildWars2.Raid;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -183,6 +184,67 @@ namespace Lieb.Data
             {
                 context.LiebRoles.Remove(role);
                 await context.SaveChangesAsync();
+            }
+        }
+
+        public List<GuildWars2Account> GetAllUsableAccounts(ulong userId, RaidType raidType)
+        {
+            LiebUser user = GetLiebUserGW2AccountOnly(userId);
+            return GetAllUsableAccounts(user, raidType);
+        }
+
+        public List<GuildWars2Account> GetAllUsableAccounts(LiebUser user, RaidType raidType)
+        {
+            if (raidType == RaidType.Planned)
+            {
+                return user.GuildWars2Accounts.ToList();
+            }
+            else
+            {
+                return user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Count > 0).ToList();
+            }
+        }
+
+        public List<GuildWars2Account> GetDiscordSignUpAccounts(ulong userId, int raidId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser user = GetLiebUserGW2AccountOnly(userId);
+            Raid raid = context.Raids
+                    .ToList()
+                    .FirstOrDefault(r => r.RaidId == raidId, new Raid());
+                    
+            List<GuildWars2Account> accounts = GetAllUsableAccounts(user, raid.RaidType);
+            if(user.AlwaysSignUpWithMainAccount && accounts.Where(a => a.GuildWars2AccountId == user.MainGW2Account).Any())
+            {
+                return accounts.Where(a => a.GuildWars2AccountId == user.MainGW2Account).ToList();
+            }
+            else
+            {
+                return accounts;
+            }
+        }
+
+        public int GetSignUpAccount(ulong userId, int raidId, int plannedAccountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser user = GetLiebUserGW2AccountOnly(userId);
+            Raid raid = context.Raids
+                    .ToList()
+                    .FirstOrDefault(r => r.RaidId == raidId, new Raid());
+                    
+            List<GuildWars2Account> usableAccounts = GetAllUsableAccounts(user, raid.RaidType);
+
+            if(usableAccounts.Where(a => a.GuildWars2AccountId == plannedAccountId).Any())
+            {
+                return plannedAccountId;
+            }
+            if(usableAccounts.Where(a => a.GuildWars2AccountId == user.MainGW2Account).Any())
+            {
+                return user.MainGW2Account;
+            }
+            else
+            {
+                return usableAccounts.First().GuildWars2AccountId;
             }
         }
     }

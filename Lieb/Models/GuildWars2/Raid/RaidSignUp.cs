@@ -1,4 +1,6 @@
-﻿namespace Lieb.Models.GuildWars2.Raid
+﻿using System.Text.Json.Serialization;
+
+namespace Lieb.Models.GuildWars2.Raid
 {
     public enum SignUpType
     {
@@ -21,6 +23,7 @@
 
         public SignUpType SignUpType { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public Raid Raid { get; set; }
         public LiebUser? LiebUser { get; set; }
         public GuildWars2Account? GuildWars2Account { get; set; }

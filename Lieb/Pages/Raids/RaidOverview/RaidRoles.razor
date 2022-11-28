@@ -118,14 +118,7 @@
     {
         if (_user != null)
         {
-            if (_raid.RaidType == RaidType.Planned)
-            {
-                _usableAccounts = _user.GuildWars2Accounts.ToList();
-            }
-            else
-            {
-                _usableAccounts = _user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Count > 0).ToList();
-            }
+            _usableAccounts = UserService.GetAllUsableAccounts(_user.Id, _raid.RaidType);
             _liebUserId = _user.Id;
         }
         _expandableRoles = new List<ExpandableRole>();
@@ -147,6 +140,10 @@
         else
         {
             int gw2AccountId =  UserService.GetMainAccount(_liebUserId).GuildWars2AccountId;
+            if(!_usableAccounts.Where(a => a.GuildWars2AccountId == gw2AccountId).Any())
+            {
+                gw2AccountId = _usableAccounts.FirstOrDefault().GuildWars2AccountId;
+            }
             await RaidService.SignUp(_raid.RaidId, _liebUserId, gw2AccountId, role.RaidRoleId, signUpType);
         }
         _Parent.HasChanged();

@@ -69,7 +69,7 @@ namespace DiscordBot.Messages
             return raid;
         }
 
-        public Embed CreateRaidMessage(ApiRaid raid)
+        private Embed CreateRaidMessage(ApiRaid raid)
         {
             var embed = new EmbedBuilder()
             {
@@ -123,6 +123,28 @@ namespace DiscordBot.Messages
                 rolesString += $"\t{user.UserName} ({user.AccountName}) {status}\n";
             }
             return rolesString;
+        }
+
+        public static ButtonParameters ParseButtonId(string customId)
+        {
+            ButtonParameters parameters = new ButtonParameters();
+
+            string[] ids = customId.Split('-');
+            if(ids.Length > 0)
+            {
+                parameters.ButtonType = ids[0];
+            }
+            if(ids.Length > 1)
+            {
+                int.TryParse(ids[1],out parameters.RaidId);
+            }
+            return parameters;
+        }
+
+        public class ButtonParameters
+        {
+            public int RaidId;
+            public string ButtonType = string.Empty;
         }
     }
 }

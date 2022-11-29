@@ -42,15 +42,7 @@ namespace DiscordBot.CommandHandlers
                     
                     //sign up
                     CreateAccountModal.Parameters createAccountParameters = CreateAccountModal.ParseId(modal.Data.CustomId);
-                    if(await _handlerFunctions.IsRaidSignUpAllowed(modal, createAccountParameters.RaidId, createAccountParameters.ButtonId))
-                    {
-                        List<ApiRole> roles = await _httpService.GetRoles(createAccountParameters.RaidId, modal.User.Id);                    
-                        await modal.RespondAsync("Please choose a role.", 
-                            components: RoleSelectionMessage.buildMessage(roles, createAccountParameters.RaidId, createAccountParameters.ButtonId, false),
-                            ephemeral: true);
-                        return;
-                    }
-                    await _handlerFunctions.Respond(modal);
+                    await _handlerFunctions.SelectRole(modal, createAccountParameters.RaidId, createAccountParameters.ButtonId, false, modal.User.Id, 0);
                     break;
                 case Constants.ComponentIds.SIGN_UP_EXTERNAL_MODAL:
                     string userName = components.First(x => x.CustomId == Constants.ComponentIds.NAME_TEXT_BOX).Value;

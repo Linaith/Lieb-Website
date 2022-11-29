@@ -11,8 +11,8 @@
             public const string FLEX_BUTTON = "flexButton";
             public const string SIGN_OFF_BUTTON = "signOffButton";
             
-            public const string SIGN_UP_DROP_DOWN = "signUpDropDown";
-            public const string SIGN_UP_EXTERNAL_DROP_DOWN = "signUpExternalDropDown";
+            public const string ROLE_SELECT_DROP_DOWN = "roleSelectDropDown";
+            public const string ROLE_SELECT_EXTERNAL_DROP_DOWN = "roleSelectExternalDropDown";
             public const string ACCOUNT_SELECT_DROP_DOWN = "accountSelectDropDown";
 
             public const string NAME_TEXT_BOX = "nameTextbox";

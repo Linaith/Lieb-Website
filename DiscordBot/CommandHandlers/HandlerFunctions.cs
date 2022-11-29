@@ -69,6 +69,75 @@ namespace DiscordBot.CommandHandlers
                 }
             }
         }
+
+        public async Task SelectRole(SocketInteraction component, int raidId, string buttonType, bool allRoles, ulong userIdToSignUp, ulong signedUpByUserId)
+        {
+            if(await IsRaidSignUpAllowed(component, raidId, buttonType))
+            {
+                List<ApiRole> roles = new List<ApiRole>();
+                roles = await _httpService.GetRoles(raidId, userIdToSignUp);       
+                if(roles.Count > 1)
+                {             
+                    await component.RespondAsync("Please choose a role.", components: RoleSelectionMessage.buildMessage(roles, raidId, buttonType, allRoles, userIdToSignUp, signedUpByUserId) , ephemeral: true);
+                }
+                else if(roles.Count == 1)
+                {
+                    await SelectAccount(buttonType, raidId, component, roles.First().roleId, userIdToSignUp, signedUpByUserId);
+                }
+                else
+                {
+                    await component.RespondAsync("no role found.", ephemeral: true);
+                }
+            }
+        }
+
+        public async Task SelectAccount(string buttonType, int raidId, SocketInteraction component, int roleId, ulong userIdToSignUp, ulong signedUpByUserId)
+        {
+
+            List<ApiGuildWars2Account> accounts = await _httpService.GetSignUpAccounts(userIdToSignUp, raidId);
+            if(accounts.Count == 1)
+            {
+                ApiGuildWars2Account account = accounts.First();
+                await SignUp(buttonType, raidId, roleId, userIdToSignUp, account.GuildWars2AccountId, signedUpByUserId);
+                await component.RespondAsync("successfully signed up", ephemeral: true);
+            }
+            else if(accounts.Count > 1)
+            {
+                await component.RespondAsync("Please choose an account.", components: AccountSelectionMessage.buildMessage(accounts, raidId, buttonType, roleId, userIdToSignUp, signedUpByUserId) , ephemeral: true);
+            }
+            else
+            {
+                await component.RespondAsync("no suitable Guild Wars 2 account found.", ephemeral: true);
+            }
+        }
+
+        public async Task SignUp(string buttonType, int raidId, int roleId, ulong userIdToSignUp, int gw2AccountId, ulong signedUpByUserId)
+        {
+            ApiSignUp signUp = new ApiSignUp()
+            {
+                raidId = raidId,
+                roleId = roleId,
+                gw2AccountId = gw2AccountId,
+                userId = userIdToSignUp,
+                signedUpByUserId = signedUpByUserId
+            };
+
+            switch(buttonType)
+            {
+                case Constants.ComponentIds.SIGN_UP_BUTTON:
+                    await _httpService.SignUp(signUp);
+                break;
+                case Constants.ComponentIds.MAYBE_BUTTON:
+                    await _httpService.SignUpMaybe(signUp);
+                break;
+                case Constants.ComponentIds.BACKUP_BUTTON:
+                    await _httpService.SignUpBackup(signUp);
+                break;
+                case Constants.ComponentIds.FLEX_BUTTON:
+                    await _httpService.SignUpFlex(signUp);
+                break;
+            }
+        }
         
         //to avoid error messages because of no response...
         public async Task Respond(SocketInteraction component)

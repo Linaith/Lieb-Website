@@ -22,34 +22,23 @@ namespace DiscordBot.CommandHandlers
         public async Task Handler(SocketMessageComponent component)
         {
             string[] ids = component.Data.CustomId.Split('-');
-            List<ApiRole> roles = new List<ApiRole>();
-            int parsedRaidId = 0;
-            if(ids.Length > 1)
-            {
-                int.TryParse(ids[1],out parsedRaidId);
-            }
             switch(ids[0])
             {
                 case Constants.ComponentIds.SIGN_UP_BUTTON:
-                    if(await _handlerFunctions.IsRaidSignUpAllowed(component, parsedRaidId, ids[0]))
-                    {
-                        roles = await _httpService.GetRoles(parsedRaidId, component.User.Id);                    
-                        await component.RespondAsync("Please choose a role.", components: RoleSelectionMessage.buildMessage(roles, parsedRaidId, ids[0], false) , ephemeral: true);
-                    }
-                break;
+                    RaidMessage.ButtonParameters signUpParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
+                    await _handlerFunctions.SelectRole(component, signUpParameters.RaidId, signUpParameters.ButtonType, false, component.User.Id, 0);
+                    break;
                 case Constants.ComponentIds.MAYBE_BUTTON:
                 case Constants.ComponentIds.BACKUP_BUTTON:
                 case Constants.ComponentIds.FLEX_BUTTON:
-                    if(await _handlerFunctions.IsRaidSignUpAllowed(component, parsedRaidId, ids[0]))
-                    {
-                        roles = await _httpService.GetRoles(parsedRaidId, component.User.Id);                    
-                        await component.RespondAsync("Please choose a role.", components: RoleSelectionMessage.buildMessage(roles, parsedRaidId, ids[0], true) , ephemeral: true);
-                    }
-                break;
+                    RaidMessage.ButtonParameters maybeParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
+                    await _handlerFunctions.SelectRole(component, maybeParameters.RaidId, maybeParameters.ButtonType, true, component.User.Id, 0);
+                    break;
                 case Constants.ComponentIds.SIGN_OFF_BUTTON:
+                    RaidMessage.ButtonParameters signOffParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
                     ApiSignUp signOff = new ApiSignUp()
                     {
-                        raidId = parsedRaidId,
+                        raidId = signOffParameters.RaidId,
                         userId = component.User.Id
                     };
                     await _httpService.SignOff(signOff);
@@ -57,6 +46,5 @@ namespace DiscordBot.CommandHandlers
                 break;
             }
         }
-
     }
 }

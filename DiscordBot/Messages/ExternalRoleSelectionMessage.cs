@@ -9,7 +9,7 @@ namespace DiscordBot.Messages
         {
             var signUpSelect = new SelectMenuBuilder()
                 .WithPlaceholder("Select an option")
-                .WithCustomId($"{Constants.ComponentIds.SIGN_UP_EXTERNAL_DROP_DOWN}-{raidId}")
+                .WithCustomId($"{Constants.ComponentIds.ROLE_SELECT_EXTERNAL_DROP_DOWN}-{raidId}")
                 .WithMinValues(1)
                 .WithMaxValues(1);
             

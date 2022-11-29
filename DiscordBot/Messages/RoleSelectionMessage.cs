@@ -5,11 +5,11 @@ namespace DiscordBot.Messages
 {
     public class RoleSelectionMessage
     {
-        public static MessageComponent buildMessage(List<ApiRole> roles, int raidId, string buttonType, bool allRoles, ulong userIdToSignUp = 0)
+        public static MessageComponent buildMessage(List<ApiRole> roles, int raidId, string buttonType, bool allRoles, ulong userIdToSignUp, ulong signedUpByUserId)
         {
             var signUpSelect = new SelectMenuBuilder()
                 .WithPlaceholder("Select an option")
-                .WithCustomId($"{Constants.ComponentIds.SIGN_UP_DROP_DOWN}-{raidId}-{buttonType}-{userIdToSignUp}")
+                .WithCustomId($"{Constants.ComponentIds.ROLE_SELECT_DROP_DOWN}-{raidId}-{buttonType}-{userIdToSignUp}-{signedUpByUserId}")
                 .WithMinValues(1)
                 .WithMaxValues(1);
             
@@ -42,6 +42,10 @@ namespace DiscordBot.Messages
             {
                 ulong.TryParse(ids[3],out parameters.UserIdToSignUp);
             }
+            if(ids.Length > 4)
+            {
+                ulong.TryParse(ids[4],out parameters.SignedUpByUserId);
+            }
             return parameters;
         }
 
@@ -49,7 +53,8 @@ namespace DiscordBot.Messages
         {
             public int RaidId;
             public string ButtonType = string.Empty;
-            public ulong UserIdToSignUp;
+            public  ulong UserIdToSignUp;
+            public  ulong SignedUpByUserId;
         }
     }
 }

@@ -22,8 +22,6 @@ namespace DiscordBot.CommandHandlers
             _handlerFunctions = new HandlerFunctions(_httpService);
         }
 
-        
-
         public async Task Handler(SocketSlashCommand command)
         {
             Tuple<bool, string> commandExecutionAllowed = await _httpService.IsSlashCommandAllowed(command.User.Id, command.Data.Name);
@@ -99,24 +97,20 @@ namespace DiscordBot.CommandHandlers
         }
 
         private async Task SignUpUser(SocketSlashCommand command, IUser user, int raidId)
-        {
-            if(await _handlerFunctions.IsRaidSignUpAllowed(command, raidId, Constants.ComponentIds.SIGN_UP_BUTTON))
-            {
-                List<ApiRole> roles = await _httpService.GetRoles(raidId, user.Id);    
-                if(await _httpService.DoesUserExist(user.Id))
-                {                
-                    Tuple<bool, string> signUpAllowed = await _httpService.IsSignUpAllowed(raidId, user.Id, true);
-                    if(!signUpAllowed.Item1)
-                    {
-                        await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
-                        return;
-                    }
-                    await command.RespondAsync("Please choose a role.", components: RoleSelectionMessage.buildMessage(roles, raidId, Constants.ComponentIds.SIGN_UP_BUTTON, false, user.Id) , ephemeral: true);
-                }
-                else
+        { 
+            if(await _httpService.DoesUserExist(user.Id))
+            {                
+                Tuple<bool, string> signUpAllowed = await _httpService.IsSignUpAllowed(raidId, user.Id, true);
+                if(!signUpAllowed.Item1)
                 {
-                    await SignUpExternalUser(command, raidId, roles);
+                    await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
+                    return;
                 }
+                await _handlerFunctions.SelectRole(command, raidId, Constants.ComponentIds.SIGN_UP_BUTTON, false, user.Id, command.User.Id); 
+            }
+            else
+            {
+                await SignUpExternalUser(command, raidId);
             }
         }
 
@@ -125,19 +119,14 @@ namespace DiscordBot.CommandHandlers
             if(await _handlerFunctions.IsRaidSignUpAllowed(command, raidId, Constants.ComponentIds.SIGN_UP_BUTTON))
             {
                 List<ApiRole> roles = await _httpService.GetRoles(raidId, uint.MaxValue);    
-                await SignUpExternalUser(command, raidId, roles);
+                Tuple<bool, string> signUpAllowed = await _httpService.IsExternalSignUpAllowed(raidId);
+                if(!signUpAllowed.Item1)
+                {
+                    await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
+                    return;
+                }
+                await command.RespondAsync("Please choose a role.", components: ExternalRoleSelectionMessage.buildMessage(roles, raidId) , ephemeral: true);
             }
-        }
-
-        private async Task SignUpExternalUser(SocketSlashCommand command, int raidId, List<ApiRole> roles)
-        {
-            Tuple<bool, string> signUpAllowed = await _httpService.IsExternalSignUpAllowed(raidId);
-            if(!signUpAllowed.Item1)
-            {
-                await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
-                return;
-            }
-            await command.RespondAsync("Please choose a role.", components: ExternalRoleSelectionMessage.buildMessage(roles, raidId) , ephemeral: true);
         }
 
         private async Task SendMessages(string message, int raidId)

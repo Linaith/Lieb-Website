@@ -120,7 +120,14 @@ namespace DiscordBot.Messages
             foreach (ApiRaid.Role.User user in role.Users.OrderBy(u => u.Status))
             {
                 string status = !string.IsNullOrWhiteSpace(user.Status) ? $" - {user.Status}" : string.Empty;
-                rolesString += $"\t{user.UserName} ({user.AccountName}) {status}\n";
+                if(string.IsNullOrEmpty(user.AccountName))
+                {
+                    rolesString += $"\t{user.UserName} {status}\n";
+                }
+                else
+                {
+                    rolesString += $"\t{user.UserName} ({user.AccountName}) {status}\n";
+                }
             }
             return rolesString;
         }

@@ -11,7 +11,7 @@ namespace DiscordBot.Messages
         public static Modal buildMessage(int raidId, int roleId)
         {
             var mb = new ModalBuilder()
-                .WithTitle("Create Account")
+                .WithTitle("User Name")
                 .WithCustomId($"{Constants.ComponentIds.SIGN_UP_EXTERNAL_MODAL}-{raidId}-{roleId}")
                 .AddTextInput("Name", Constants.ComponentIds.NAME_TEXT_BOX, placeholder: "Name", required: true);
 

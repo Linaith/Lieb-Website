@@ -72,16 +72,15 @@ namespace Lieb.Models.GuildWars2.Raid
                     DiscordChannelId = reminder.DiscordChannelId,
                     ReminderTimeUTC = reminder.ReminderTimeUTC,
                     Message = reminder.Message,
-                    Sent = reminder.Sent,
+                    Sent = false,
                     Type = reminder.Type,
-                    RaidId = reminder.RaidId
+                    TimeType = reminder.TimeType
                 });
             }
             foreach (DiscordRaidMessage message in template.DiscordRaidMessages)
             {
                 this.DiscordRaidMessages.Add(new DiscordRaidMessage()
                 {
-                    RaidId = message.RaidId,
                     DiscordChannelId = message.DiscordChannelId,
                     DiscordGuildId = message.DiscordGuildId
                 });

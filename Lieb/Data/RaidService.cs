@@ -95,6 +95,11 @@ namespace Lieb.Data
             context.RaidReminders.RemoveRange(raid.Reminders);
             context.DiscordRaidMessages.RemoveRange(raid.DiscordRaidMessages);
             await context.SaveChangesAsync();
+            raid.SignUps.Clear();
+            raid.Roles.Clear();
+            raid.RaidLogs.Clear();
+            raid.Reminders.Clear();
+            raid.DiscordRaidMessages.Clear();
             context.Raids.Remove(raid);
             await context.SaveChangesAsync();
 
@@ -487,8 +492,6 @@ namespace Lieb.Data
         {
             using var context = _contextFactory.CreateDbContext();
             List<RaidReminder> reminders = context.RaidReminders
-                .Include(r => r.Raid)
-                .ThenInclude(r => r.SignUps)
                 .Where(r => !r.Sent)
                 .ToList();
 
@@ -498,7 +501,11 @@ namespace Lieb.Data
                 switch(reminder.Type)
                 {
                     case RaidReminder.ReminderType.User:
-                        await _discordService.SendUserReminder(reminder, reminder.Raid);
+                        Raid raid = context.Raids
+                            .Include(r => r.SignUps)
+                            .Include(r => r.Reminders)
+                            .First(r => r.Reminders.Where(re => re.RaidReminderId == reminder.RaidReminderId).Any());
+                        await _discordService.SendUserReminder(reminder, raid);
                         break;
                     case RaidReminder.ReminderType.Channel:
                         await _discordService.SendChannelReminder(reminder);

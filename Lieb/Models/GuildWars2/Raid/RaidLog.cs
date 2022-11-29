@@ -32,6 +32,7 @@ namespace Lieb.Models.GuildWars2.Raid
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public Raid? Raid { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public RaidTemplate? RaidTemplate { get; set; }
 
         public static RaidLog CreateRaidLog(ulong userId, Raid raid)

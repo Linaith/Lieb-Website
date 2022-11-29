@@ -28,6 +28,8 @@ namespace Lieb.Data
             return context.RaidTemplates
                 .Include(r => r.Roles)
                 .Include(r => r.Reminders)
+                .Include(r => r.DiscordRaidMessages)
+                .Include(r => r.TemplateLogs)
                 .FirstOrDefault(t => t.RaidTemplateId == raidTemplateId);
         }
 
@@ -61,7 +63,12 @@ namespace Lieb.Data
             context.RaidRoles.RemoveRange(template.Roles);
             context.RaidReminders.RemoveRange(template.Reminders);
             context.DiscordRaidMessages.RemoveRange(template.DiscordRaidMessages);
+            context.RaidLogs.RemoveRange(template.TemplateLogs);
             await context.SaveChangesAsync();
+            template.Roles.Clear();
+            template.Reminders.Clear();
+            template.DiscordRaidMessages.Clear();
+            template.TemplateLogs.Clear();
             context.RaidTemplates.Remove(template);
             await context.SaveChangesAsync();
         }

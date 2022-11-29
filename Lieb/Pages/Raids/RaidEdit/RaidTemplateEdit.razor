@@ -7,6 +7,7 @@
 @using System.Security.Claims
 @using SharedClasses.SharedModels
 @inject RaidTemplateService RaidTemplateService
+@inject RaidService RaidService
 @inject UserService UserService
 @inject DiscordService DiscordService
 @inject TimeZoneService TimeZoneService
@@ -289,13 +290,15 @@
     {
         if(_template.RaidType != RaidType.Planned)
         {
-            _template.Roles.Clear();
-            _template.Roles.Add(new RaidRole()
-                {
-                    Spots = 10,
-                    Name = "Random",
-                    Description = _template.RaidType.ToString()
-                });
+            if(!_template.Roles.Where(r => r.IsRandomSignUpRole).Any())
+            {
+                _template.Roles.Add(RaidService.CreateRandomSignUpRole(_template.RaidType));
+            }
+
+            foreach(RaidRole role in _template.Roles.Where(r => !r.IsRandomSignUpRole))
+            {
+                _rolesToDelete.Add(role);
+            }
         }
 
         if(_template.Roles.Count == 0)
@@ -326,11 +329,13 @@
         foreach(DynamicRaidReminder reminder in _dynamicReminders)
         {
             reminder.ReminderTimeUTC = _template.StartTime - new TimeSpan(reminder.DaysBeforeRaid, reminder.HoursBeforeRaid, reminder.MinutesBeforeRaid, 0);
+            reminder.Sent = true;
             _template.Reminders.Add(reminder);
         }
         foreach(StaticRaidReminder reminder in _staticReminders)
         {
             reminder.ReminderTimeUTC = await TimeZoneService.GetUTCDateTime(reminder.ReminderDate.Date + reminder.ReminderTime.TimeOfDay);
+            reminder.Sent = true;
             _template.Reminders.Add(reminder);
         }
 

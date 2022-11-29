@@ -39,11 +39,6 @@ namespace Lieb.Models.GuildWars2.Raid
         public ulong DiscordChannelId { get; set; }
 
         public bool Sent { get; set; } = false;
-        
-        public int RaidId { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-        public Raid Raid { get; set; }
     }
 
     public class StaticRaidReminder : RaidReminder

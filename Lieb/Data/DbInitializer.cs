@@ -196,16 +196,6 @@ namespace Lieb.Data
             context.Equipped.AddRange(equippedBuilds);
             context.SaveChanges();
 
-            var discordMessage = new DiscordRaidMessage()
-            {
-                DiscordChannelId = 666954070388637697,
-                DiscordGuildId = 666953424734257182,
-                DiscordMessageId = 1040355092630614087,
-                RaidId = raid.RaidId
-            };
-            context.DiscordRaidMessages.Add(discordMessage);
-            context.SaveChanges();
-
 #endif
         }
     }

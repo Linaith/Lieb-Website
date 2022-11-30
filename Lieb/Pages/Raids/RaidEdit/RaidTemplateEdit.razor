@@ -310,7 +310,7 @@
         _template.TimeZone = await TimeZoneService.GetUserTimeZone();
 
         _template.StartTime =_raidDate.Date + _startTime.TimeOfDay;
-        if(_startTime.TimeOfDay > _endTime.TimeOfDay)
+        if(_startTime.TimeOfDay <= _endTime.TimeOfDay)
         {
             _template.EndTime = _raidDate.Date + _endTime.TimeOfDay;
         }

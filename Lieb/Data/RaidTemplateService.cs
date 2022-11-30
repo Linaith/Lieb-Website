@@ -7,10 +7,12 @@ namespace Lieb.Data
     {
 
         private readonly IDbContextFactory<LiebContext> _contextFactory;
+        private readonly RaidService _raidSerive;
 
-        public RaidTemplateService(IDbContextFactory<LiebContext> contextFactory)
+        public RaidTemplateService(IDbContextFactory<LiebContext> contextFactory, RaidService raidSerice)
         {
             _contextFactory = contextFactory;
+            _raidSerive = raidSerice;
         }
 
         public List<RaidTemplate> GetTemplates()
@@ -86,7 +88,7 @@ namespace Lieb.Data
                 return;
             }
             Raid raid = new Raid(template);
-            context.Raids.Add(raid);
+            await _raidSerive.AddOrEditRaid(raid, null, null, null, template.RaidOwnerId);
             MoveTemplate(template);
             await context.SaveChangesAsync();
         }

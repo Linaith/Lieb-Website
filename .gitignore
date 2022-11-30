@@ -23,6 +23,7 @@ Database/
 DiscordBot/token.txt
 DiscordBot/debugtoken.txt
 Lieb/discordAppSecret.txt
+publish.sh
 
 # Build results
 [Dd]ebug/

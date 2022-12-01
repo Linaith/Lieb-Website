@@ -89,12 +89,19 @@ namespace Lieb.Data
         {
             using var context = _contextFactory.CreateDbContext();
             Raid raid = GetRaid(raidId);
+            await _discordService.DeleteRaidMessages(raid);
+            if(raid.EndTimeUTC > DateTimeOffset.UtcNow)
+            {
+                await _discordService.SendMessageToRaidUsers($"Raid \"{raid.Title}\": was deleted.", raid);
+            }
+
             context.RaidSignUps.RemoveRange(raid.SignUps);
             context.RaidRoles.RemoveRange(raid.Roles);
             context.RaidLogs.RemoveRange(raid.RaidLogs);
             context.RaidReminders.RemoveRange(raid.Reminders);
             context.DiscordRaidMessages.RemoveRange(raid.DiscordRaidMessages);
             await context.SaveChangesAsync();
+
             raid.SignUps.Clear();
             raid.Roles.Clear();
             raid.RaidLogs.Clear();
@@ -103,11 +110,6 @@ namespace Lieb.Data
             context.Raids.Remove(raid);
             await context.SaveChangesAsync();
 
-            await _discordService.DeleteRaidMessages(raid);
-            if(raid.EndTimeUTC > DateTimeOffset.UtcNow)
-            {
-                await _discordService.SendMessageToRaidUsers($"Raid \"{raid.Title}\": was deleted.", raid);
-            }
         }
 
         public async Task SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType, ulong signedUpByUserId = 0)
@@ -524,7 +526,8 @@ namespace Lieb.Data
             {
                 await DeleteRaid(raid.RaidId);
             }
-            foreach(Raid raid in raids.Where(r => r.EndTimeUTC < utcNow.AddHours(-1)))
+            foreach(Raid raid in raids.Where(r => r.EndTimeUTC < utcNow.AddHours(-1) 
+                                                && (r.DiscordRaidMessages.Count > 0 || r.Reminders.Count > 0)))
             {
                 await _discordService.DeleteRaidMessages(raid);
                 context.RaidReminders.RemoveRange(raid.Reminders);

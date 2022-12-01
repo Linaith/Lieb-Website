@@ -147,6 +147,7 @@ namespace Lieb.Data
                 Interval = 7,
                 CreateDaysBefore = 7,
                 TimeZone = "Europe/Vienna",
+                RaidOwnerId = 2,
                 Roles = new[] { new RaidRole(){
                         Description = "WupWup",
                         Name = "Ups",

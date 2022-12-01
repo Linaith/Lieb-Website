@@ -9,11 +9,13 @@ namespace Lieb.Data
     {
         private readonly IDbContextFactory<LiebContext> _contextFactory;
         private readonly DiscordService _discordService;
+        private readonly GuildWars2AccountService _guildWars2AccountService;
 
-        public UserService(IDbContextFactory<LiebContext> contextFactory, DiscordService discordService)
+        public UserService(IDbContextFactory<LiebContext> contextFactory, DiscordService discordService, GuildWars2AccountService guildWars2AccountService)
         {
             _contextFactory = contextFactory;
             _discordService = discordService;
+            _guildWars2AccountService = guildWars2AccountService;
         }
 
         public List<LiebUser> GetLiebUsers()
@@ -99,6 +101,21 @@ namespace Lieb.Data
             context.Update(user);
             await context.SaveChangesAsync();
             await _discordService.RenameUser(user.Id, user.Name, GetMainAccount(user.Id).AccountName);
+        }
+
+        public async Task DeleteUser(LiebUser user)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            
+            foreach(GuildWars2Account account in user.GuildWars2Accounts)
+            {
+                await _guildWars2AccountService.DeleteAccount(account.GuildWars2AccountId);
+            }
+            context.RaidLogs.RemoveRange(context.RaidLogs.Where(r => r.UserId == user.Id).ToList());
+            context.RaidSignUps.RemoveRange(context.RaidSignUps.Where(r => r.LiebUserId == user.Id));
+            context.RoleAssignments.RemoveRange(context.RoleAssignments.Where(r => r.LiebUserId == user.Id));
+            context.Remove(user);
+            await context.SaveChangesAsync();
         }
 
         public async Task UpdateBannedUntil(ulong userId, DateTime? date)

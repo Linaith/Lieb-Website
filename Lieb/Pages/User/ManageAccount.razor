@@ -7,6 +7,7 @@
 @inject UserService UserService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JsRuntime
 
 <h3>Manage Account</h3>
 
@@ -71,6 +72,12 @@
         <br />
         <button type="submit">Save</button>
         <ValidationSummary />
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <a href="Account/Logout" class="loginText" @onclick="() => DeleteAccountClicked()">Delete Account</a>
     </EditForm>
 </Authorized>
 </AuthorizeView>
@@ -98,5 +105,18 @@
     {
         await UserService.EditUser(_user);
         _saveMessage = "changes saved successfully";
+    }
+
+    async Task DeleteAccountClicked()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this Website Account?\nThis will sign you off in every raid in which you are signed up.");
+        if (confirmed)
+        {
+            await UserService.DeleteUser(_user);
+        }
+        else
+        {
+            NavigationManager.NavigateTo("accountedit");
+        }
     }
 }

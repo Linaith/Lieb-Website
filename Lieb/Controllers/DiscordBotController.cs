@@ -164,7 +164,10 @@ namespace Lieb.Controllers
             {
                 AccountName = user.AccountName
             };
-            await _userService.CreateUser(user.UserId, user.UserName);
+            if(_userService.GetLiebUserGW2AccountOnly(user.UserId) == null)
+            {
+                await _userService.CreateUser(user.UserId, user.UserName);
+            }
             await _gw2AccountService.AddOrEditAccount(gw2Account, user.UserId);
             return Ok();
         }

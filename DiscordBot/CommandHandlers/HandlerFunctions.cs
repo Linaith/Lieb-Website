@@ -58,15 +58,19 @@ namespace DiscordBot.CommandHandlers
             string nickname = $"{name} | {account}";
             foreach(ulong serverId in serverList)
             {
-                SocketGuild guild = client.Guilds.FirstOrDefault(g => g.Id == serverId);
-                if(guild != null)
+                try
                 {
-                    SocketGuildUser user = guild.GetUser(userId);
-                    if(user != null)
+                    SocketGuild guild = client.Guilds.FirstOrDefault(g => g.Id == serverId);
+                    if(guild != null)
                     {
-                        await user.ModifyAsync(p => p.Nickname = nickname);
+                        SocketGuildUser user = guild.GetUser(userId);
+                        if(user != null)
+                        {
+                            await user.ModifyAsync(p => p.Nickname = nickname);
+                        }
                     }
                 }
+                catch {}
             }
         }
 

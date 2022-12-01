@@ -112,11 +112,7 @@
         bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this Website Account?\nThis will sign you off in every raid in which you are signed up.");
         if (confirmed)
         {
-            await UserService.DeleteUser(_user);
-        }
-        else
-        {
-            NavigationManager.NavigateTo("accountedit");
+            await UserService.DeleteUser(_user.Id);
         }
     }
 }

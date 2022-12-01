@@ -103,17 +103,15 @@ namespace Lieb.Data
             await _discordService.RenameUser(user.Id, user.Name, GetMainAccount(user.Id).AccountName);
         }
 
-        public async Task DeleteUser(LiebUser user)
+        public async Task DeleteUser(ulong userId)
         {
             using var context = _contextFactory.CreateDbContext();
-            
+            LiebUser user = GetLiebUser(userId);
             foreach(GuildWars2Account account in user.GuildWars2Accounts)
             {
                 await _guildWars2AccountService.DeleteAccount(account.GuildWars2AccountId);
             }
-            context.RaidLogs.RemoveRange(context.RaidLogs.Where(r => r.UserId == user.Id).ToList());
-            context.RaidSignUps.RemoveRange(context.RaidSignUps.Where(r => r.LiebUserId == user.Id));
-            context.RoleAssignments.RemoveRange(context.RoleAssignments.Where(r => r.LiebUserId == user.Id));
+            user.GuildWars2Accounts.Clear();
             context.Remove(user);
             await context.SaveChangesAsync();
         }

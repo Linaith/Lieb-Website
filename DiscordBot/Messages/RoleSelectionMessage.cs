@@ -8,7 +8,7 @@ namespace DiscordBot.Messages
         public static MessageComponent buildMessage(List<ApiRole> roles, int raidId, string buttonType, bool allRoles, ulong userIdToSignUp, ulong signedUpByUserId)
         {
             var signUpSelect = new SelectMenuBuilder()
-                .WithPlaceholder("Select an option")
+                .WithPlaceholder($"Select a role")
                 .WithCustomId($"{Constants.ComponentIds.ROLE_SELECT_DROP_DOWN}-{raidId}-{buttonType}-{userIdToSignUp}-{signedUpByUserId}")
                 .WithMinValues(1)
                 .WithMaxValues(1);

@@ -2,14 +2,6 @@
 
 namespace Lieb.Models.GuildWars2.Raid
 {
-    public enum RaidType
-    {
-        Planned = 0,
-        RandomWithBoons = 1,
-        RandomClasses = 2,
-        RandomEliteSpecialization = 3,
-    }
-
     public class Raid : RaidBase
     {
         public int RaidId { get; private set; }

@@ -46,6 +46,17 @@
             </InputSelect>
         </label>
     </p>
+    <p>
+        <label>
+            Event Type:
+            <InputSelect @bind-Value="_raid.EventType">
+                @foreach (EventType eventType in (EventType[]) Enum.GetValues(typeof(EventType)))
+                {
+                    <option value="@eventType">@eventType.ToString()</option>
+                }
+            </InputSelect>
+        </label>
+    </p>
     
     <p>
         <label>

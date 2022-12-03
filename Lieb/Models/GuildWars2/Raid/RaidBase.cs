@@ -2,6 +2,22 @@
 
 namespace Lieb.Models.GuildWars2.Raid
 {
+    public enum RaidType
+    {
+        Planned = 0,
+        RandomWithBoons = 1,
+        RandomClasses = 2,
+        RandomEliteSpecialization = 3,
+    }
+    public enum EventType
+    {
+        Other = 0,
+        Raid = 1,
+        Strike = 2,
+        Dungeon = 3,
+        Guild = 4
+    }
+
     public abstract class RaidBase
     {
         [Required]
@@ -26,6 +42,9 @@ namespace Lieb.Models.GuildWars2.Raid
 
         [Required]
         public RaidType RaidType { get; set; }
+
+        [Required]
+        public EventType EventType { get; set; }
 
         public string RequiredRole { get; set; } = String.Empty;
 

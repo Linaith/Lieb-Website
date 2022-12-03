@@ -5,3 +5,8 @@ input {
     margin-right: 20px;
     width: fit-content;
 }
+
+select {
+    margin-right: 20px;
+    width: fit-content;
+}

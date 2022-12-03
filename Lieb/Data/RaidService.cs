@@ -112,11 +112,11 @@ namespace Lieb.Data
 
         }
 
-        public async Task SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType, ulong signedUpByUserId = 0)
+        public async Task<bool> SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType, ulong signedUpByUserId = 0)
         {
             if (!IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true))
             {
-                return;
+                return false;
             }
             using var context = _contextFactory.CreateDbContext();
 
@@ -134,14 +134,19 @@ namespace Lieb.Data
                 await context.SaveChangesAsync();
                 await LogSignUp(signUp, userName, signedUpByUserId);
             }
+            else
+            {
+                return false;
+            }
             await _discordService.PostRaidMessage(raidId);
+            return true;
         }
 
-        public async Task SignUpExternalUser(int raidId, string userName, int plannedRoleId, SignUpType signUpType, ulong signedUpByUserId)
+        public async Task<bool> SignUpExternalUser(int raidId, string userName, int plannedRoleId, SignUpType signUpType, ulong signedUpByUserId)
         {
             if (!IsRoleSignUpAllowed(raidId, ulong.MaxValue, plannedRoleId, signUpType, true))
             {
-                return;
+                return false;
             }
             using var context = _contextFactory.CreateDbContext();
 
@@ -151,6 +156,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
             await LogSignUp(signUp, userName, signedUpByUserId);
             await _discordService.PostRaidMessage(raidId);
+            return true;
         }
 
         public async Task SignOff(int raidId, ulong liebUserId, ulong signedOffByUserId = 0)

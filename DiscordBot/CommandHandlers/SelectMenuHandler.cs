@@ -36,12 +36,22 @@ namespace DiscordBot.CommandHandlers
                 case Constants.ComponentIds.ACCOUNT_SELECT_DROP_DOWN:
                     AccountSelectionMessage.Parameters accountParameters = AccountSelectionMessage.ParseId(component.Data.CustomId);
                     int accountId = int.Parse(component.Data.Values.First());
-                    await _handlerFunctions.SignUp(accountParameters.ButtonType, accountParameters.RaidId, accountParameters.RoleId, accountParameters.UserIdToSignUp, accountId, accountParameters.SignedUpByUserId);
-                    await component.UpdateAsync(x => 
+                    if(await _handlerFunctions.SignUp(accountParameters.ButtonType, accountParameters.RaidId, accountParameters.RoleId, accountParameters.UserIdToSignUp, accountId, accountParameters.SignedUpByUserId))
                     {
-                        x.Content = "successfully signed up";
-                        x.Components = null;
-                    });
+                        await component.UpdateAsync(x => 
+                        {
+                            x.Content = "successfully signed up";
+                            x.Components = null;
+                        });
+                    }
+                    else
+                    {
+                        await component.UpdateAsync(x => 
+                        {
+                            x.Content = "signing up failed";
+                            x.Components = null;
+                        });
+                    }
                     break;
             }
         }

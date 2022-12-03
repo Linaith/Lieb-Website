@@ -99,24 +99,24 @@ namespace DiscordBot.Services
             return new List<ApiRole>();
         }
 
-        public async Task SignUp(ApiSignUp signUp)
+        public async Task<bool> SignUp(ApiSignUp signUp)
         {
-            await SendSignUp(signUp, "DiscordBot/SignUp");
+            return await SendSignUp(signUp, "DiscordBot/SignUp");
         }
 
-        public async Task SignUpMaybe(ApiSignUp signUp)
+        public async Task<bool> SignUpMaybe(ApiSignUp signUp)
         {
-            await SendSignUp(signUp, "DiscordBot/SignUpMaybe");
+            return await SendSignUp(signUp, "DiscordBot/SignUpMaybe");
         }
 
-        public async Task SignUpBackup(ApiSignUp signUp)
+        public async Task<bool> SignUpBackup(ApiSignUp signUp)
         {
-            await SendSignUp(signUp, "DiscordBot/SignUpBackup");
+            return await SendSignUp(signUp, "DiscordBot/SignUpBackup");
         }
 
-        public async Task SignUpFlex(ApiSignUp signUp)
+        public async Task<bool> SignUpFlex(ApiSignUp signUp)
         {
-            await SendSignUp(signUp, "DiscordBot/SignUpFlex");
+            return await SendSignUp(signUp, "DiscordBot/SignUpFlex");
         }
 
         public async Task SignOff(ApiSignUp signUp)
@@ -124,7 +124,7 @@ namespace DiscordBot.Services
             await SendSignUp(signUp, "DiscordBot/SignOff");
         }
 
-        private async Task SendSignUp(ApiSignUp signUp, string requestUri)
+        private async Task<bool> SendSignUp(ApiSignUp signUp, string requestUri)
         {
             var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
 
@@ -134,6 +134,14 @@ namespace DiscordBot.Services
                 Application.Json);
 
             var httpResponseMessage = await httpClient.PostAsync(requestUri, raidItemJson);
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using var contentStream =
+                    await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                return await JsonSerializer.DeserializeAsync<bool>(contentStream, _serializerOptions);
+            }
+            return false;
         }
 
         public async Task<Tuple<bool, string>> CreateAccount(ApiRaid.Role.User user)

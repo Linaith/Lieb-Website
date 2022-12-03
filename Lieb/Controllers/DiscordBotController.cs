@@ -87,67 +87,67 @@ namespace Lieb.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task SignUp(ApiSignUp signUp)
+        public async Task<bool> SignUp(ApiSignUp signUp)
         {
             if(signUp.userId != 0)
             {
                 int accountId = _userService.GetSignUpAccount(signUp.userId, signUp.raidId, signUp.gw2AccountId);
-                await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.SignedUp, signUp.signedUpByUserId);
+                return await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.SignedUp, signUp.signedUpByUserId);
             }
             else
             {
-                await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.SignedUp, signUp.signedUpByUserId);
+                return await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.SignedUp, signUp.signedUpByUserId);
             }
         }
 
         [HttpPost]
         [Route("[action]")]
-        public async Task SignUpMaybe(ApiSignUp signUp)
+        public async Task<bool> SignUpMaybe(ApiSignUp signUp)
         {
             if(signUp.userId != 0)
             {
                 int accountId = _userService.GetSignUpAccount(signUp.userId, signUp.raidId, signUp.gw2AccountId);
-                await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Maybe, signUp.signedUpByUserId);
+                return await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Maybe, signUp.signedUpByUserId);
             }
             else
             {
-                await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.Maybe, signUp.signedUpByUserId);
+                return await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.Maybe, signUp.signedUpByUserId);
             }
         }
 
         [HttpPost]
         [Route("[action]")]
-        public async Task SignUpBackup(ApiSignUp signUp)
+        public async Task<bool> SignUpBackup(ApiSignUp signUp)
         {
             if(signUp.userId != 0)
             {
                 int accountId = _userService.GetSignUpAccount(signUp.userId, signUp.raidId, signUp.gw2AccountId);
-                await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Backup, signUp.signedUpByUserId);
+                return await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Backup, signUp.signedUpByUserId);
             }
             else
             {
-                await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.Backup, signUp.signedUpByUserId);
+                return await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.Backup, signUp.signedUpByUserId);
             }
         }
 
         [HttpPost]
         [Route("[action]")]
-        public async Task SignUpFlex(ApiSignUp signUp)
+        public async Task<bool> SignUpFlex(ApiSignUp signUp)
         {
             if(signUp.userId != 0)
             {
                 int accountId = _userService.GetSignUpAccount(signUp.userId, signUp.raidId, signUp.gw2AccountId);
-                await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Flex, signUp.signedUpByUserId);
+                return await _raidService.SignUp(signUp.raidId, signUp.userId, accountId, signUp.roleId, SignUpType.Flex, signUp.signedUpByUserId);
             }
             else
             {
-                await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.Flex, signUp.signedUpByUserId);
+                return await _raidService.SignUpExternalUser(signUp.raidId, signUp.userName, signUp.roleId, SignUpType.Flex, signUp.signedUpByUserId);
             }
         }
 
         [HttpPost]
         [Route("[action]")]
-        public async Task SignOff(ApiSignUp signUp)
+        public async Task<bool> SignOff(ApiSignUp signUp)
         {
             if(signUp.userId != 0)
             {
@@ -157,6 +157,7 @@ namespace Lieb.Controllers
             {
                 await _raidService.SignOffExternalUser(signUp.raidId, signUp.userName, signUp.signedUpByUserId);
             }
+            return true;
         }
 
         [HttpPost]

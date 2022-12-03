@@ -54,8 +54,14 @@ namespace DiscordBot.CommandHandlers
                         signedUpByUserId = modal.User.Id,
                         roleId = modalParameters.RoleId
                     };
-                    await _httpService.SignUp(signUpExternal);
-                    await modal.RespondAsync($"signed up {userName}", ephemeral: true);
+                    if(await _httpService.SignUp(signUpExternal))
+                    {
+                        await modal.RespondAsync($"signed up {userName}", ephemeral: true);
+                    }
+                    else
+                    {
+                        await modal.RespondAsync($"signing up failed", ephemeral: true);
+                    }
                     break;
             }
         }

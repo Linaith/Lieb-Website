@@ -103,8 +103,14 @@ namespace DiscordBot.CommandHandlers
             if(accounts.Count == 1)
             {
                 ApiGuildWars2Account account = accounts.First();
-                await SignUp(buttonType, raidId, roleId, userIdToSignUp, account.GuildWars2AccountId, signedUpByUserId);
-                await UpdateOrRespond(component, "successfully signed up", null, roleMessageExists);
+                if(await SignUp(buttonType, raidId, roleId, userIdToSignUp, account.GuildWars2AccountId, signedUpByUserId))
+                {
+                    await UpdateOrRespond(component, "successfully signed up", null, roleMessageExists);
+                }
+                else
+                {
+                    await UpdateOrRespond(component, "signing up failed", null, roleMessageExists);
+                }
             }
             else if(accounts.Count > 1)
             {
@@ -116,7 +122,7 @@ namespace DiscordBot.CommandHandlers
             }
         }
 
-        public async Task SignUp(string buttonType, int raidId, int roleId, ulong userIdToSignUp, int gw2AccountId, ulong signedUpByUserId)
+        public async Task<bool> SignUp(string buttonType, int raidId, int roleId, ulong userIdToSignUp, int gw2AccountId, ulong signedUpByUserId)
         {
             ApiSignUp signUp = new ApiSignUp()
             {
@@ -130,17 +136,19 @@ namespace DiscordBot.CommandHandlers
             switch(buttonType)
             {
                 case Constants.ComponentIds.SIGN_UP_BUTTON:
-                    await _httpService.SignUp(signUp);
+                    return await _httpService.SignUp(signUp);
                 break;
                 case Constants.ComponentIds.MAYBE_BUTTON:
-                    await _httpService.SignUpMaybe(signUp);
+                    return await _httpService.SignUpMaybe(signUp);
                 break;
                 case Constants.ComponentIds.BACKUP_BUTTON:
-                    await _httpService.SignUpBackup(signUp);
+                    return await _httpService.SignUpBackup(signUp);
                 break;
                 case Constants.ComponentIds.FLEX_BUTTON:
-                    await _httpService.SignUpFlex(signUp);
+                    return await _httpService.SignUpFlex(signUp);
                 break;
+                default:
+                    return false;
             }
         }
 

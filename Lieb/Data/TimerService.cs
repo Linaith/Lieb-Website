@@ -35,7 +35,7 @@ namespace Lieb.Data
                 {
                     TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(template.TimeZone);
                     DateTime UTCStartTime = TimeZoneInfo.ConvertTimeToUtc(template.StartTime, timeZone);
-                    if(UTCStartTime.AddDays(-template.CreateDaysBefore).AddHours(1) < DateTime.UtcNow)
+                    if(template.Interval > 0 && UTCStartTime.AddDays(-template.CreateDaysBefore).AddHours(1) < DateTime.UtcNow)
                     {
                         raidTemplateService.CreateRaidFromTemplate(template.RaidTemplateId).Wait();
                     }

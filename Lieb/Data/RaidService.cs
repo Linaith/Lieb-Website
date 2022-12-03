@@ -50,7 +50,7 @@ namespace Lieb.Data
                 .FirstOrDefault(r => r.RaidId == raidId, new Raid());
         }
 
-        public async Task AddOrEditRaid(Raid raid, List<RaidRole> rolesToDelete, List<RaidReminder> remindersToDelete, List<DiscordRaidMessage> messagesToDelete, ulong changedBy)
+        public async Task AddOrEditRaid(Raid raid, List<RaidRole> rolesToDelete, List<RaidReminder> remindersToDelete, List<DiscordRaidMessage> messagesToDelete, ulong? changedBy)
         {
             if (raid != null)
             {

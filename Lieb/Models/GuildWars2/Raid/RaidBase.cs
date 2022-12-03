@@ -31,7 +31,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public bool MoveFlexUsers { get; set; } = true;
 
-        public ulong RaidOwnerId { get; set; }
+        public ulong? RaidOwnerId { get; set; }
 
         //role name, number of spots
         public ICollection<RaidRole> Roles { get; set; } = new HashSet<RaidRole>();

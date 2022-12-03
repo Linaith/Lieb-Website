@@ -106,6 +106,29 @@ namespace Lieb.Data
         public async Task DeleteUser(ulong userId)
         {
             using var context = _contextFactory.CreateDbContext();
+            IEnumerable<Raid> raids = context.Raids.Where(r => r.RaidOwnerId == userId);
+            foreach(Raid raid in raids)
+            {
+                raid.RaidOwnerId = null;
+            }
+            IEnumerable<RaidTemplate> templates = context.RaidTemplates.Where(r => r.RaidOwnerId == userId);
+            foreach(RaidTemplate template in templates)
+            {
+                template.RaidOwnerId = null;
+            }
+            await context.SaveChangesAsync();
+
+            IEnumerable<RaidSignUp> signUps = context.RaidSignUps.Where(r => r.LiebUserId == userId);
+            context.RemoveRange(signUps);
+            await context.SaveChangesAsync();
+
+            IEnumerable<RaidLog> logs = context.RaidLogs.Where(r => r.UserId == userId);
+            foreach(RaidLog log in logs)
+            {
+                log.UserId = null;
+            }
+            await context.SaveChangesAsync();
+
             LiebUser user = GetLiebUser(userId);
             foreach(GuildWars2Account account in user.GuildWars2Accounts)
             {

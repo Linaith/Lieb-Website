@@ -320,7 +320,7 @@
         }
         _template.FreeForAllTime = _freeForAllDate.Date + _freeForAllTime.TimeOfDay;
 
-        if (_template.RaidOwnerId == 0)
+        if (!_template.RaidOwnerId.HasValue)
         {
             _template.RaidOwnerId = _user.Id;
         }

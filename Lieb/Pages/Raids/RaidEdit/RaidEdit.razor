@@ -296,7 +296,7 @@
         }
         _raid.FreeForAllTimeUTC = await TimeZoneService.GetUTCDateTime(_freeForAllDate.Date + _freeForAllTime.TimeOfDay);
 
-        if (_raid.RaidOwnerId == 0)
+        if (!_raid.RaidOwnerId.HasValue)
         {
             _raid.RaidOwnerId = _user.Id;
         }

@@ -477,13 +477,13 @@ namespace Lieb.Data
                     signedUpByUserName = signedUpByUser.Name;
                 }
 
-                string message = $"{raid.Title}: {signedUpByUserName} signed up {userName} as {signUp.SignUpType.ToString()}";
+                string message = $"{signedUpByUserName} signed up {userName} as {signUp.SignUpType.ToString()}";
                 foreach(DiscordRaidMessage discordMessage in raid.DiscordRaidMessages)
                 {
                     DiscordSettings settings = _discordService.GetDiscordSettings(discordMessage.DiscordGuildId);
                     if(settings.DiscordLogChannel > 0)
                     {
-                        await _discordService.SendChannelMessage(discordMessage.DiscordGuildId, settings.DiscordLogChannel, message);
+                        await _discordService.SendChannelMessage(discordMessage.DiscordGuildId, settings.DiscordLogChannel, message, raid.Title);
                     }
                 }
             }
@@ -500,17 +500,17 @@ namespace Lieb.Data
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
             foreach(RaidReminder reminder in reminders.Where(r => r.ReminderTimeUTC < utcNow))
             {
+                Raid raid = context.Raids
+                    .Include(r => r.SignUps)
+                    .Include(r => r.Reminders)
+                    .First(r => r.Reminders.Where(re => re.RaidReminderId == reminder.RaidReminderId).Any());
                 switch(reminder.Type)
                 {
                     case RaidReminder.ReminderType.User:
-                        Raid raid = context.Raids
-                            .Include(r => r.SignUps)
-                            .Include(r => r.Reminders)
-                            .First(r => r.Reminders.Where(re => re.RaidReminderId == reminder.RaidReminderId).Any());
                         await _discordService.SendUserReminder(reminder, raid);
                         break;
                     case RaidReminder.ReminderType.Channel:
-                        await _discordService.SendChannelReminder(reminder);
+                        await _discordService.SendChannelReminder(reminder, raid.Title);
                         break;
                 }
             }

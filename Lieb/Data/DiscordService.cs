@@ -182,9 +182,9 @@ namespace Lieb.Data
             return false;
         }
 
-        public async Task SendChannelReminder(RaidReminder reminder)
+        public async Task SendChannelReminder(RaidReminder reminder, string raidTitle)
         {
-            if (await SendChannelMessage(reminder.DiscordServerId, reminder.DiscordChannelId, reminder.Message))
+            if (await SendChannelMessage(reminder.DiscordServerId, reminder.DiscordChannelId, reminder.Message, raidTitle))
             {                
                 reminder.Sent = true;
                 using var context = _contextFactory.CreateDbContext();
@@ -193,13 +193,13 @@ namespace Lieb.Data
             }
         }
 
-        public async Task<bool> SendChannelMessage(ulong discordServerId, ulong discordChannelId, string message)
+        public async Task<bool> SendChannelMessage(ulong discordServerId, ulong discordChannelId, string message, string raidTitle)
         {
             try
             {
                 var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
 
-                ApiChannelReminder apiReminder = ConvertChannelReminder(discordServerId, discordChannelId, message);
+                ApiChannelReminder apiReminder = ConvertChannelReminder(discordServerId, discordChannelId, message, raidTitle);
 
                 var raidItemJson = new StringContent(
                     JsonSerializer.Serialize(apiReminder),
@@ -305,7 +305,7 @@ namespace Lieb.Data
         {
             ApiUserReminder apiReminder = new ApiUserReminder()
             {
-                Message = message
+                Message = $"{raid.Title}: {message}"
             };
             apiReminder.UserIds = new List<ulong>();
             HashSet<ulong> userIds = new HashSet<ulong>();
@@ -320,13 +320,13 @@ namespace Lieb.Data
             return apiReminder;
         }
 
-        public static ApiChannelReminder ConvertChannelReminder(ulong discordServerId, ulong discordChannelId, string message)
+        public static ApiChannelReminder ConvertChannelReminder(ulong discordServerId, ulong discordChannelId, string message, string raidTitle)
         {
             return new ApiChannelReminder()
             {
                 DiscordServerId = discordServerId,
                 DiscordChannelId = discordChannelId,
-                Message = message
+                Message = $"{raidTitle}: {message}"
             };
         }
 

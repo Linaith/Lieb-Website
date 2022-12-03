@@ -1,4 +1,5 @@
-﻿using Lieb.Models.GuildWars2.Raid;
+﻿using Lieb.Models;
+using Lieb.Models.GuildWars2.Raid;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -58,7 +59,7 @@ namespace Lieb.Data
             }
         }
 
-        public async Task DeleteTemplate(int raidTemplateId)
+        public async Task DeleteTemplate(int raidTemplateId, ulong userId)
         {
             using var context = _contextFactory.CreateDbContext();
             RaidTemplate template = GetTemplate(raidTemplateId);
@@ -72,6 +73,17 @@ namespace Lieb.Data
             template.DiscordRaidMessages.Clear();
             template.TemplateLogs.Clear();
             context.RaidTemplates.Remove(template);
+            await context.SaveChangesAsync();
+
+            LiebUser user = context.LiebUsers.ToList().FirstOrDefault(u => u.Id == userId, new LiebUser());
+            RaidLog logEntry = new RaidLog()
+            {
+                LogEntry = $"The Template \"{template.Title}\" was deleted by {user.Name}",
+                Time = DateTimeOffset.UtcNow,
+                Type = RaidLog.LogType.RaidTemplate,
+                UserId = userId
+            };
+            context.RaidLogs.Add(logEntry);
             await context.SaveChangesAsync();
         }
 

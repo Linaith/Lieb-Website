@@ -259,7 +259,7 @@
         bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete the raid?");
         if (confirmed)
         {
-            await RaidService.DeleteRaid(_raid.RaidId);
+            await RaidService.DeleteRaid(_raid.RaidId, _user.Id);
             NavigationManager.NavigateTo("raidoverview");
         }
     }

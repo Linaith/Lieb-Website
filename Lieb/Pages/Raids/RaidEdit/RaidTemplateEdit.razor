@@ -177,7 +177,7 @@
 
 </EditForm>
         <br/>
-<button type=button @onclick="() => DeleteRaidClicked()">Delete Raid</button>
+<button type=button @onclick="() => DeleteRaidClicked()">Delete Template</button>
 </AuthorizeView>
 
 @code {
@@ -281,7 +281,7 @@
         bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete the raid?");
         if (confirmed)
         {
-            await RaidTemplateService.DeleteTemplate(_template.RaidTemplateId);
+            await RaidTemplateService.DeleteTemplate(_template.RaidTemplateId, _user.Id);
             NavigationManager.NavigateTo("raidtemplateoverview");
         }
     }

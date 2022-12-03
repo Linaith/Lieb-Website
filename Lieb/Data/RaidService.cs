@@ -85,7 +85,7 @@ namespace Lieb.Data
             }
         }
 
-        public async Task DeleteRaid(int raidId)
+        public async Task DeleteRaid(int raidId, ulong? userId)
         {
             using var context = _contextFactory.CreateDbContext();
             Raid raid = GetRaid(raidId);
@@ -110,6 +110,19 @@ namespace Lieb.Data
             context.Raids.Remove(raid);
             await context.SaveChangesAsync();
 
+            if(userId != null)
+            {
+                LiebUser user = context.LiebUsers.ToList().FirstOrDefault(u => u.Id == userId, new LiebUser());
+                RaidLog logEntry = new RaidLog()
+                {
+                    LogEntry = $"The Raid \"{raid.Title}\" was deleted by {user.Name}",
+                    Time = DateTimeOffset.UtcNow,
+                    Type = RaidLog.LogType.Raid,
+                    UserId = userId
+                };
+                context.RaidLogs.Add(logEntry);
+                await context.SaveChangesAsync();
+            }
         }
 
         public async Task<bool> SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType, ulong signedUpByUserId = 0)
@@ -530,7 +543,7 @@ namespace Lieb.Data
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
             foreach(Raid raid in raids.Where(r => r.EndTimeUTC < utcNow.AddYears(-1)))
             {
-                await DeleteRaid(raid.RaidId);
+                await DeleteRaid(raid.RaidId, null);
             }
             foreach(Raid raid in raids.Where(r => r.EndTimeUTC < utcNow.AddHours(-1) 
                                                 && (r.DiscordRaidMessages.Count > 0 || r.Reminders.Count > 0)))

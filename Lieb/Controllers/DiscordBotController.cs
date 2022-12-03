@@ -48,6 +48,14 @@ namespace Lieb.Controllers
         }
 
         [HttpGet]
+        [Route("[action]/{raidId}/{userId}")]
+        public bool IsUserSignedUp(int raidId, ulong userId)
+        {
+            Raid raid = _raidService.GetRaid(raidId);
+            return raid.SignUps.Where(s => s.LiebUserId == userId && s.SignUpType != SignUpType.Flex && s.SignUpType != SignUpType.SignedOff).Any();
+        }
+
+        [HttpGet]
         [Route("[action]/{raidId}")]
         public ActionResult IsExternalSignUpAllowed(int raidId)
         {

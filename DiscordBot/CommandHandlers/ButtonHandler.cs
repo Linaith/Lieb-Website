@@ -25,14 +25,24 @@ namespace DiscordBot.CommandHandlers
             switch(ids[0])
             {
                 case Constants.ComponentIds.SIGN_UP_BUTTON:
+                case Constants.ComponentIds.MAYBE_BUTTON:
                     RaidMessage.ButtonParameters signUpParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
                     await _handlerFunctions.SelectRole(component, signUpParameters.RaidId, signUpParameters.ButtonType, false, component.User.Id, 0);
                     break;
-                case Constants.ComponentIds.MAYBE_BUTTON:
                 case Constants.ComponentIds.BACKUP_BUTTON:
+                    RaidMessage.ButtonParameters backupParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
+                    await _handlerFunctions.SelectRole(component, backupParameters.RaidId, backupParameters.ButtonType, true, component.User.Id, 0);
+                    break;
                 case Constants.ComponentIds.FLEX_BUTTON:
-                    RaidMessage.ButtonParameters maybeParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
-                    await _handlerFunctions.SelectRole(component, maybeParameters.RaidId, maybeParameters.ButtonType, true, component.User.Id, 0);
+                    RaidMessage.ButtonParameters flexParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
+                    if(await _httpService.IsUserSignedUp(flexParameters.RaidId, component.User.Id))
+                    {
+                        await _handlerFunctions.SelectRole(component, flexParameters.RaidId, flexParameters.ButtonType, true, component.User.Id, 0);
+                    }
+                    else
+                    {
+                        await component.RespondAsync("Flex sign up is only allowed if you are already signed up.", ephemeral: true);
+                    }
                     break;
                 case Constants.ComponentIds.SIGN_OFF_BUTTON:
                     RaidMessage.ButtonParameters signOffParameters = RaidMessage.ParseButtonId(component.Data.CustomId);

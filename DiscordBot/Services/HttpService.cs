@@ -67,6 +67,22 @@ namespace DiscordBot.Services
             return new Tuple<bool, string>(true, string.Empty);
         }
 
+        public async Task<bool> IsUserSignedUp(int raidId, ulong userId)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/IsUserSignedUp/{raidId}/{userId}");
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using var contentStream =
+                    await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                return await JsonSerializer.DeserializeAsync<bool>(contentStream, _serializerOptions);
+            }
+            return false;
+        }
+
         public async Task<List<ApiRole>> GetRoles(int raidId, ulong userId)
         {
             var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);

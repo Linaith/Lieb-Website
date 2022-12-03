@@ -79,14 +79,15 @@ namespace DiscordBot.CommandHandlers
             if(await IsRaidSignUpAllowed(component, raidId, buttonType))
             {
                 List<ApiRole> roles = new List<ApiRole>();
-                roles = await _httpService.GetRoles(raidId, userIdToSignUp);       
+                roles = await _httpService.GetRoles(raidId, userIdToSignUp);
+                ApiRaid raid = await _httpService.GetRaid(raidId);       
                 if(roles.Count > 1)
                 {             
-                    await component.RespondAsync("Please choose a role.", components: RoleSelectionMessage.buildMessage(roles, raidId, buttonType, allRoles, userIdToSignUp, signedUpByUserId) , ephemeral: true);
+                    await component.RespondAsync($"{raid.Title}: Please choose a role.", components: RoleSelectionMessage.buildMessage(roles, raidId, buttonType, allRoles, userIdToSignUp, signedUpByUserId) , ephemeral: true);
                 }
                 else if(roles.Count == 1)
                 {
-                    await SelectAccount(buttonType, raidId, component, roles.First().roleId, userIdToSignUp, signedUpByUserId);
+                    await SelectAccount(buttonType, raidId, component, roles.First().roleId, userIdToSignUp, signedUpByUserId, false);
                 }
                 else
                 {
@@ -95,7 +96,7 @@ namespace DiscordBot.CommandHandlers
             }
         }
 
-        public async Task SelectAccount(string buttonType, int raidId, SocketInteraction component, int roleId, ulong userIdToSignUp, ulong signedUpByUserId)
+        public async Task SelectAccount(string buttonType, int raidId, SocketInteraction component, int roleId, ulong userIdToSignUp, ulong signedUpByUserId, bool roleMessageExists = true)
         {
 
             List<ApiGuildWars2Account> accounts = await _httpService.GetSignUpAccounts(userIdToSignUp, raidId);
@@ -103,15 +104,15 @@ namespace DiscordBot.CommandHandlers
             {
                 ApiGuildWars2Account account = accounts.First();
                 await SignUp(buttonType, raidId, roleId, userIdToSignUp, account.GuildWars2AccountId, signedUpByUserId);
-                await component.RespondAsync("successfully signed up", ephemeral: true);
+                await UpdateOrRespond(component, "successfully signed up", null, roleMessageExists);
             }
             else if(accounts.Count > 1)
             {
-                await component.RespondAsync("Please choose an account.", components: AccountSelectionMessage.buildMessage(accounts, raidId, buttonType, roleId, userIdToSignUp, signedUpByUserId) , ephemeral: true);
+                await UpdateOrRespond(component, "Please choose an account.", AccountSelectionMessage.buildMessage(accounts, raidId, buttonType, roleId, userIdToSignUp, signedUpByUserId), roleMessageExists);
             }
             else
             {
-                await component.RespondAsync("no suitable Guild Wars 2 account found.", ephemeral: true);
+                await UpdateOrRespond(component, "no suitable Guild Wars 2 account found.", null, roleMessageExists);
             }
         }
 
@@ -142,17 +143,21 @@ namespace DiscordBot.CommandHandlers
                 break;
             }
         }
-        
-        //to avoid error messages because of no response...
-        public async Task Respond(SocketInteraction component)
-        {
-            try
-            {
-                await component.RespondAsync();
-            }
-            catch(Discord.Net.HttpException e)
-            {
 
+        public async Task UpdateOrRespond(SocketInteraction component, string messageText, MessageComponent messageComponent, bool editMessage)
+        {
+            if(editMessage && component is SocketMessageComponent)
+            {
+                SocketMessageComponent socketComponent = component as SocketMessageComponent;
+                    await socketComponent.UpdateAsync(x => 
+                    {
+                        x.Content = messageText;
+                        x.Components = messageComponent;
+                    });
+            }
+            else
+            {
+                await component.RespondAsync(messageText, components: messageComponent , ephemeral: true);
             }
         }
     }

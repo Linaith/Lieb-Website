@@ -8,7 +8,7 @@ namespace DiscordBot.Messages
         public static MessageComponent buildMessage(List<ApiRole> roles, int raidId, string buttonType, bool allRoles, ulong userIdToSignUp, ulong signedUpByUserId)
         {
             var signUpSelect = new SelectMenuBuilder()
-                .WithPlaceholder($"Select a role")
+                .WithPlaceholder($"Select a role - {GetButtonName(buttonType)}")
                 .WithCustomId($"{Constants.ComponentIds.ROLE_SELECT_DROP_DOWN}-{raidId}-{buttonType}-{userIdToSignUp}-{signedUpByUserId}")
                 .WithMinValues(1)
                 .WithMaxValues(1);
@@ -23,6 +23,28 @@ namespace DiscordBot.Messages
                 .WithSelectMenu(signUpSelect, 0);
 
             return builder.Build();
+        }
+
+        private static string GetButtonName(string buttonType)
+        {
+            switch(buttonType)
+            {
+                case Constants.ComponentIds.SIGN_UP_BUTTON:
+                    return "Sign Up";
+                    break;
+                case Constants.ComponentIds.MAYBE_BUTTON:
+                    return "Maybe";
+                    break;
+                case Constants.ComponentIds.BACKUP_BUTTON:
+                    return "Backup";
+                    break;
+                case Constants.ComponentIds.FLEX_BUTTON:
+                    return "Flex";
+                    break;
+                default:
+                    return string.Empty;
+                    break;
+            }
         }
 
         public static Parameters ParseId(string customId)

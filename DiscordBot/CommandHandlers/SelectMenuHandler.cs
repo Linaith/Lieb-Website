@@ -37,7 +37,11 @@ namespace DiscordBot.CommandHandlers
                     AccountSelectionMessage.Parameters accountParameters = AccountSelectionMessage.ParseId(component.Data.CustomId);
                     int accountId = int.Parse(component.Data.Values.First());
                     await _handlerFunctions.SignUp(accountParameters.ButtonType, accountParameters.RaidId, accountParameters.RoleId, accountParameters.UserIdToSignUp, accountId, accountParameters.SignedUpByUserId);
-                    await component.RespondAsync("successfully signed up", ephemeral: true);
+                    await component.UpdateAsync(x => 
+                    {
+                        x.Content = "successfully signed up";
+                        x.Components = null;
+                    });
                     break;
             }
         }

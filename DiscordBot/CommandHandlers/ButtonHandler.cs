@@ -42,7 +42,7 @@ namespace DiscordBot.CommandHandlers
                         userId = component.User.Id
                     };
                     await _httpService.SignOff(signOff);
-                    await _handlerFunctions.Respond(component);
+                    await component.RespondAsync("Signed Off", ephemeral: true);
                 break;
             }
         }

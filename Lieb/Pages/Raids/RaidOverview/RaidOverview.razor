@@ -37,6 +37,14 @@
                 }
             }
         </select>
+        Event Type:
+        <select @onchange="args => EventTypeFilterChanged(args)" >
+            <option value="">All</option>
+            @foreach(EventType eventType in (EventType[]) Enum.GetValues(typeof(EventType)))
+            {
+                <option value="@eventType">@eventType.ToString()</option>
+            }
+        </select>
 </label>
 
 <br />
@@ -55,6 +63,7 @@
     private DateTime _startDate = DateTime.Now.Date;
     private DateTime _endDate = DateTime.Now.Date.AddDays(15).AddSeconds(-1);
     private string _filterRole = string.Empty;
+    private string _filterEventType = string.Empty;
     private List<Raid> _raidsToShow;
 
     protected override async Task OnInitializedAsync()
@@ -99,6 +108,12 @@
         ApplyFilter();
     }
 
+    private void EventTypeFilterChanged(ChangeEventArgs e)
+    {
+        _filterEventType = e.Value?.ToString();
+        ApplyFilter();
+    }
+
     private void ApplyFilter()
     {
         if(String.IsNullOrEmpty(_filterRole))
@@ -112,6 +127,10 @@
         else
         {
             _raidsToShow = _raids.Where(r => r.StartTimeUTC > _startDate && r.StartTimeUTC < _endDate && r.RequiredRole == _filterRole).ToList();
+        }
+        if(!String.IsNullOrEmpty(_filterEventType))
+        {
+            _raidsToShow = _raidsToShow.Where(r => r.EventType.ToString() == _filterEventType).ToList();
         }
     }
 }

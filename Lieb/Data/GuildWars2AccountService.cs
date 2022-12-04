@@ -1,5 +1,6 @@
 ﻿using Lieb.Models;
 using Lieb.Models.GuildWars2;
+using Lieb.Models.GuildWars2.Raid;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -64,7 +65,9 @@ namespace Lieb.Data
             if (account != null)
             {
                 context.Equipped.RemoveRange(account.EquippedBuilds);
-                context.RaidSignUps.RemoveRange(context.RaidSignUps.Where(s => s.GuildWars2AccountId == accountId));
+                IEnumerable<RaidSignUp> signUpsToDelete = context.RaidSignUps.Where(s => s.GuildWars2AccountId == accountId);
+                HashSet<int> raidsToUpdate = signUpsToDelete.Select(s => s.RaidId).ToHashSet();
+                context.RaidSignUps.RemoveRange(signUpsToDelete);
                 await context.SaveChangesAsync();
                 context.GuildWars2Accounts.Remove(account);
                 LiebUser? user = context.LiebUsers.Include(u => u.GuildWars2Accounts).FirstOrDefault(u => u.GuildWars2Accounts.Contains(account));
@@ -75,6 +78,10 @@ namespace Lieb.Data
                     user.MainGW2Account = newMain.GuildWars2AccountId;
                     await context.SaveChangesAsync();
                     await _discordService.RenameUser(user.Id, user.Name, newMain.AccountName);
+                }
+                foreach(int raidId in raidsToUpdate)
+                {
+                    await _discordService.PostRaidMessage(raidId);
                 }
             }
         }

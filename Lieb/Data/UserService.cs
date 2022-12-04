@@ -119,8 +119,13 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
 
             IEnumerable<RaidSignUp> signUps = context.RaidSignUps.Where(r => r.LiebUserId == userId);
+            HashSet<int> raidIds = signUps.Select(s => s.RaidId).ToHashSet();
             context.RemoveRange(signUps);
             await context.SaveChangesAsync();
+            foreach(int raidId in raidIds)
+            {
+                await _discordService.PostRaidMessage(raidId);
+            }
 
             IEnumerable<RaidLog> logs = context.RaidLogs.Where(r => r.UserId == userId);
             foreach(RaidLog log in logs)

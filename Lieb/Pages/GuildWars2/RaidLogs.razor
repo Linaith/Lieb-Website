@@ -53,6 +53,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if(string.IsNullOrEmpty(_selectedLogFolder))
+        {
+            _selectedLogFolder = "Training";
+        }
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
         _user = UserService.GetLiebUser(discordId);

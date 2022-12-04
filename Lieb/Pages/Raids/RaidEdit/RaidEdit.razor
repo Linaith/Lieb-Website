@@ -15,7 +15,7 @@
 @inject IJSRuntime JsRuntime
 
 
-<h3>Create or edit Raid</h3>
+<h3>Create or edit Event</h3>
 
 <AuthorizeView Policy="@Constants.Roles.RaidLead.Name" Context="authorizationContext">
 <EditForm Model="@_raid" OnValidSubmit="@HandleValidSubmit">

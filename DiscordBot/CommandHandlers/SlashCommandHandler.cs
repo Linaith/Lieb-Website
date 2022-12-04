@@ -115,18 +115,15 @@ namespace DiscordBot.CommandHandlers
         }
 
         private async Task SignUpExternalUser(SocketSlashCommand command, int raidId)
-        {
-            if(await _handlerFunctions.IsRaidSignUpAllowed(command, raidId, Constants.ComponentIds.SIGN_UP_BUTTON))
+        {  
+            List<ApiRole> roles = await _httpService.GetRoles(raidId, uint.MaxValue);    
+            Tuple<bool, string> signUpAllowed = await _httpService.IsExternalSignUpAllowed(raidId);
+            if(!signUpAllowed.Item1)
             {
-                List<ApiRole> roles = await _httpService.GetRoles(raidId, uint.MaxValue);    
-                Tuple<bool, string> signUpAllowed = await _httpService.IsExternalSignUpAllowed(raidId);
-                if(!signUpAllowed.Item1)
-                {
-                    await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
-                    return;
-                }
-                await command.RespondAsync("Please choose a role.", components: ExternalRoleSelectionMessage.buildMessage(roles, raidId) , ephemeral: true);
+                await command.RespondAsync(signUpAllowed.Item2, ephemeral: true);
+                return;
             }
+            await command.RespondAsync("Please choose a role.", components: ExternalRoleSelectionMessage.buildMessage(roles, raidId) , ephemeral: true);
         }
 
         private async Task SendMessages(string message, int raidId)

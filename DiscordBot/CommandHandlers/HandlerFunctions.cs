@@ -76,7 +76,7 @@ namespace DiscordBot.CommandHandlers
 
         public async Task SelectRole(SocketInteraction component, int raidId, string buttonType, bool allRoles, ulong userIdToSignUp, ulong signedUpByUserId)
         {
-            if(await IsRaidSignUpAllowed(component, raidId, buttonType))
+            if(signedUpByUserId != 0 || await IsRaidSignUpAllowed(component, raidId, buttonType))
             {
                 List<ApiRole> roles = new List<ApiRole>();
                 roles = await _httpService.GetRoles(raidId, userIdToSignUp);

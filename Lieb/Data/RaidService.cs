@@ -20,7 +20,6 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             return context.Raids
                 .Include(r => r.Roles)
-                .Include(r => r.RaidLogs)
                 .Include(r => r.Reminders)
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.LiebUser)

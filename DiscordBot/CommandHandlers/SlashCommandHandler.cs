@@ -50,8 +50,9 @@ namespace DiscordBot.CommandHandlers
                 case Constants.SlashCommands.SEND_MESSAGE_COMMAND:
                     int raidId = (int)(long)command.Data.Options.First().Options?.FirstOrDefault(o => o.Name == Constants.SlashCommands.OptionNames.RAID_ID).Value;
                     string message = (string)command.Data.Options.First().Options?.FirstOrDefault(o => o.Name == Constants.SlashCommands.OptionNames.MESSAGE).Value;
+                    await command.DeferAsync(ephemeral:true);
                     await SendMessages(message, raidId);
-                    await command.RespondAsync($"message sent", ephemeral:true);
+                    await command.ModifyOriginalResponseAsync(r => r.Content = $"message sent");
                     break;
             }
         }
@@ -110,7 +111,7 @@ namespace DiscordBot.CommandHandlers
             }
             else
             {
-                await SignUpExternalUser(command, raidId);
+                await command.RespondAsync("This user has no account, please use sign up external", ephemeral: true);
             }
         }
 
@@ -129,15 +130,20 @@ namespace DiscordBot.CommandHandlers
         private async Task SendMessages(string message, int raidId)
         {
             ApiRaid raid  = await _httpService.GetRaid(raidId);
+            HashSet<ulong> users = new HashSet<ulong>();
             foreach(ApiRaid.Role role in raid.Roles)
             {
-                foreach(var user in role.Users)
+                foreach(ulong userId in role.Users.Select(u => u.UserId).ToHashSet())
                 {
-                    if(user.UserId > 100)
-                    {
-                        IUser discordUser = await _client.GetUserAsync(user.UserId);
-                        await discordUser.SendMessageAsync($"{raid.Title}: {message}");
-                    }
+                    users.Add(userId);
+                }
+            }
+            foreach(ulong userId in users)
+            {
+                if(userId > 100)
+                {
+                    IUser discordUser = await _client.GetUserAsync(userId);
+                    await discordUser.SendMessageAsync($"{raid.Title}: {message}");
                 }
             }
         }

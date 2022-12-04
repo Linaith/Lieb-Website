@@ -16,7 +16,7 @@
 @inject IJSRuntime JsRuntime
 
 
-<h3>CreateRaid</h3>
+<h3>Create or edit Template</h3>
 
 <AuthorizeView Policy="@Constants.Roles.RaidLead.Name" Context="authorizationContext">
 <EditForm Model="@_template" OnValidSubmit="@HandleValidSubmit">
@@ -81,7 +81,7 @@
     <p>
         <label>
             Time Zone:
-            <InputSelect @bind-Value="_template.RequiredRole">
+            <InputSelect @bind-Value="_template.TimeZone">
                 <option value="@_template.TimeZone">@_template.TimeZone</option>
                 @if(_userTimeZone != @_template.TimeZone)
                 {

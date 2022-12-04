@@ -416,6 +416,12 @@ namespace Lieb.Data
                 return false;
             }
 
+            if(user.BannedUntil > DateTimeOffset.UtcNow)
+            {
+                errorMessage = $"You are banned until {user.BannedUntil}.";
+                return false;
+            }
+
             return true;
         }
 

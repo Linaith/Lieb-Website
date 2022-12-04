@@ -135,19 +135,41 @@ namespace Lieb.Data
                 await _guildWars2AccountService.DeleteAccount(account.GuildWars2AccountId);
             }
             user.GuildWars2Accounts.Clear();
-            context.Remove(user);
+
+            if(user.BannedUntil > DateTime.Now)
+            {
+                LiebUser contextUser = context.LiebUsers.First(u => u.Id == userId);
+                contextUser.Name = "Deleted and Banned";
+                contextUser.MainGW2Account = 0;
+                contextUser.Pronouns = string.Empty;
+                contextUser.Birthday = null;
+                contextUser.AlwaysSignUpWithMainAccount = false;
+                LiebRole standardRole = await context.LiebRoles.FirstOrDefaultAsync(m => m.RoleName == Constants.Roles.User.Name);
+                context.RemoveRange(user.RoleAssignments.Where(a => a.LiebRoleId != standardRole.LiebRoleId));
+            }
+            else
+            {
+                context.Remove(user);
+            }
             await context.SaveChangesAsync();
         }
 
         public async Task UpdateBannedUntil(ulong userId, DateTime? date)
         {
             using var context = _contextFactory.CreateDbContext();
-            LiebUser? user = await context.LiebUsers.FirstOrDefaultAsync(u => u.Id == userId);
+            LiebUser? user = await context.LiebUsers
+                .Include(u => u.RoleAssignments)
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return;
 
             user.BannedUntil = date;
+            if(user.BannedUntil > DateTime.UtcNow)
+            {
+                LiebRole standardRole = await context.LiebRoles.FirstOrDefaultAsync(m => m.RoleName == Constants.Roles.User.Name);
+                context.RemoveRange(user.RoleAssignments.Where(a => a.LiebRoleId != standardRole.LiebRoleId));
+            }
 
             await context.SaveChangesAsync();
         }

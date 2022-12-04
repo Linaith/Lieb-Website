@@ -175,8 +175,17 @@ namespace Lieb.Data
                 LiebRole standardRole = await context.LiebRoles.FirstOrDefaultAsync(m => m.RoleName == Constants.Roles.User.Name);
                 context.RemoveRange(user.RoleAssignments.Where(a => a.LiebRoleId != standardRole.LiebRoleId));
             }
-
             await context.SaveChangesAsync();
+
+            //sign off from every Raid
+            IEnumerable<RaidSignUp> signUps = context.RaidSignUps.Where(r => r.LiebUserId == userId);
+            HashSet<int> raidIds = signUps.Select(s => s.RaidId).ToHashSet();
+            context.RemoveRange(signUps);
+            await context.SaveChangesAsync();
+            foreach(int raidId in raidIds)
+            {
+                await _discordService.PostRaidMessage(raidId);
+            }
         }
 
         public async Task AddRoleToUser(ulong userId, int roleId)

@@ -481,7 +481,7 @@ namespace Lieb.Data
             await context.RaidLogs.AddAsync(log);
             await context.SaveChangesAsync();
 
-            await SendDiscordSignUpLogMessage(signUp, userName, signedUpBy);
+            _ = SendDiscordSignUpLogMessage(signUp, userName, signedUpBy);
         }
 
         public async Task SendDiscordSignUpLogMessage(RaidSignUp signUp, string userName, ulong signedUpBy = 0)
@@ -509,16 +509,16 @@ namespace Lieb.Data
                 }
 
                 string message = $"{signedUpByUserName} signed up {userName} as {signUp.SignUpType.ToString()}";
-                foreach(DiscordRaidMessage discordMessage in raid.DiscordRaidMessages)
+                HashSet<ulong> guildIds = raid.DiscordRaidMessages.Select(m => m.DiscordGuildId).ToHashSet();
+                foreach(ulong guildId in guildIds)
                 {
-                    DiscordSettings settings = _discordService.GetDiscordSettings(discordMessage.DiscordGuildId);
+                    DiscordSettings settings = _discordService.GetDiscordSettings(guildId);
                     if(settings.DiscordLogChannel > 0)
                     {
-                        await _discordService.SendChannelMessage(discordMessage.DiscordGuildId, settings.DiscordLogChannel, message, raid.Title);
+                        await _discordService.SendChannelMessage(guildId, settings.DiscordLogChannel, message, raid.Title);
                     }
                 }
             }
-            await context.SaveChangesAsync();
         }
 
         public async Task SendReminders()

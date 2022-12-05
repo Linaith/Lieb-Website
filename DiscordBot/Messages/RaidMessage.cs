@@ -45,26 +45,30 @@ namespace DiscordBot.Messages
 
             foreach (ApiRaid.DiscordMessage message in raid.DisocrdMessages)
             {
-                var channel = _client.GetGuild(message.GuildId).GetChannel(message.ChannelId);
-                if (channel != null && channel is IMessageChannel)
+                try
                 {
-                    IMessageChannel messageChannel = channel as IMessageChannel;
-                    if (message.MessageId != 0)
+                    var channel = _client.GetGuild(message.GuildId).GetChannel(message.ChannelId);
+                    if (channel != null && channel is IMessageChannel)
                     {
-                        MessageProperties properties  = new MessageProperties()
+                        IMessageChannel messageChannel = channel as IMessageChannel;
+                        if (message.MessageId != 0)
                         {
-                            Embed = raidMessage,
-                            Components = components
-                        };
-                        IUserMessage discordMessage = (IUserMessage)await messageChannel.GetMessageAsync(message.MessageId);
-                        await discordMessage.ModifyAsync(msg => msg.Embed = raidMessage);
-                    }
-                    else
-                    {
-                        IUserMessage sentMessage = await messageChannel.SendMessageAsync(embed: raidMessage, components: components);
-                        message.MessageId = sentMessage.Id;
+                            MessageProperties properties  = new MessageProperties()
+                            {
+                                Embed = raidMessage,
+                                Components = components
+                            };
+                            IUserMessage discordMessage = (IUserMessage)await messageChannel.GetMessageAsync(message.MessageId);
+                            await discordMessage.ModifyAsync(msg => msg.Embed = raidMessage);
+                        }
+                        else
+                        {
+                            IUserMessage sentMessage = await messageChannel.SendMessageAsync(embed: raidMessage, components: components);
+                            message.MessageId = sentMessage.Id;
+                        }
                     }
                 }
+                catch {}
             }
             return raid;
         }

@@ -19,7 +19,8 @@ namespace DiscordBot.Messages
                 {
                     if(!string.IsNullOrEmpty(role.Description))
                     {
-                        signUpSelect.AddOption(role.Name, role.roleId.ToString(), role.Description);
+                        string description = role.Description.Length <= 100 ? role.Description : role.Description.Substring(0, 100);
+                        signUpSelect.AddOption(role.Name, role.roleId.ToString(), description);
                     }
                     else
                     {

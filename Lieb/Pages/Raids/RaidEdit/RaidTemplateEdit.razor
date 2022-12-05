@@ -345,7 +345,7 @@
         }
         foreach(StaticRaidReminder reminder in _staticReminders)
         {
-            reminder.ReminderTimeUTC = await TimeZoneService.GetUTCDateTime(reminder.ReminderDate.Date + reminder.ReminderTime.TimeOfDay);
+            reminder.ReminderTimeUTC = reminder.ReminderDate.Date + reminder.ReminderTime.TimeOfDay;
             reminder.Sent = true;
             _template.Reminders.Add(reminder);
         }

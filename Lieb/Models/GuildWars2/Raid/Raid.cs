@@ -18,7 +18,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public Raid() { }
 
-        public Raid(RaidTemplate template) : base(template)
+        public Raid(RaidTemplate template) : base(template, template.TimeZone)
         {
             TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(template.TimeZone);
             StartTimeUTC = TimeZoneInfo.ConvertTimeToUtc(template.StartTime, timeZone);

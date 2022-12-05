@@ -61,7 +61,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public RaidBase() { }
 
-        public RaidBase(RaidBase template)
+        public RaidBase(RaidBase template, string timeZoneString)
         {
             this.Title = template.Title;
             this.Description = template.Description;
@@ -84,13 +84,15 @@ namespace Lieb.Models.GuildWars2.Raid
                     IsRandomSignUpRole = role.IsRandomSignUpRole
                 });
             }
+
+            TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneString);
             foreach (RaidReminder reminder in template.Reminders)
             {
                 this.Reminders.Add(new RaidReminder()
                 {
                     DiscordServerId = reminder.DiscordServerId,
                     DiscordChannelId = reminder.DiscordChannelId,
-                    ReminderTimeUTC = reminder.ReminderTimeUTC,
+                    ReminderTimeUTC = TimeZoneInfo.ConvertTimeToUtc(reminder.ReminderTimeUTC.DateTime, timeZone),
                     Message = reminder.Message,
                     Sent = false,
                     Type = reminder.Type,

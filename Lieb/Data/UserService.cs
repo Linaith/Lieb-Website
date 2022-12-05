@@ -66,7 +66,7 @@ namespace Lieb.Data
                 using var context = _contextFactory.CreateDbContext();
                 LiebUser user = context.LiebUsers
                     .Include(u => u.GuildWars2Accounts)
-                    .FirstOrDefault(u => u.Id == userId, new LiebUser());
+                    .FirstOrDefault(u => u.Id == userId);
 
                 if(user == null) return new GuildWars2Account();
 

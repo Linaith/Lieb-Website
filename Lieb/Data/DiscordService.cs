@@ -28,9 +28,9 @@ namespace Lieb.Data
         public DiscordSettings GetDiscordSettings(ulong discordServerId)
         {
             using var context = _contextFactory.CreateDbContext();
-            return context.DiscordSettings
-                .ToList()
-                .FirstOrDefault(s => s.DiscordSettingsId == discordServerId, new DiscordSettings());
+            DiscordSettings settings = context.DiscordSettings
+                .FirstOrDefault(s => s.DiscordSettingsId == discordServerId);
+            return settings != null ? settings : new DiscordSettings();
         }
 
         public async Task AddOrEditDiscordSettings(DiscordSettings discordSettings)

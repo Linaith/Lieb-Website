@@ -66,8 +66,10 @@ namespace Lieb.Data
                 using var context = _contextFactory.CreateDbContext();
                 LiebUser user = context.LiebUsers
                     .Include(u => u.GuildWars2Accounts)
-                    .ToList()
                     .FirstOrDefault(u => u.Id == userId, new LiebUser());
+
+                if(user == null) return new GuildWars2Account();
+
                 return user.GuildWars2Accounts.FirstOrDefault(g => g.GuildWars2AccountId == user.MainGW2Account, new GuildWars2Account());
         }
 
@@ -284,8 +286,9 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             LiebUser user = GetLiebUserGW2AccountOnly(userId);
             Raid raid = context.Raids
-                    .ToList()
-                    .FirstOrDefault(r => r.RaidId == raidId, new Raid());
+                    .FirstOrDefault(r => r.RaidId == raidId);
+                
+            if(raid == null) return new List<GuildWars2Account>();
                     
             List<GuildWars2Account> accounts = GetAllUsableAccounts(user, raid.RaidType);
             if(user.AlwaysSignUpWithMainAccount && accounts.Where(a => a.GuildWars2AccountId == user.MainGW2Account).Any())
@@ -303,8 +306,9 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             LiebUser user = GetLiebUserGW2AccountOnly(userId);
             Raid raid = context.Raids
-                    .ToList()
-                    .FirstOrDefault(r => r.RaidId == raidId, new Raid());
+                    .FirstOrDefault(r => r.RaidId == raidId);
+
+            if(raid == null) return 0;
                     
             List<GuildWars2Account> usableAccounts = GetAllUsableAccounts(user, raid.RaidType);
 

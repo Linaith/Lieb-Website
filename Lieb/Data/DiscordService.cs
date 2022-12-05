@@ -74,8 +74,9 @@ namespace Lieb.Data
                     .Include(r => r.SignUps)
                     .ThenInclude(s => s.RaidRole)
                     .Include(r => r.DiscordRaidMessages)
-                    .ToList()
-                    .FirstOrDefault(r => r.RaidId == raidId, new Raid());
+                    .FirstOrDefault(r => r.RaidId == raidId);
+
+                if(raid == null) return;
 
                 var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
 

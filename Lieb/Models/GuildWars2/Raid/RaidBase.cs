@@ -72,6 +72,7 @@ namespace Lieb.Models.GuildWars2.Raid
             this.RequiredRole = template.RequiredRole;
             this.MoveFlexUsers = template.MoveFlexUsers;
             this.RaidOwnerId = template.RaidOwnerId;
+            this.EventType = template.EventType;
 
             foreach (RaidRole role in template.Roles)
             {

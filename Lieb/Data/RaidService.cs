@@ -34,9 +34,8 @@ namespace Lieb.Data
         public Raid GetRaid(int raidId)
         {
             using var context = _contextFactory.CreateDbContext();
-            return context.Raids
+            Raid raid = context.Raids
                 .Include(r => r.Roles)
-                .Include(r => r.RaidLogs)
                 .Include(r => r.Reminders)
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.LiebUser)
@@ -45,8 +44,9 @@ namespace Lieb.Data
                 .Include(r => r.SignUps)
                 .ThenInclude(s => s.RaidRole)
                 .Include(r => r.DiscordRaidMessages)
-                .ToList()
-                .FirstOrDefault(r => r.RaidId == raidId, new Raid());
+                .FirstOrDefault(r => r.RaidId == raidId);
+            if(raid != null) return raid;
+            else return new Raid();
         }
 
         public async Task AddOrEditRaid(Raid raid, List<RaidRole> rolesToDelete, List<RaidReminder> remindersToDelete, List<DiscordRaidMessage> messagesToDelete, ulong? changedBy)
@@ -111,16 +111,19 @@ namespace Lieb.Data
 
             if(userId != null)
             {
-                LiebUser user = context.LiebUsers.ToList().FirstOrDefault(u => u.Id == userId, new LiebUser());
-                RaidLog logEntry = new RaidLog()
+                LiebUser user = context.LiebUsers.FirstOrDefault(u => u.Id == userId);
+                if(user != null)
                 {
-                    LogEntry = $"The Raid \"{raid.Title}\" was deleted by {user.Name}",
-                    Time = DateTimeOffset.UtcNow,
-                    Type = RaidLog.LogType.Raid,
-                    UserId = userId
-                };
-                context.RaidLogs.Add(logEntry);
-                await context.SaveChangesAsync();
+                    RaidLog logEntry = new RaidLog()
+                    {
+                        LogEntry = $"The Raid \"{raid.Title}\" was deleted by {user.Name}",
+                        Time = DateTimeOffset.UtcNow,
+                        Type = RaidLog.LogType.Raid,
+                        UserId = userId
+                    };
+                    context.RaidLogs.Add(logEntry);
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
@@ -487,8 +490,9 @@ namespace Lieb.Data
 
             Raid raid = context.Raids
                 .Include(r => r.DiscordRaidMessages)
-                .ToList()
-                .FirstOrDefault(r => r.RaidId == signUp.RaidId, new Raid());
+                .FirstOrDefault(r => r.RaidId == signUp.RaidId);
+
+            if(raid == null) return;
 
             if(raid.DiscordRaidMessages.Count > 0)
             {
@@ -496,9 +500,12 @@ namespace Lieb.Data
                 if(signedUpBy > 0)
                 {
                     LiebUser signedUpByUser = context.LiebUsers
-                        .ToList()
-                        .FirstOrDefault(u => u.Id == signedUpBy, new LiebUser());
-                    signedUpByUserName = signedUpByUser.Name;
+                        .FirstOrDefault(u => u.Id == signedUpBy);
+
+                    if(signedUpByUser != null)
+                        signedUpByUserName = signedUpByUser.Name;
+                    else
+                        signedUpByUserName = "user not found";
                 }
 
                 string message = $"{signedUpByUserName} signed up {userName} as {signUp.SignUpType.ToString()}";

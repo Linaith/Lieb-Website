@@ -105,7 +105,7 @@ namespace DiscordBot.Messages
         {
             Dictionary<string, string> fieldList = new Dictionary<string, string>();
 
-            embed.AddField("Signed up", $"({raid.Roles.Sum(r => r.Users.Count)}/{raid.Roles.Sum(r => r.Spots)}):");
+            embed.AddField("Signed up", $"({raid.Roles.Sum(r => r.Users.Where(u => string.IsNullOrWhiteSpace(u.Status)).Count())}/{raid.Roles.Sum(r => r.Spots)}):");
             foreach (ApiRaid.Role role in raid.Roles.OrderBy(x => x.RoleId))
             {
                 //print signed up users

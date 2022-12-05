@@ -52,9 +52,6 @@ namespace Lieb.Data
                     context.DiscordRaidMessages.RemoveRange(messagesToDelete);
                 }
                 await context.SaveChangesAsync();
-                RaidLog log = RaidLog.CreateRaidTemplateLog(changedBy, template);
-                await context.RaidLogs.AddAsync(log);
-                await context.SaveChangesAsync();
             }
         }
 
@@ -65,28 +62,12 @@ namespace Lieb.Data
             context.RaidRoles.RemoveRange(template.Roles);
             context.RaidReminders.RemoveRange(template.Reminders);
             context.DiscordRaidMessages.RemoveRange(template.DiscordRaidMessages);
-            context.RaidLogs.RemoveRange(template.TemplateLogs);
             await context.SaveChangesAsync();
             template.Roles.Clear();
             template.Reminders.Clear();
             template.DiscordRaidMessages.Clear();
-            template.TemplateLogs.Clear();
             context.RaidTemplates.Remove(template);
-            await context.SaveChangesAsync();
-
-            LiebUser user = context.LiebUsers.FirstOrDefault(u => u.Id == userId);
-            if(user != null)
-            {
-                RaidLog logEntry = new RaidLog()
-                {
-                    LogEntry = $"The Template \"{template.Title}\" was deleted by {user.Name}",
-                    Time = DateTimeOffset.UtcNow,
-                    Type = RaidLog.LogType.RaidTemplate,
-                    UserId = userId
-                };
-                context.RaidLogs.Add(logEntry);
-                await context.SaveChangesAsync();
-            }
+            await context.SaveChangesAsync();           
         }
 
         public async Task CreateRaidFromTemplate(int raidTempalteId)

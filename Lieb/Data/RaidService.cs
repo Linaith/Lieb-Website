@@ -77,9 +77,6 @@ namespace Lieb.Data
                     }
                 }
                 await context.SaveChangesAsync();
-                RaidLog log = RaidLog.CreateRaidLog(changedBy, raid);
-                await context.RaidLogs.AddAsync(log);
-                await context.SaveChangesAsync();
                 await _discordService.PostRaidMessage(raid.RaidId);
             }
         }
@@ -96,35 +93,16 @@ namespace Lieb.Data
 
             context.RaidSignUps.RemoveRange(raid.SignUps);
             context.RaidRoles.RemoveRange(raid.Roles);
-            context.RaidLogs.RemoveRange(raid.RaidLogs);
             context.RaidReminders.RemoveRange(raid.Reminders);
             context.DiscordRaidMessages.RemoveRange(raid.DiscordRaidMessages);
             await context.SaveChangesAsync();
 
             raid.SignUps.Clear();
             raid.Roles.Clear();
-            raid.RaidLogs.Clear();
             raid.Reminders.Clear();
             raid.DiscordRaidMessages.Clear();
             context.Raids.Remove(raid);
             await context.SaveChangesAsync();
-
-            if(userId != null)
-            {
-                LiebUser user = context.LiebUsers.FirstOrDefault(u => u.Id == userId);
-                if(user != null)
-                {
-                    RaidLog logEntry = new RaidLog()
-                    {
-                        LogEntry = $"The Raid \"{raid.Title}\" was deleted by {user.Name}",
-                        Time = DateTimeOffset.UtcNow,
-                        Type = RaidLog.LogType.Raid,
-                        UserId = userId
-                    };
-                    context.RaidLogs.Add(logEntry);
-                    await context.SaveChangesAsync();
-                }
-            }
         }
 
         public async Task<bool> SignUp(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType, ulong signedUpByUserId = 0)
@@ -474,13 +452,6 @@ namespace Lieb.Data
 
         private async Task LogSignUp(RaidSignUp signUp, string userName, ulong signedUpBy = 0)
         {
-            ulong userId = signedUpBy > 0 ? signedUpBy : signUp.LiebUserId.Value;
-            RaidLog log = RaidLog.CreateSignUpLog(userId, signUp, userName);
-
-            using var context = _contextFactory.CreateDbContext();
-            await context.RaidLogs.AddAsync(log);
-            await context.SaveChangesAsync();
-
             _ = SendDiscordSignUpLogMessage(signUp, userName, signedUpBy);
         }
 

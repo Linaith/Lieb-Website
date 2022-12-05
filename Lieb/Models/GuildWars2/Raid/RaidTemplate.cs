@@ -19,7 +19,5 @@ namespace Lieb.Models.GuildWars2.Raid
         public int Interval { get; set; }
         
         public int CreateDaysBefore { get; set; }
-
-        public ICollection<RaidLog> TemplateLogs { get; set; } = new HashSet<RaidLog>();
     }
 }

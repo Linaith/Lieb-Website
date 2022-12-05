@@ -129,13 +129,6 @@ namespace Lieb.Data
                 await _discordService.PostRaidMessage(raidId);
             }
 
-            IEnumerable<RaidLog> logs = context.RaidLogs.Where(r => r.UserId == userId);
-            foreach(RaidLog log in logs)
-            {
-                log.UserId = null;
-            }
-            await context.SaveChangesAsync();
-
             LiebUser user = GetLiebUser(userId);
             foreach(GuildWars2Account account in user.GuildWars2Accounts)
             {

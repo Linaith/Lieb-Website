@@ -43,14 +43,25 @@
         {
             <br />
             <label>
-                Filter:
-                <select @onchange="args => ChangeBuildFilter(args)" >
+                Klasse:
+                <select @onchange="args => ChangeClassFilter(args)" >
                     <option value="All">All</option>
                     @foreach(GuildWars2Class gw2Class in Enum.GetValues(typeof(GuildWars2Class)))
                     {
                         <option value="@gw2Class">@gw2Class.ToString()</option>
                     }
                 </select>
+                <label style="margin-left: 10px; margin-right: 3px;">DamageType:</label>
+                <select @onchange="args => ChangeDamageTypeFilter(args)" style="margin">
+                    <option value="All">All</option>
+                    @foreach(DamageType damageType in Enum.GetValues(typeof(DamageType)))
+                    {
+                        <option value="@damageType">@damageType.ToString()</option>
+                    }
+                </select>
+                <label style="margin-left: 10px; margin-right: 4px;">Alacrity:</label><input type="checkbox" checked="@_filterAlac" @onchange="args => AlacStatusChanged(args)" />
+                <label style="margin-left: 10px; margin-right: 4px;">Quickness:</label><input type="checkbox" checked="@_filterQuick" @onchange="args => QuickStatusChanged(args)" />
+                <label style="margin-left: 10px; margin-right: 4px;">Might:</label><input type="checkbox" checked="@_filterMight" @onchange="args => MightStatusChanged(args)" />      
             </label>
             <table  class="roletable">
                 <tr>
@@ -130,6 +141,12 @@
 
     private List<GuildWars2Build> _buildsToShow;
 
+    private GuildWars2Class? _filterClass;
+    private bool _filterAlac = false;
+    private bool _filterQuick = false;
+    private bool _filterMight = false;
+    private DamageType? _filterDamageType;
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -185,15 +202,72 @@
         _saveMessage = "changes saved successfully";
     }
 
-    private void ChangeBuildFilter( ChangeEventArgs e)
+    private void ChangeClassFilter( ChangeEventArgs e)
     {
-        if(Enum.TryParse<GuildWars2Class>(e.Value?.ToString(),out GuildWars2Class selectedClass))
+        if(Enum.TryParse<GuildWars2Class>(e.Value?.ToString(), out GuildWars2Class gw2Class))
         {
-            _buildsToShow = _builds.Where(b => b.Class == selectedClass).ToList();
+            _filterClass = gw2Class;
         }
         else
         {
-            _buildsToShow = _builds;
+            _filterClass = null;
+        }
+        ApplyFilter();
+    }
+
+    private void ChangeDamageTypeFilter( ChangeEventArgs e)
+    {
+        if(Enum.TryParse<DamageType>(e.Value?.ToString(), out DamageType damage))
+        {
+            _filterDamageType = damage;
+        }
+        else
+        {
+            _filterDamageType = null;
+        }
+        ApplyFilter();
+    }
+
+    private void AlacStatusChanged(ChangeEventArgs args)
+    {
+        _filterAlac = bool.Parse(args.Value.ToString());
+        ApplyFilter();
+    }
+
+    private void QuickStatusChanged(ChangeEventArgs args)
+    {
+        _filterQuick = bool.Parse(args.Value.ToString());
+        ApplyFilter();
+    }
+
+    private void MightStatusChanged(ChangeEventArgs args)
+    {
+        _filterMight = bool.Parse(args.Value.ToString());
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        _buildsToShow = _builds;
+        if(_filterClass != null)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.Class == _filterClass).ToList();
+        }
+        if(_filterAlac)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.Alacrity).ToList();
+        }
+        if(_filterQuick)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.Quickness).ToList();
+        }
+        if(_filterMight)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.Might).ToList();
+        }
+        if(_filterDamageType != null)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.DamageType == _filterDamageType).ToList();
         }
     }
 }

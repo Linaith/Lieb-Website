@@ -32,9 +32,15 @@
                 <th>Class</th>
                 <th>Elite</th>
                 <th>Might</th>
-                <th>Heal</th>
                 <th>Quick</th>
                 <th>Alac</th>
+                <th>Heal</th>
+                <th>Power</th>
+                <th>Condition</th>
+                <th>Hybrid</th>
+                <th>Other</th>
+                <th>Random</th>
+                <th>Source</th>
             </tr>
             @foreach (var build in _buildsToShow.OrderBy(b => b.Class).ThenBy(b => b.EliteSpecialization))
             {
@@ -45,10 +51,16 @@
                     </td>
                     <td>@build.Class.ToString()</td>
                     <td>@build.EliteSpecialization.ToString()</td>
-                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Might > 0)" disabled="disabled" /></td>
-                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Heal > 0)" disabled="disabled" /></td>
-                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Quickness > 0)" disabled="disabled" /></td>
-                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Alacrity > 0)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Might)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Quickness)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.Alacrity)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Heal)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Power)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Condition)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Hybrid)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Other)" disabled="disabled" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@(build.UseInRandomRaid)" disabled="disabled" /></td>
+                    <td>@build.Source</td>
                 </tr>
             }
         </table> 

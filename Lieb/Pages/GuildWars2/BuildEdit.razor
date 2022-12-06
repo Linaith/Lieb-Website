@@ -23,26 +23,38 @@
 
         <p>
             <label>
-                <InputCheckbox @bind-Value="_hasMight" />
+                <InputCheckbox @bind-Value="_build.UseInRandomRaid" />
+                Use for random raids
+            </label>
+        </p>
+
+        <p>
+            <label>
+                <InputCheckbox @bind-Value="_build.Might" />
                 Might
             </label>
         </p>
         <p>
             <label>
-                <InputCheckbox @bind-Value="_hasHeal" />
-                Heal
-            </label>
-        </p>
-        <p>
-            <label>
-                <InputCheckbox @bind-Value="_hasQuickness" />
+                <InputCheckbox @bind-Value="_build.Quickness" />
                 Quickness
             </label>
         </p>
         <p>
             <label>
-                <InputCheckbox @bind-Value="_hasAlacrity" />
+                <InputCheckbox @bind-Value="_build.Alacrity" />
                 Alacrity
+            </label>
+        </p>
+        <p>
+            <label>
+                Damage Type:
+                <InputSelect @bind-Value="_build.DamageType">
+                    @foreach(DamageType damageType in Enum.GetValues(typeof(DamageType)))
+                    {
+                        <option value="@damageType">@damageType.ToString()</option>
+                    }
+                </InputSelect>
             </label>
         </p>
         
@@ -68,6 +80,12 @@
                 </InputSelect>
             </label>
         </p>
+        <p>
+            <label>
+                Source:
+                <InputText @bind-Value="_build.Source" />
+            </label>
+        </p>
 
         <ValidationSummary />
         <button type="submit">Submit</button>
@@ -85,20 +103,12 @@
 
     public GuildWars2Build _build;
 
-    private bool _hasMight;
-    private bool _hasHeal;
-    private bool _hasQuickness;
-    private bool _hasAlacrity;
 
     protected override async Task OnInitializedAsync()
     {
         if(!string.IsNullOrEmpty(buildId) && int.TryParse(buildId, out int parsedId))
         {
             _build = GuildWars2BuildService.GetBuild(parsedId);
-            _hasMight = _build.Might > 0;
-            _hasHeal = _build.Heal > 0;
-            _hasQuickness = _build.Quickness > 0;
-            _hasAlacrity = _build.Alacrity > 0;
         }
         else
         {
@@ -118,11 +128,6 @@
 
     private async Task HandleValidSubmit()
     {
-        _build.Might = _hasMight ? (short)5 : (short)0;
-        _build.Heal = _hasHeal ? (short)5 : (short)0;
-        _build.Quickness = _hasQuickness ? (short)5 : (short)0;
-        _build.Alacrity = _hasAlacrity ? (short)5 : (short)0;
-
         await GuildWars2BuildService.AddOrEditBuild(_build);
             NavigationManager.NavigateTo("buildoverview");
     }

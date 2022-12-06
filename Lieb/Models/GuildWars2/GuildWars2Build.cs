@@ -2,15 +2,13 @@
 
 namespace Lieb.Models.GuildWars2
 {
-    public enum Role
+    public enum DamageType
     {
-        Might = 0,
-        Quickness = 1,
-        Alacrity = 2,
-        Heal = 3,
-        Tank = 4,
-        pDps = 5,
-        cDps = 6,
+        Other = 0,
+        Heal = 1,
+        Power = 2,
+        Condition = 3,
+        Hybrid = 4
     }
 
     public enum GuildWars2Class
@@ -74,10 +72,11 @@ namespace Lieb.Models.GuildWars2
         [StringLength(60, ErrorMessage = "BuildName too long (60 character limit).")]
         public string BuildName { get; set; } = String.Empty;
 
-        public short Might { get; set; }
-        public short Quickness { get; set; }
-        public short Alacrity { get; set; }
-        public short Heal { get; set; }
+        public bool Might { get; set; }
+        public bool Quickness { get; set; }
+        public bool Alacrity { get; set; }
+        public DamageType DamageType {get; set;}
+        public bool UseInRandomRaid {get; set;}
 
         [Required]
         [Range(1, 9, ErrorMessage = "Please select a class")]
@@ -88,6 +87,8 @@ namespace Lieb.Models.GuildWars2
         public EliteSpecialization EliteSpecialization { get; set; }
 
         public ICollection<Equipped> EquippedRoles { get; set; } = new List<Equipped>();
+
+        public string Source {get; set;} = string.Empty;
 
     }
 }

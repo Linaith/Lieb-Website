@@ -7,11 +7,13 @@ namespace Lieb.Data
     public class RaidRandomizerService
     {
         private readonly IDbContextFactory<LiebContext> _contextFactory;
+        private readonly DiscordService _discordService;
         private static Random _random = new Random();
 
-        public RaidRandomizerService(IDbContextFactory<LiebContext> contextFactory)
+        public RaidRandomizerService(IDbContextFactory<LiebContext> contextFactory, DiscordService discordService)
         {
             _contextFactory = contextFactory;
+            _discordService = discordService;
         }
 
         public async Task RandomizeRaid(int raidId)
@@ -48,6 +50,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
             CleanUpRoles(raid, context);
             await context.SaveChangesAsync();
+            await _discordService.PostRaidMessage(raidId);
         }
 
         private void RandomizeClasses(Raid raid)

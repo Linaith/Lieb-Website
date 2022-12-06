@@ -90,5 +90,7 @@ namespace Lieb.Models.GuildWars2
 
         public string Source {get; set;} = string.Empty;
 
+        public string SourceLink {get; set;} = string.Empty;
+
     }
 }

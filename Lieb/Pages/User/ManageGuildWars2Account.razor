@@ -95,7 +95,14 @@
                         <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Hybrid)" disabled="disabled" /></td>
                         <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Other)" disabled="disabled" /></td>
                         <td class="checkboxfield"><input type="checkbox" checked="@(build.UseInRandomRaid)" disabled="disabled" /></td>
-                        <td>@build.Source</td>
+                        @if(string.IsNullOrEmpty(build.SourceLink))
+                        {
+                            <td>@build.Source</td>
+                        }
+                        else
+                        {
+                            <NavLink class="nav-link" href="@build.SourceLink" target="blank">@build.Source</NavLink>
+                        }
                     </tr>
                 }
             </table> 

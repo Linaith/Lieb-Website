@@ -2,8 +2,9 @@
     background-color: rgb(38 38 38);
     border-radius: 25px;
     padding: 25px;
-    width: 700px;
+    /*width: 700px;*/
     /*width: fit-content;*/
+    width: stretch;
     color: lightgray;
 }
 
@@ -11,18 +12,23 @@ h5 {
     color: lightgrey;
 }
 
+.timesblock {
+    display: block;
+}
+
 .times {
-    float: left;
-    display: inline;
-    width: 33%;
+    display: inline-block;
+    width: 250px;
     padding-top: 15px;
 }
 
+.detailsblock {
+    display: block;
+}
 
 .details {
-    float: left;
-    display: inline;
-    width: 33%;
+    display: inline-block;
+    width: 250px;
     padding-top: 15px;
 }
 

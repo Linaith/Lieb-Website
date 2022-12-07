@@ -10,66 +10,71 @@
 
 <body>
 
-<h5>@_template.Title</h5>
+<div @onclick="() => _isCollapsed = !_isCollapsed">
+    <h5>@_template.Title</h5>
 
-<label style="white-space: pre-line">@_template.Description</label>
+    <label style="white-space: pre-line">@_template.Description</label>
 
-<div >
-    <div class="times">
-        <h5>Date</h5>
-        <p>@_template.StartTime.ToLongDateString()</p>
-    </div>
-    <div class="times">
-        <h5>Time</h5>
-        <p>from: @_template.StartTime.ToShortTimeString()  to: @_template.EndTime.ToShortTimeString()</p>
-    </div>
-    <div class="times">
-        <h5>TimeZone</h5>
-        <p>@_template.TimeZone</p>
-    </div>
+    <span class="timesblock">
+        <div class="times">
+            <h5>Date</h5>
+            <p>@_template.StartTime.ToLongDateString()</p>
+        </div>
+        <div class="times">
+            <h5>Time</h5>
+            <p>from: @_template.StartTime.ToShortTimeString()  to: @_template.EndTime.ToShortTimeString()</p>
+        </div>
+        <div class="times">
+            <h5>TimeZone</h5>
+            <p>@_template.TimeZone</p>
+        </div>
+        <div class="times">
+            <h5>Type</h5>
+            <p>@_template.EventType</p>
+        </div>
+    </span>
 </div>
 
-<div>
-    <div class="details">
-        <h5>Organizer</h5>
-        <p>@_template.Organizer</p>
-    </div>
-    <div class="details">
-        <h5>Guild</h5>
-        <p>@_template.Guild</p>
-    </div>
-    <div class="details">
-        <h5>Voice chat</h5>
-        <p>@_template.VoiceChat</p>
-    </div>
-</div>
+@if (!_isCollapsed)
+{
 
-<div class="times">
-    <h5>Type</h5>
-    <p>@_template.EventType</p>
-</div>
-
-    
-<div>
-    <table class="table">
-        <tbody>
-            @foreach (var role in _template.Roles.OrderBy(r => r.RaidRoleId))
-            {                        
-                <tr>
-                    <td><Label> <b>@role.Name</b> (@role.Spots) <br>  @role.Description </Label></td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+    <div>
+        <div class="details">
+            <h5>Organizer</h5>
+            <p>@_template.Organizer</p>
+        </div>
+        <div class="details">
+            <h5>Guild</h5>
+            <p>@_template.Guild</p>
+        </div>
+        <div class="details">
+            <h5>Voice chat</h5>
+            <p>@_template.VoiceChat</p>
+        </div>
+    </div>
 
         
-<AuthorizeView>
-    @if (_template.RaidOwnerId == _user.Id || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel)
-    {
-        <button class="controlButton raidButton" @onclick="() => EditClicked()">Edit</button>
-    }
-</AuthorizeView>
+    <div>
+        <table class="table">
+            <tbody>
+                @foreach (var role in _template.Roles.OrderBy(r => r.RaidRoleId))
+                {                        
+                    <tr>
+                        <td><Label> <b>@role.Name</b> (@role.Spots) <br>  @role.Description </Label></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+            
+    <AuthorizeView>
+        @if (_template.RaidOwnerId == _user.Id || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel)
+        {
+            <button class="controlButton raidButton" @onclick="() => EditClicked()">Edit</button>
+        }
+    </AuthorizeView>
+}
 </body>
 
 @code {
@@ -78,6 +83,8 @@
     
     [Parameter]
     public LiebUser? _user { get; set; }
+    
+    bool _isCollapsed = true;
 
     protected override async Task OnParametersSetAsync()
     {

@@ -32,7 +32,8 @@
     <tr>
         <th>Name</th>
         <th>GW2 Account</th>
-        <th>Banned Until</th>
+        <th style="padding-left: 15px;">Created At</th>
+        <th style="padding-left: 15px;">Banned Until</th>
     </tr>
     @{
         HashSet<LiebUser> foundUsers = new HashSet<LiebUser>();
@@ -59,7 +60,7 @@
             }
         }
     }
-    @foreach (LiebUser user in foundUsers)
+    @foreach (LiebUser user in foundUsers.OrderBy(u => u.CreatedAt))
     {
         <tr>    
             <td class="nav-item px-3">
@@ -67,9 +68,10 @@
                 <NavLink class="nav-link" href="@navLink">@user.Name</NavLink>
             </td>
             <td>@foreach(var account in user.GuildWars2Accounts){<div>@account.AccountName </div> }</td>
+            <td style="padding-left: 15px;">@user.CreatedAt.ToShortDateString()</td>
             @if(user.BannedUntil >= DateTime.Now.Date)
             {
-                <td>@user.BannedUntil?.ToLongDateString()</td>
+                <td style="padding-left: 15px;">@user.BannedUntil?.ToShortDateString()</td>
             }
         </tr>
     }

@@ -1,0 +1,51 @@
+﻿@page "/gw2accountbuilds/{gw2Id}"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@inject GuildWars2AccountService GuildWars2AccountService
+@inject GuildWars2BuildService GuildWars2BuildService
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JsRuntime
+
+<h3>Build Overview @_account.AccountName</h3>
+
+<AuthorizeView Policy="@Constants.Roles.Admin.Name">
+    <Authorized>
+        
+        @if (_account.GuildWars2AccountId != 0)
+        {
+            <br/>
+            <BuildList _account=@_account _allowEdit=false></BuildList>                        
+        }
+             
+    </Authorized>
+</AuthorizeView>
+
+
+@code {
+
+    [Parameter]
+    public string gw2Id { get; set; }
+
+    public GuildWars2Account _account;
+
+    private LiebUser _user;
+
+    private string _saveMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(!string.IsNullOrEmpty(gw2Id) && int.TryParse(gw2Id, out int parsedId))
+        {
+            _account = GuildWars2AccountService.GetAccount(parsedId);
+        }
+        else
+        {
+            _account = new GuildWars2Account();
+        }
+    }
+}

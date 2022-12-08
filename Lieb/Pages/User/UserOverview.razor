@@ -28,12 +28,12 @@
     <input @bind="_searchString" />
 </label>
 
-    <table>
+    <table class="usertable">
     <tr>
         <th>Name</th>
         <th>GW2 Account</th>
-        <th style="padding-left: 15px;">Created At</th>
-        <th style="padding-left: 15px;">Banned Until</th>
+        <th>Created At</th>
+        <th>Banned Until</th>
     </tr>
     @{
         HashSet<LiebUser> foundUsers = new HashSet<LiebUser>();
@@ -67,11 +67,26 @@
                 @{string navLink = $"useredit/{@user.Id}";}
                 <NavLink class="nav-link" href="@navLink">@user.Name</NavLink>
             </td>
-            <td>@foreach(var account in user.GuildWars2Accounts){<div>@account.AccountName </div> }</td>
-            <td style="padding-left: 15px;">@user.CreatedAt.ToShortDateString()</td>
+            <td>
+                @foreach(var account in user.GuildWars2Accounts)
+                {
+                    <AuthorizeView Policy="@Constants.Roles.Admin.Name">
+                        <Authorized>
+                            <div>
+                                @{string navLink = $"gw2accountbuilds/{@account.GuildWars2AccountId}";}
+                                <NavLink class="nav-link" href="@navLink">@account.AccountName</NavLink>
+                            </div> 
+                        </Authorized>
+                        <NotAuthorized>
+                            <div>@account.AccountName </div> 
+                        </NotAuthorized>
+                    </AuthorizeView>
+                }
+            </td>
+            <td>@user.CreatedAt.ToShortDateString()</td>
             @if(user.BannedUntil >= DateTime.Now.Date)
             {
-                <td style="padding-left: 15px;">@user.BannedUntil?.ToShortDateString()</td>
+                <td>@user.BannedUntil?.ToShortDateString()</td>
             }
         </tr>
     }

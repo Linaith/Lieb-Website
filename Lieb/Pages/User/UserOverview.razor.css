@@ -1,0 +1,18 @@
+.usertable{
+    margin-top: 15px;
+    border: 1px solid;
+    
+}
+
+.usertable td {
+    border: 1px solid;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.usertable th {
+    border: 1px solid;
+    margin-left: 10px;
+    padding-left: 8px;
+    padding-right: 8px;
+}

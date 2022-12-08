@@ -79,6 +79,16 @@ main {
         color: darkgrey;
     }
 
+::deep button[type="submit"] {
+    color: lightgray;
+    background-color: green;
+}
+
+::deep button[type="delete"] {
+    color: lightgray;
+    background-color: red;
+}
+
 .top-row {
     background-color: #202020;
     border-bottom: 1px solid #d6d5d5;

@@ -36,15 +36,14 @@
             <br />
             <button type="submit">Save</button>
             <ValidationSummary />
-
         </EditForm>
+        <br/>
+        <button  type="delete" @onclick="() => DeleteAccountClicked()">Delete Account</button>
 
         @if (_account.GuildWars2AccountId != 0)
         {
             <br/>
             <BuildList _account=@_account _allowEdit=true></BuildList>                        
-            <br/>
-            <button type=button @onclick="() => DeleteAccountClicked()">Delete Account</button>
         }
              
     </Authorized>

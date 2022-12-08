@@ -47,6 +47,15 @@
             </InputSelect>
         </label>
     </p>
+    @if(_template.RaidType != RaidType.Planned)
+    {
+        <p>
+            <label>
+                Random Spots:
+                <InputNumber @bind-Value="_randomSpots"/>
+            </label>
+        </p>
+    }
     <p>
         <label>
             Event Type:
@@ -201,6 +210,7 @@
 
     private string _errorMessage = string.Empty;
 
+    private int _randomSpots = 10;
     private DateTimeOffset _raidDate = DateTime.Now.Date;
     private DateTimeOffset _startTime;
     private DateTimeOffset _endTime;
@@ -238,6 +248,15 @@
             if (_template != null && (_template.RaidOwnerId == _user.Id 
                 || _user.RoleAssignments.Max(a => a.LiebRole.Level) >= Constants.RaidEditPowerLevel))
             {
+                if(_template.RaidType != RaidType.Planned)
+                {
+                    if(_template.Roles.Where(r => r.IsRandomSignUpRole).Any())
+                    {
+                        RaidRole role = _template.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
+                        _randomSpots = role != null ? role.Spots : 10;
+                    }
+                }
+
                 _startTime = _template.StartTime;
                 _endTime = _template.EndTime;
                 _raidDate = _startTime.Date;
@@ -303,7 +322,7 @@
         {
             if(!_template.Roles.Where(r => r.IsRandomSignUpRole).Any())
             {
-                _template.Roles.Add(RaidService.CreateRandomSignUpRole(_template.RaidType));
+                _template.Roles.Add(RaidService.CreateRandomSignUpRole(_template.RaidType, _randomSpots));
             }
 
             foreach(RaidRole role in _template.Roles.Where(r => !r.IsRandomSignUpRole))

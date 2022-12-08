@@ -542,11 +542,11 @@ namespace Lieb.Data
             }
         }
 
-        public RaidRole CreateRandomSignUpRole(RaidType raidType)
+        public RaidRole CreateRandomSignUpRole(RaidType raidType, int spots = 10)
         {
             return new RaidRole()
                 {
-                    Spots = 10,
+                    Spots = spots,
                     Name = "Random",
                     Description = raidType.ToString(),
                     IsRandomSignUpRole = true

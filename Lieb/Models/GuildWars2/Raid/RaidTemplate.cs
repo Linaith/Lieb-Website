@@ -19,5 +19,17 @@ namespace Lieb.Models.GuildWars2.Raid
         public int Interval { get; set; }
         
         public int CreateDaysBefore { get; set; }
+
+        public RaidTemplate() { }
+
+        public RaidTemplate(RaidTemplate template) : base(template, template.TimeZone, false)
+        {
+            StartTime = template.StartTime;
+            EndTime = template.EndTime;
+            FreeForAllTime = template.FreeForAllTime;
+            TimeZone = template.TimeZone;
+            Interval = template.Interval;
+            CreateDaysBefore = template.CreateDaysBefore;
+        }
     }
 }

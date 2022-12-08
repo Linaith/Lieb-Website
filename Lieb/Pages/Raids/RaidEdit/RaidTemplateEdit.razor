@@ -1,5 +1,6 @@
 ﻿@page "/raidtemplateedit"
 @page "/raidtemplateedit/{raidId}"
+@page "/raidtemplateedit/{raidId}/{editType}"
 @using Lieb.Data
 @using Lieb.Models
 @using Lieb.Models.GuildWars2.Raid
@@ -39,7 +40,7 @@
     <p>
         <label>
             Raid Type:
-            <InputSelect @bind-Value="_template.RaidType" disabled="@_isEdit">
+            <InputSelect @bind-Value="_template.RaidType" disabled="@(!_editType && _isEdit)">
                 <option value="@RaidType.Planned">Planned</option>
                 <option value="@RaidType.RandomWithBoons">Random with boons covered</option>
                 <option value="@RaidType.RandomClasses">Random classes</option>
@@ -198,15 +199,20 @@
 </EditForm>
         <br/>
 <button type="delete" @onclick="() => DeleteRaidClicked()">Delete Template</button>
+<button type="copy" @onclick="() => CopyTemplate()">Copy Template</button>
 </AuthorizeView>
 
 @code {
 
     [Parameter]
     public string raidId { get; set; }
+    
+    [Parameter]
+    public string editType { get; set; }
 
     public RaidTemplate _template;
     private LiebUser _user;
+    private bool _editType = false;
 
     private string _errorMessage = string.Empty;
 
@@ -239,6 +245,11 @@
         if(_user == null)
         {
             NavigationManager.NavigateTo("");
+        }
+
+        if(!string.IsNullOrEmpty(editType) && bool.TryParse(editType, out bool allowEdit))
+        {
+            _editType = allowEdit;
         }
 
         if(!string.IsNullOrEmpty(raidId) && int.TryParse(raidId, out int parsedId))
@@ -371,5 +382,13 @@
 
         await RaidTemplateService.AddOrEditTemplate(_template, _rolesToDelete, _remindersToDelete, _messagesToDelete, _user.Id);
         NavigationManager.NavigateTo("raidtemplateoverview");
+    }
+
+    private async Task CopyTemplate()
+    {
+        RaidTemplate newTemplate = new RaidTemplate(_template);
+        await RaidTemplateService.AddOrEditTemplate(newTemplate, new List<RaidRole>(), new List<RaidReminder>(), new List<DiscordRaidMessage>(), _user.Id);
+
+        NavigationManager.NavigateTo($"/raidtemplateedit/{newTemplate.RaidTemplateId}/true", true);
     }
 }

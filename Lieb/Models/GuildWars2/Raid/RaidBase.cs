@@ -61,7 +61,7 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public RaidBase() { }
 
-        public RaidBase(RaidBase template, string timeZoneString)
+        public RaidBase(RaidBase template, string timeZoneString, bool convertTimeForRaid)
         {
             this.Title = template.Title;
             this.Description = template.Description;
@@ -88,11 +88,17 @@ namespace Lieb.Models.GuildWars2.Raid
             TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneString);
             foreach (RaidReminder reminder in template.Reminders)
             {
+                DateTimeOffset reminderTime = reminder.ReminderTimeUTC;
+                if(convertTimeForRaid)
+                {
+                    reminderTime = TimeZoneInfo.ConvertTimeToUtc(reminder.ReminderTimeUTC.DateTime, timeZone);
+                }
+
                 this.Reminders.Add(new RaidReminder()
                 {
                     DiscordServerId = reminder.DiscordServerId,
                     DiscordChannelId = reminder.DiscordChannelId,
-                    ReminderTimeUTC = TimeZoneInfo.ConvertTimeToUtc(reminder.ReminderTimeUTC.DateTime, timeZone),
+                    ReminderTimeUTC = reminderTime,
                     Message = reminder.Message,
                     Sent = false,
                     Type = reminder.Type,

@@ -1,0 +1,219 @@
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@inject GuildWars2AccountService GuildWars2AccountService
+@inject GuildWars2BuildService GuildWars2BuildService
+
+
+
+<br />
+<label>
+    Klasse:
+    <select @onchange="args => ChangeClassFilter(args)" >
+        <option value="All">All</option>
+        @foreach(GuildWars2Class gw2Class in Enum.GetValues(typeof(GuildWars2Class)))
+        {
+            <option value="@gw2Class">@gw2Class.ToString()</option>
+        }
+    </select>
+    <label style="margin-left: 10px; margin-right: 3px;">DamageType:</label>
+    <select @onchange="args => ChangeDamageTypeFilter(args)" style="margin">
+        <option value="All">All</option>
+        @foreach(DamageType damageType in Enum.GetValues(typeof(DamageType)))
+        {
+            <option value="@damageType">@damageType.ToString()</option>
+        }
+    </select>
+    <label style="margin-left: 10px; margin-right: 4px;">Alacrity:</label><input type="checkbox" checked="@_filterAlac" @onchange="args => AlacStatusChanged(args)" />
+    <label style="margin-left: 10px; margin-right: 4px;">Quickness:</label><input type="checkbox" checked="@_filterQuick" @onchange="args => QuickStatusChanged(args)" />
+    <label style="margin-left: 10px; margin-right: 4px;">Might:</label><input type="checkbox" checked="@_filterMight" @onchange="args => MightStatusChanged(args)" />      
+</label>
+<table  class="roletable">
+    <tr>
+        @if (_account != null)
+        {
+            <th>Equipped</th>
+            <th>Tank</th>
+        }
+        <th>Build</th>
+        <th>Class</th>
+        <th>Elite</th>
+        <th>Might</th>
+        <th>Quick</th>
+        <th>Alac</th>
+        <th>Heal</th>
+        <th>Power</th>
+        <th>Condition</th>
+        <th>Hybrid</th>
+        <th>Other</th>
+        <th>Random</th>
+        <th>Source</th>
+    </tr>
+    @foreach (GuildWars2Build build in _buildsToShow.OrderBy(b => b.Class).ThenBy(b => b.EliteSpecialization))
+    {
+        bool isEquipped = false;
+        bool canTank = false;
+        @if(_account != null)
+        {
+            Equipped? equippedBuild = _account.EquippedBuilds.FirstOrDefault(e => e.GuildWars2BuildId == build.GuildWars2BuildId);
+            isEquipped = equippedBuild != null;
+            if (isEquipped)
+            {
+                canTank = equippedBuild.CanTank;
+            }
+        }
+
+        <tr>
+            @if (_account != null)
+            {
+                <td class="checkboxfield"><input type="checkbox" checked="@isEquipped" disabled="@(!_allowEdit)" @onchange="args => EquippedStatusChanged(build.GuildWars2BuildId, args)" /></td>
+                <td class="checkboxfield"><input type="checkbox" checked="@canTank" disabled="@(!isEquipped || !_allowEdit)" @onchange="args => TankingStatusChanged(build.GuildWars2BuildId, args)" /></td>
+            }
+            <AuthorizeView Policy="@Constants.Roles.Admin.Name">
+                <Authorized>
+                    <td class="nav-item px-3">
+                        @{string navLink = $"buildedit/{@build.GuildWars2BuildId}";}
+                        <NavLink class="nav-link" href="@navLink">@build.BuildName</NavLink>
+                    </td>
+                </Authorized>
+                <NotAuthorized>
+                    <td class="nav-item px-3">
+                        <label style="padding: .5rem 1rem;">@build.BuildName</label>
+                    </td>
+                </NotAuthorized>
+            </AuthorizeView>
+            <td>@build.Class.ToString()</td>
+            <td>@build.EliteSpecialization.ToString()</td>
+            <td class="checkboxfield"><input type="checkbox" checked="@(build.Might)" disabled="disabled" /></td>
+            <td class="checkboxfield"><input type="checkbox" checked="@(build.Quickness)" disabled="disabled" /></td>
+            <td class="checkboxfield"><input type="checkbox" checked="@(build.Alacrity)" disabled="disabled" /></td>
+            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Heal)" disabled="disabled" /></td>
+            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Power)" disabled="disabled" /></td>
+            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Condition)" disabled="disabled" /></td>
+            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Hybrid)" disabled="disabled" /></td>
+            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Other)" disabled="disabled" /></td>
+            <td class="checkboxfield"><input type="checkbox" checked="@(build.UseInRandomRaid)" disabled="disabled" /></td>
+            @if(string.IsNullOrEmpty(build.SourceLink))
+            {
+                <td>@build.Source</td>
+            }
+            else
+            {
+                <td><NavLink class="nav-link" href="@build.SourceLink" target="blank">@build.Source</NavLink></td>
+            }
+        </tr>
+    }
+</table> 
+
+@code {
+
+    [Parameter]
+    public GuildWars2Account _account {get; set;}
+
+    [Parameter]
+    public bool _allowEdit {get; set;}
+
+    private List<GuildWars2Build> _builds;
+    private List<GuildWars2Build> _buildsToShow;
+
+    private GuildWars2Class? _filterClass;
+    private bool _filterAlac = false;
+    private bool _filterQuick = false;
+    private bool _filterMight = false;
+    private DamageType? _filterDamageType;
+
+    protected override async Task OnInitializedAsync()
+    {        
+        _builds = GuildWars2BuildService.GetBuilds();
+        _buildsToShow = _builds;
+    }
+
+    async Task EquippedStatusChanged(int buildId, ChangeEventArgs args)
+    {
+        bool isEquipped = bool.Parse(args.Value.ToString());
+        if(isEquipped)
+        {
+            await GuildWars2AccountService.AddBuild(_account.GuildWars2AccountId, buildId);
+        }
+        else
+        {
+            await GuildWars2AccountService.RemoveBuild(_account.GuildWars2AccountId, buildId);
+        }
+        _account = GuildWars2AccountService.GetAccount(_account.GuildWars2AccountId);
+    }
+
+    async Task TankingStatusChanged(int buildId, ChangeEventArgs args)
+    {
+        bool canTank = bool.Parse(args.Value.ToString());
+        await GuildWars2AccountService.ChangeTankStatus(_account.GuildWars2AccountId, buildId, canTank);
+    }
+
+    private void ChangeClassFilter( ChangeEventArgs e)
+    {
+        if(Enum.TryParse<GuildWars2Class>(e.Value?.ToString(), out GuildWars2Class gw2Class))
+        {
+            _filterClass = gw2Class;
+        }
+        else
+        {
+            _filterClass = null;
+        }
+        ApplyFilter();
+    }
+
+    private void ChangeDamageTypeFilter( ChangeEventArgs e)
+    {
+        if(Enum.TryParse<DamageType>(e.Value?.ToString(), out DamageType damage))
+        {
+            _filterDamageType = damage;
+        }
+        else
+        {
+            _filterDamageType = null;
+        }
+        ApplyFilter();
+    }
+
+    private void AlacStatusChanged(ChangeEventArgs args)
+    {
+        _filterAlac = bool.Parse(args.Value.ToString());
+        ApplyFilter();
+    }
+
+    private void QuickStatusChanged(ChangeEventArgs args)
+    {
+        _filterQuick = bool.Parse(args.Value.ToString());
+        ApplyFilter();
+    }
+
+    private void MightStatusChanged(ChangeEventArgs args)
+    {
+        _filterMight = bool.Parse(args.Value.ToString());
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        _buildsToShow = _builds;
+        if(_filterClass != null)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.Class == _filterClass).ToList();
+        }
+        if(_filterAlac)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.Alacrity).ToList();
+        }
+        if(_filterQuick)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.Quickness).ToList();
+        }
+        if(_filterMight)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.Might).ToList();
+        }
+        if(_filterDamageType != null)
+        {
+            _buildsToShow = _buildsToShow.Where(b => b.DamageType == _filterDamageType).ToList();
+        }
+    }
+}

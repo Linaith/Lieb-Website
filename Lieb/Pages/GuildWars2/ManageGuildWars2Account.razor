@@ -1,0 +1,97 @@
+﻿@page "/gw2accountedit"
+@page "/gw2accountedit/{gw2Id}"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.GuildWars2
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@inject GuildWars2AccountService GuildWars2AccountService
+@inject GuildWars2BuildService GuildWars2BuildService
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JsRuntime
+
+<h3>Manage Guild Wars 2 Account</h3>
+
+<AuthorizeView Context="authorizationContext">
+    <Authorized>
+        <EditForm Model="@_account" OnValidSubmit="@HandleValidSubmit">
+            <DataAnnotationsValidator />
+    
+            <p>@_saveMessage</p>
+            <p>
+                <label>
+                    Account name:
+                    <InputText @bind-Value="_account.AccountName" />
+                </label>
+            </p>
+            <!--<p>
+                <label>
+                    Api-Key:
+                    <InputText @bind-Value="_account.ApiKey" />
+                </label>
+            </p>-->
+
+            <br />
+            <button type="submit">Save</button>
+            <ValidationSummary />
+
+        </EditForm>
+
+        @if (_account.GuildWars2AccountId != 0)
+        {
+            <br/>
+            <BuildList _account=@_account _allowEdit=true></BuildList>                        
+            <br/>
+            <button type=button @onclick="() => DeleteAccountClicked()">Delete Account</button>
+        }
+             
+    </Authorized>
+</AuthorizeView>
+
+
+@code {
+
+    [Parameter]
+    public string gw2Id { get; set; }
+
+    public GuildWars2Account _account;
+
+    private LiebUser _user;
+
+    private string _saveMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+        _user = UserService.GetLiebUserGW2AccountOnly(discordId);
+
+        if(!string.IsNullOrEmpty(gw2Id) && int.TryParse(gw2Id, out int parsedId) && _user.GuildWars2Accounts.Where(a => a.GuildWars2AccountId == parsedId).Any())
+        {
+            _account = GuildWars2AccountService.GetAccount(parsedId);
+        }
+        else
+        {
+            _account = new GuildWars2Account();
+        }
+    }
+
+    async Task DeleteAccountClicked()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this Account?\nThis will sign you off in every raid in which you are signed up with this account.");
+        if (confirmed)
+        {
+            await GuildWars2AccountService.DeleteAccount(_account.GuildWars2AccountId);
+            NavigationManager.NavigateTo("accountedit");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await GuildWars2AccountService.AddOrEditAccount(_account, _user.Id);
+        _account = GuildWars2AccountService.GetAccount(_account.GuildWars2AccountId);
+        _saveMessage = "changes saved successfully";
+    }
+}

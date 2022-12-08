@@ -14,13 +14,29 @@
             <th>Hours</th>
             <th>Minutes</th>
             <th>Type</th>
-            @if(_raidReminders.Where(r => r.Type == RaidReminder.ReminderType.Channel).Any())
+            @{bool channelReminderExists = _raidReminders.Where(r => r.Type == RaidReminder.ReminderType.Channel).Any();
+            bool groupReminderExists = _raidReminders.Where(r => r.Type == RaidReminder.ReminderType.Group).Any();}
+            @if(channelReminderExists && groupReminderExists)
             {
+                <th>Group</th>
                 <th>Server</th>
                 <th>Channel</th>
             }
+            else if(channelReminderExists)
+            {
+                <th></th>
+                <th>Server</th>
+                <th>Channel</th>
+            }
+            else if(groupReminderExists)
+            {
+                <th>Group</th>
+                <th></th>
+                <th></th>
+            }
             else
             {
+                <th></th>
                 <th></th>
                 <th></th>
             }
@@ -28,7 +44,8 @@
         </tr>
         @foreach( DynamicRaidReminder reminder in _raidReminders)
         {
-            bool hidden = reminder.Type == RaidReminder.ReminderType.User;
+            bool groupHidden = reminder.Type != RaidReminder.ReminderType.Group;
+            bool discordHidden = reminder.Type != RaidReminder.ReminderType.Channel;
             <tr>
                 <td><InputNumber @bind-Value="reminder.DaysBeforeRaid" /></td>
                 <td><InputNumber @bind-Value="reminder.HoursBeforeRaid" /></td>
@@ -42,7 +59,15 @@
                     </InputSelect>
                 </td>
                 <td>
-                    <InputSelect @bind-Value="reminder.DiscordServerId" hidden="@hidden"> 
+                    <InputSelect @bind-Value="reminder.RoleId" hidden="@groupHidden"> 
+                        @foreach(LiebRole role in _availableRoles)
+                        {
+                            <option value="@role.LiebRoleId">@role.RoleName</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td>
+                    <InputSelect @bind-Value="reminder.DiscordServerId" hidden="@discordHidden"> 
                         @foreach(DiscordServer item in _discordServers)
                         {
                             <option value="@item.Id">@item.Name</option>
@@ -50,7 +75,7 @@
                     </InputSelect>
                 </td>
                 <td>
-                    <InputSelect @bind-Value="reminder.DiscordChannelId" hidden="@hidden"> 
+                    <InputSelect @bind-Value="reminder.DiscordChannelId" hidden="@discordHidden"> 
                         @if(reminder.DiscordServerId > 0)
                         {
                             List<DiscordChannel> channels = _discordServers.Where(s => s.Id == reminder.DiscordServerId).FirstOrDefault(new DiscordServer()).Channels;
@@ -81,6 +106,9 @@
         
     [Parameter]
     public List<RaidReminder> _remindersToDelete {get; set; }
+        
+    [Parameter]
+    public List<LiebRole> _availableRoles {get; set; }
     
     async Task AddReminderClicked()
     {

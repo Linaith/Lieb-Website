@@ -8,7 +8,8 @@ namespace Lieb.Models.GuildWars2.Raid
         public enum ReminderType
         {
             User = 1,
-            Channel = 2
+            Channel = 2,
+            Group = 3
         }
 
         public enum ReminderTimeType
@@ -20,7 +21,7 @@ namespace Lieb.Models.GuildWars2.Raid
         public int RaidReminderId { get; set; }
 
         [Required]
-        [Range(1, 2, ErrorMessage = "Please select a reminder type")]
+        [Range(1, 3, ErrorMessage = "Please select a reminder type")]
         public ReminderType Type { get; set; }
 
         [Required]
@@ -37,6 +38,8 @@ namespace Lieb.Models.GuildWars2.Raid
         public ulong DiscordServerId { get; set; }
 
         public ulong DiscordChannelId { get; set; }
+
+        public int RoleId {get; set; }
 
         public bool Sent { get; set; } = false;
     }

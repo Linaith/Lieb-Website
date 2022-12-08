@@ -189,8 +189,8 @@
     }
     
     <DiscordMessageEdit _raid=@_template _discordServers=@_discordServers _messagesToDelete=@_messagesToDelete ></DiscordMessageEdit>
-    <StaticReminderEdit _raidReminders=@_staticReminders _discordServers=@_discordServers _remindersToDelete=@_remindersToDelete ></StaticReminderEdit>
-    <DynamicReminderEdit _raidReminders=@_dynamicReminders _discordServers=@_discordServers _remindersToDelete=@_remindersToDelete ></DynamicReminderEdit>
+    <StaticReminderEdit _raidReminders=@_staticReminders _discordServers=@_discordServers _remindersToDelete=@_remindersToDelete  _availableRoles=@_availabeGroups></StaticReminderEdit>
+    <DynamicReminderEdit _raidReminders=@_dynamicReminders _discordServers=@_discordServers _remindersToDelete=@_remindersToDelete  _availableRoles=@_availabeGroups></DynamicReminderEdit>
     
     <ValidationSummary />
     <label class="validation-message" >@_errorMessage</label>
@@ -232,6 +232,7 @@
     private List<DynamicRaidReminder> _dynamicReminders = new List<DynamicRaidReminder>();
         
     private List<DiscordServer> _discordServers = new List<DiscordServer>();
+    private List<LiebRole> _availabeGroups = new List<LiebRole>();
 
 
     protected override async Task OnInitializedAsync()
@@ -300,6 +301,7 @@
         }
         _userTimeZone = await TimeZoneService.GetUserTimeZone();
         _discordServers = await DiscordService.GetServers();
+        _availabeGroups = UserService.GetUserRoles(_user.Id).Where(u => u.Type == RoleType.UserDefinedRole).ToList();
     }
 
     async Task AddRoleClicked()

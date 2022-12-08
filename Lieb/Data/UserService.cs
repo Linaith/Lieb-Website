@@ -235,6 +235,16 @@ namespace Lieb.Data
                 .ToList();
         }
 
+        public List<LiebRole> GetUserRoles(ulong userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.LiebRoles
+                .Include(u => u.RoleAssignments)
+                .ThenInclude(r => r.LiebUser)
+                .Where(r => r.RoleAssignments.Where(a => a.LiebUserId == userId).Any())
+                .ToList();
+        }
+
         public async Task AddRole(LiebRole role)
         {
             using var context = _contextFactory.CreateDbContext();

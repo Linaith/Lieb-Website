@@ -148,6 +148,7 @@ namespace Lieb.Data
             return new List<DiscordServer>();
         }
 
+#region UserReminder
         public async Task SendUserReminder(RaidReminder reminder, Raid raid)
         {
             if (await SendMessageToRaidUsers(reminder.Message, raid))
@@ -183,6 +184,27 @@ namespace Lieb.Data
             return false;
         }
 
+        public static ApiUserReminder ConvertUserReminder(string message, Raid raid)
+        {
+            ApiUserReminder apiReminder = new ApiUserReminder()
+            {
+                Message = $"{raid.Title}: {message}"
+            };
+            apiReminder.UserIds = new List<ulong>();
+            HashSet<ulong> userIds = new HashSet<ulong>();
+            foreach(RaidSignUp signUp in raid.SignUps)
+            {
+                if(signUp.LiebUserId.HasValue)
+                {
+                    userIds.Add(signUp.LiebUserId.Value);
+                }
+            }
+            apiReminder.UserIds = userIds.ToList();
+            return apiReminder;
+        }
+#endregion UserReminder
+
+#region ChannelReminder
         public async Task SendChannelReminder(RaidReminder reminder, string raidTitle)
         {
             if (await SendChannelMessage(reminder.DiscordServerId, reminder.DiscordChannelId, reminder.Message, raidTitle))
@@ -214,6 +236,63 @@ namespace Lieb.Data
             catch {}
             return false;
         }
+
+        public static ApiChannelReminder ConvertChannelReminder(ulong discordServerId, ulong discordChannelId, string message, string raidTitle)
+        {
+            return new ApiChannelReminder()
+            {
+                DiscordServerId = discordServerId,
+                DiscordChannelId = discordChannelId,
+                Message = $"{raidTitle}: {message}"
+            };
+        }
+
+#endregion ChannelReminder
+
+#region GroupReminder
+        public async Task SendGroupReminder(RaidReminder reminder, string raidTitle)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            HashSet<ulong> groupMembers = context.LiebUsers.Where(u => u.RoleAssignments.Where(r => r.LiebRole.LiebRoleId == reminder.RoleId).Any()).Select(u => u.Id).ToHashSet();
+            if (await SendMessageToGroup(reminder.Message, raidTitle, groupMembers))
+            {
+                reminder.Sent = true;
+                context.Update(reminder);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> SendMessageToGroup(string message, string raidTitle, HashSet<ulong> userIds)
+        {
+            try
+            {
+                var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+
+                ApiUserReminder apiReminder = ConvertGroupReminder(message, raidTitle, userIds);
+
+                var raidItemJson = new StringContent(
+                    JsonSerializer.Serialize(apiReminder),
+                    Encoding.UTF8,
+                    Application.Json);
+
+                var httpResponseMessage = await httpClient.PostAsync("raid/SendUserReminder", raidItemJson);
+
+                return httpResponseMessage.IsSuccessStatusCode;
+            }
+            catch {}
+            return false;
+        }
+
+        public static ApiUserReminder ConvertGroupReminder(string message, string raidTitle, HashSet<ulong> groupIds)
+        {
+            ApiUserReminder apiReminder = new ApiUserReminder()
+            {
+                Message = $"{raidTitle}: {message}"
+            };
+            apiReminder.UserIds = groupIds.ToList();
+            return apiReminder;
+        }
+#endregion GroupReminder
 
         private async Task UpdateDiscordMessages(IEnumerable<ApiRaid.DiscordMessage> messages, Raid raid)
         {
@@ -300,35 +379,6 @@ namespace Lieb.Data
                 });
             }
             return apiMessages;
-        }
-
-        public static ApiUserReminder ConvertUserReminder(string message, Raid raid)
-        {
-            ApiUserReminder apiReminder = new ApiUserReminder()
-            {
-                Message = $"{raid.Title}: {message}"
-            };
-            apiReminder.UserIds = new List<ulong>();
-            HashSet<ulong> userIds = new HashSet<ulong>();
-            foreach(RaidSignUp signUp in raid.SignUps)
-            {
-                if(signUp.LiebUserId.HasValue)
-                {
-                    userIds.Add(signUp.LiebUserId.Value);
-                }
-            }
-            apiReminder.UserIds = userIds.ToList();
-            return apiReminder;
-        }
-
-        public static ApiChannelReminder ConvertChannelReminder(ulong discordServerId, ulong discordChannelId, string message, string raidTitle)
-        {
-            return new ApiChannelReminder()
-            {
-                DiscordServerId = discordServerId,
-                DiscordChannelId = discordChannelId,
-                Message = $"{raidTitle}: {message}"
-            };
         }
 
         public async Task RenameUser(ulong userId, string name, string account)

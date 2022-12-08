@@ -112,6 +112,9 @@ namespace Lieb.Data
                 return false;
             }
             using var context = _contextFactory.CreateDbContext();
+            LiebUser user = context.LiebUsers.FirstOrDefault(l => l.Id == liebUserId);
+
+            if(user == null) return false;
 
             List<RaidSignUp> signUps = context.RaidSignUps.Where(r => r.RaidId == raidId && r.LiebUserId == liebUserId).ToList();
             if (signUpType != SignUpType.Flex && signUps.Where(r => r.SignUpType != SignUpType.Flex).Any())
@@ -122,15 +125,16 @@ namespace Lieb.Data
             else if (!signUps.Where(r => r.RaidRoleId == plannedRoleId).Any())
             {
                 RaidSignUp signUp = new RaidSignUp(raidId, liebUserId, guildWars2AccountId, plannedRoleId, signUpType);
-                string userName = context.LiebUsers.FirstOrDefault(l => l.Id == liebUserId)?.Name;
                 context.RaidSignUps.Add(signUp);
                 await context.SaveChangesAsync();
-                await LogSignUp(signUp, userName, signedUpByUserId);
+                await LogSignUp(signUp, user.Name, signedUpByUserId);
             }
             else
             {
                 return false;
             }
+            user.LastSignUpAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
             await _discordService.PostRaidMessage(raidId);
             return true;
         }

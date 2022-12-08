@@ -6,6 +6,7 @@ namespace Lieb.Data
     {
         private Timer _minuteTimer = null!;
         private Timer _fiveMinuteTimer = null!;
+        private Timer _dailyTimer = null!;
         private IServiceProvider _services;
 
         public TimerService(IServiceProvider services)
@@ -19,6 +20,8 @@ namespace Lieb.Data
                 TimeSpan.FromMinutes(1));
             _fiveMinuteTimer = new Timer(CleanUpRaids, null, TimeSpan.Zero,
                 TimeSpan.FromMinutes(5));
+            _dailyTimer = new Timer(CleanUpDatabase, null, TimeSpan.Zero,
+                TimeSpan.FromDays(1));
 
             return Task.CompletedTask;
         }
@@ -56,6 +59,17 @@ namespace Lieb.Data
                     scope.ServiceProvider
                         .GetRequiredService<RaidService>();
                 await raidService.CleanUpRaids();
+            }
+        }
+
+        private async void CleanUpDatabase(object? state)
+        {
+            using (var scope = _services.CreateScope())
+            {
+                var userService =
+                    scope.ServiceProvider
+                        .GetRequiredService<UserService>();
+                await userService.DeleteInactiveUsers();
             }
         }
 

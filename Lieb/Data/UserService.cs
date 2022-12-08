@@ -318,5 +318,20 @@ namespace Lieb.Data
                 return usableAccounts.First().GuildWars2AccountId;
             }
         }
+
+        public async Task DeleteInactiveUsers()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            List<LiebUser> users = context.LiebUsers.ToList();
+
+            foreach(LiebUser user in users)
+            {
+                if((user.LastSignUpAt == null && user.CreatedAt < DateTime.UtcNow.AddYears(-1))
+                    || (user.LastSignUpAt != null && user.LastSignUpAt < DateTime.UtcNow.AddYears(-1)))
+                {
+                    await DeleteUser(user.Id);
+                }
+            }
+        }
     }
 }

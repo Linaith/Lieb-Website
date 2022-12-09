@@ -303,6 +303,10 @@
             {
                 _raid.Roles.Add(RaidService.CreateRandomSignUpRole(_raid.RaidType, _randomSpots));
             }
+            else
+            {
+                _raid.Roles.First(r => r.IsRandomSignUpRole).Spots = _randomSpots;
+            }
 
             foreach(RaidRole role in _raid.Roles.Where(r => !r.IsRandomSignUpRole))
             {

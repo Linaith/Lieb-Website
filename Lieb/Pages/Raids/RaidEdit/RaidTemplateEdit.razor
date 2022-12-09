@@ -337,6 +337,10 @@
             {
                 _template.Roles.Add(RaidService.CreateRandomSignUpRole(_template.RaidType, _randomSpots));
             }
+            else
+            {
+                _template.Roles.First(r => r.IsRandomSignUpRole).Spots = _randomSpots;
+            }
 
             foreach(RaidRole role in _template.Roles.Where(r => !r.IsRandomSignUpRole))
             {

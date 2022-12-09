@@ -55,7 +55,7 @@ namespace Lieb.Data
 
         private void RandomizeClasses(Raid raid)
         {
-            foreach (RaidSignUp signUp in raid.SignUps.Where(s => s.RaidRole.IsRandomSignUpRole))
+            foreach (RaidSignUp signUp in raid.SignUps.Where(s => s.RaidRole.IsRandomSignUpRole && s.SignUpType == SignUpType.SignedUp))
             {
                 HashSet<GuildWars2Class> possibleClasses = new HashSet<GuildWars2Class>();
                 foreach (Equipped build in signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.UseInRandomRaid))
@@ -79,7 +79,7 @@ namespace Lieb.Data
 
         private void RandomizeEliteSpecs(Raid raid)
         {
-            foreach (RaidSignUp signUp in raid.SignUps.Where(s => s.RaidRole.IsRandomSignUpRole))
+            foreach (RaidSignUp signUp in raid.SignUps.Where(s => s.RaidRole.IsRandomSignUpRole && s.SignUpType == SignUpType.SignedUp))
             {
                 HashSet<EliteSpecialization> possibleEliteSpecs = new HashSet<EliteSpecialization>();
                 foreach (Equipped build in signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.UseInRandomRaid))
@@ -103,10 +103,17 @@ namespace Lieb.Data
     
         private void RandomizeWithBoons(Raid raid)
         {
-            int noGroups = (raid.SignUps.Where(s => s.SignUpType != SignUpType.Flex && s.SignUpType != SignUpType.SignedOff).Count() / 5) +1;
+            //reset signUps to move Maybes and Backups back to Random
+            RaidRole randomRole = raid.Roles.FirstOrDefault(r => r.IsRandomSignUpRole);
+            foreach (RaidSignUp signUp in raid.SignUps)
+            {
+                signUp.RaidRole = randomRole;
+            }
+
+            int noGroups = (raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() / 5) +1;
 
             HashSet<GuildWars2Account> signedUpAccounts = raid.SignUps.Where(s => s.GuildWars2Account != null && s.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.UseInRandomRaid).Count() > 0
-                                                                        && s.SignUpType != SignUpType.Flex && s.SignUpType != SignUpType.SignedOff)
+                                                                        && s.SignUpType == SignUpType.SignedUp)
                                                                         .Select(s => s.GuildWars2Account).ToHashSet();
             
             List<Tuple<int, int>> possibleBoonCombinations = GetPossibleBoonCombinations(signedUpAccounts);

@@ -55,7 +55,7 @@ namespace Lieb.Data
 
         private void RandomizeClasses(Raid raid)
         {
-            foreach (RaidSignUp signUp in raid.SignUps)
+            foreach (RaidSignUp signUp in raid.SignUps.Where(s => s.RaidRole.IsRandomSignUpRole))
             {
                 HashSet<GuildWars2Class> possibleClasses = new HashSet<GuildWars2Class>();
                 foreach (Equipped build in signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.UseInRandomRaid))
@@ -79,7 +79,7 @@ namespace Lieb.Data
 
         private void RandomizeEliteSpecs(Raid raid)
         {
-            foreach (RaidSignUp signUp in raid.SignUps)
+            foreach (RaidSignUp signUp in raid.SignUps.Where(s => s.RaidRole.IsRandomSignUpRole))
             {
                 HashSet<EliteSpecialization> possibleEliteSpecs = new HashSet<EliteSpecialization>();
                 foreach (Equipped build in signUp.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.UseInRandomRaid))

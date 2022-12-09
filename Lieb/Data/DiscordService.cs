@@ -160,16 +160,62 @@ namespace Lieb.Data
             }
         }
 
-
         public async Task<bool> SendMessageToRaidUsers(string message, Raid raid)
+        {
+            if(raid == null) return false;
+            
+            HashSet<ulong> userIds = new HashSet<ulong>();
+            foreach(RaidSignUp signUp in raid.SignUps)
+            {
+                if(signUp.LiebUserId.HasValue)
+                {
+                    userIds.Add(signUp.LiebUserId.Value);
+                }
+            }
+            return await SendMessageToUsers(message, raid.Title, userIds);
+        }
+
+        public async Task SendGroupReminder(RaidReminder reminder, Raid raid)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            HashSet<ulong> groupMembers = context.LiebUsers.Where(u => u.RoleAssignments.Where(r => r.LiebRole.LiebRoleId == reminder.RoleId).Any()).Select(u => u.Id).ToHashSet();
+            HashSet<ulong> userIds;
+            switch(reminder.RoleType)
+            {
+                case RaidReminder.RoleReminderType.All:
+                    userIds = groupMembers;
+                    break;
+                case RaidReminder.RoleReminderType.SignedUp:
+                    userIds = groupMembers.Where(m => raid.SignUps.Where(s => s.LiebUserId == m).Any()).ToHashSet();
+                    break;
+                case RaidReminder.RoleReminderType.NotSignedUp:
+                    userIds = groupMembers.Where(m => !raid.SignUps.Where(s => s.LiebUserId == m).Any()).ToHashSet();
+                    break;
+                default:
+                    userIds = new HashSet<ulong>();
+                    break;
+            }
+            if (await SendMessageToUsers(reminder.Message, raid.Title, userIds))
+            {
+                reminder.Sent = true;
+                context.Update(reminder);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> SendMessageToUsers(string message, string raidTitle, HashSet<ulong> userIds)
         {
             try
             {
+                using var context = _contextFactory.CreateDbContext();
+                HashSet<ulong> userIdsToSendTo = context.LiebUsers
+                .Where(u => u.ReminderSubscription == userIds.Contains(u.Id))
+                .Select(u => u.Id)
+                .ToHashSet();
+
                 var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
 
-                if(raid == null) return false;
-
-                ApiUserReminder apiReminder = ConvertUserReminder(message, raid);
+                ApiUserReminder apiReminder = CreateUserReminder(message, raidTitle, userIds);
 
                 var raidItemJson = new StringContent(
                     JsonSerializer.Serialize(apiReminder),
@@ -184,21 +230,12 @@ namespace Lieb.Data
             return false;
         }
 
-        public static ApiUserReminder ConvertUserReminder(string message, Raid raid)
+        public static ApiUserReminder CreateUserReminder(string message, string raidTitle, HashSet<ulong> userIds)
         {
             ApiUserReminder apiReminder = new ApiUserReminder()
             {
-                Message = $"{raid.Title}: {message}"
+                Message = $"{raidTitle}: {message}"
             };
-            apiReminder.UserIds = new List<ulong>();
-            HashSet<ulong> userIds = new HashSet<ulong>();
-            foreach(RaidSignUp signUp in raid.SignUps)
-            {
-                if(signUp.LiebUserId.HasValue)
-                {
-                    userIds.Add(signUp.LiebUserId.Value);
-                }
-            }
             apiReminder.UserIds = userIds.ToList();
             return apiReminder;
         }
@@ -248,51 +285,6 @@ namespace Lieb.Data
         }
 
 #endregion ChannelReminder
-
-#region GroupReminder
-        public async Task SendGroupReminder(RaidReminder reminder, string raidTitle)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            HashSet<ulong> groupMembers = context.LiebUsers.Where(u => u.RoleAssignments.Where(r => r.LiebRole.LiebRoleId == reminder.RoleId).Any()).Select(u => u.Id).ToHashSet();
-            if (await SendMessageToGroup(reminder.Message, raidTitle, groupMembers))
-            {
-                reminder.Sent = true;
-                context.Update(reminder);
-                await context.SaveChangesAsync();
-            }
-        }
-
-        public async Task<bool> SendMessageToGroup(string message, string raidTitle, HashSet<ulong> userIds)
-        {
-            try
-            {
-                var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
-
-                ApiUserReminder apiReminder = ConvertGroupReminder(message, raidTitle, userIds);
-
-                var raidItemJson = new StringContent(
-                    JsonSerializer.Serialize(apiReminder),
-                    Encoding.UTF8,
-                    Application.Json);
-
-                var httpResponseMessage = await httpClient.PostAsync("raid/SendUserReminder", raidItemJson);
-
-                return httpResponseMessage.IsSuccessStatusCode;
-            }
-            catch {}
-            return false;
-        }
-
-        public static ApiUserReminder ConvertGroupReminder(string message, string raidTitle, HashSet<ulong> groupIds)
-        {
-            ApiUserReminder apiReminder = new ApiUserReminder()
-            {
-                Message = $"{raidTitle}: {message}"
-            };
-            apiReminder.UserIds = groupIds.ToList();
-            return apiReminder;
-        }
-#endregion GroupReminder
 
         private async Task UpdateDiscordMessages(IEnumerable<ApiRaid.DiscordMessage> messages, Raid raid)
         {
@@ -401,6 +393,18 @@ namespace Lieb.Data
                     Application.Json);
 
                 var httpResponseMessage = await httpClient.PostAsync("raid/RenameUser", messageItemJson);
+
+                httpResponseMessage.EnsureSuccessStatusCode();
+            }
+            catch {}
+        }
+
+        public async Task SendReminderOptOutMessage(ulong userId)
+        {
+            try
+            {
+                var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+                var httpResponseMessage = await httpClient.GetAsync($"raid/SendReminderOptOutMessage/{userId}");
 
                 httpResponseMessage.EnsureSuccessStatusCode();
             }

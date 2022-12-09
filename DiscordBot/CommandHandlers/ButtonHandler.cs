@@ -54,6 +54,16 @@ namespace DiscordBot.CommandHandlers
                     await _httpService.SignOff(signOff);
                     await component.RespondAsync("Signed Off", ephemeral: true);
                 break;
+                case Constants.ComponentIds.OPT_OUT_BUTTON:
+                    if(await _httpService.ReminderOptOut(component.User.Id))
+                    {
+                        await component.RespondAsync("You opted out of the raid reminders.");
+                    }
+                    else
+                    {
+                        await component.RespondAsync("Opting out failed, please try again later or change the setting on the website.");
+                    }
+                    break;
             }
         }
     }

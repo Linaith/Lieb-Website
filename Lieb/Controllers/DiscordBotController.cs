@@ -250,5 +250,12 @@ namespace Lieb.Controllers
             }
             return Ok();
         }
+
+        [HttpGet]
+        [Route("[action]/{userId}")]
+        public async Task<ActionResult> ReminderOptOut(ulong userId)
+        {
+            return Ok(await _userService.ReminderOptOut(userId));
+        }
     }
 }

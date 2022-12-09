@@ -14,29 +14,23 @@
             <th>Hours</th>
             <th>Minutes</th>
             <th>Type</th>
-            @{bool channelReminderExists = _raidReminders.Where(r => r.Type == RaidReminder.ReminderType.Channel).Any();
-            bool groupReminderExists = _raidReminders.Where(r => r.Type == RaidReminder.ReminderType.Group).Any();}
-            @if(channelReminderExists && groupReminderExists)
+            @if(_raidReminders.Where(r => r.Type == RaidReminder.ReminderType.Group).Any())
             {
                 <th>Group</th>
-                <th>Server</th>
-                <th>Channel</th>
-            }
-            else if(channelReminderExists)
-            {
-                <th></th>
-                <th>Server</th>
-                <th>Channel</th>
-            }
-            else if(groupReminderExists)
-            {
-                <th>Group</th>
-                <th></th>
-                <th></th>
+                <th>Signed Up</th>
             }
             else
             {
                 <th></th>
+                <th></th>
+            }
+            @if(_raidReminders.Where(r => r.Type == RaidReminder.ReminderType.Channel).Any())
+            {
+                <th>Server</th>
+                <th>Channel</th>
+            }
+            else 
+            {
                 <th></th>
                 <th></th>
             }
@@ -63,6 +57,14 @@
                         @foreach(LiebRole role in _availableRoles)
                         {
                             <option value="@role.LiebRoleId">@role.RoleName</option>
+                        }
+                    </InputSelect>
+                </td>
+                <td>
+                    <InputSelect @bind-Value="reminder.RoleType" hidden="@groupHidden"> 
+                        @foreach(RaidReminder.RoleReminderType type in Enum.GetValues(typeof(RaidReminder.RoleReminderType)))
+                        {
+                            <option value="@type">@type.ToString()</option>
                         }
                     </InputSelect>
                 </td>

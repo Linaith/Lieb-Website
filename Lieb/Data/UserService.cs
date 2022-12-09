@@ -95,6 +95,7 @@ namespace Lieb.Data
                 context.RoleAssignments.Add(roleAssignment);
                 await context.SaveChangesAsync();
             }
+            await _discordService.SendReminderOptOutMessage(newUser.Id);
         }
 
         public async Task EditUser(LiebUser user)
@@ -342,6 +343,18 @@ namespace Lieb.Data
                     await DeleteUser(user.Id);
                 }
             }
+        }
+
+        public async Task<bool> ReminderOptOut(ulong userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            LiebUser? user = await context.LiebUsers
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+            if(user == null) return false;
+
+            user.ReminderSubscription = false;
+            await context.SaveChangesAsync();
+            return true;
         }
     }
 }

@@ -75,18 +75,22 @@ main {
 }
 
     ::deep button:disabled {
-        background-color: #777777;
-        color: darkgrey;
+        /*background-color: #777777;
+        color: darkgrey;*/
+        background-color: rgb(38,38,38);
+        color: rgb(38,38,38);
     }
 
 ::deep button[type="submit"] {
     color: lightgray;
-    background-color: green;
+    background-color: #355835;
+    border: none;
 }
 
 ::deep button[type="delete"] {
     color: lightgray;
-    background-color: red;
+    background-color: #6e2424;
+    border: none;
 }
 
 .top-row {

@@ -18,6 +18,13 @@ namespace Lieb.Models.GuildWars2.Raid
             Dynamic = 2
         }
 
+        public enum RoleReminderType
+        {
+            All = 0,
+            SignedUp = 1,
+            NotSignedUp = 2
+        }
+
         public int RaidReminderId { get; set; }
 
         [Required]
@@ -40,6 +47,8 @@ namespace Lieb.Models.GuildWars2.Raid
         public ulong DiscordChannelId { get; set; }
 
         public int RoleId {get; set; }
+        
+        public RoleReminderType RoleType {get; set;}
 
         public bool Sent { get; set; } = false;
     }

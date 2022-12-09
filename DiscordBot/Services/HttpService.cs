@@ -242,5 +242,20 @@ namespace DiscordBot.Services
             }
             return new Tuple<bool, string>(true, string.Empty);
         }
+
+        public async Task<bool> ReminderOptOut(ulong userId)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var httpResponseMessage = await httpClient.GetAsync($"DiscordBot/ReminderOptOut/{userId}");
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                using var contentStream =
+                    await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                return await JsonSerializer.DeserializeAsync<bool>(contentStream, _serializerOptions);
+            }
+            return false;
+        }
     }
 }

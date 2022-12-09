@@ -22,6 +22,7 @@ namespace Lieb.Models
         public DateTime? LastSignUpAt { get; set; }
         public int MainGW2Account { get; set; }
         public bool AlwaysSignUpWithMainAccount { get; set; } = false;
+        public bool ReminderSubscription { get; set; } = true;
         public ICollection<GuildWars2Account> GuildWars2Accounts { get; set; } = new List<GuildWars2Account>();
         public ICollection<RoleAssignment> RoleAssignments { get; set; } = new List<RoleAssignment>();
     }

@@ -95,5 +95,12 @@ namespace DiscordBot.Controllers
         {
             await DiscordBot.CommandHandlers.HandlerFunctions.RenameUser(_client, user.userId, user.Name, user.Account, user.ServerIds);
         }
+
+        [HttpGet]
+        [Route("[action]/{userId}")]
+        public async Task SendReminderOptOutMessage(ulong userId)
+        {
+            await ReminderSubscriptionMessage.sendMessage(_client, userId);
+        }
     }
 }

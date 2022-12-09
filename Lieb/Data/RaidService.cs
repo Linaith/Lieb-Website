@@ -519,7 +519,7 @@ namespace Lieb.Data
                         await _discordService.SendChannelReminder(reminder, raid.Title);
                         break;
                     case RaidReminder.ReminderType.Group:
-                        await _discordService.SendGroupReminder(reminder, raid.Title);
+                        await _discordService.SendGroupReminder(reminder, raid);
                         break;
                 }
             }

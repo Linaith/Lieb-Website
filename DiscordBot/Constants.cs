@@ -10,6 +10,7 @@
             public const string BACKUP_BUTTON = "backupButton";
             public const string FLEX_BUTTON = "flexButton";
             public const string SIGN_OFF_BUTTON = "signOffButton";
+            public const string OPT_OUT_BUTTON = "optOutButton";
             
             public const string ROLE_SELECT_DROP_DOWN = "roleSelectDropDown";
             public const string ROLE_SELECT_EXTERNAL_DROP_DOWN = "roleSelectExternalDropDown";

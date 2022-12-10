@@ -267,7 +267,14 @@
         }
 
         _discordServers = await DiscordService.GetServers();
-        _availabeGroups = UserService.GetUserRoles(_user.Id).Where(u => u.Type == RoleType.UserDefinedRole).ToList();
+        if(_user.RoleAssignments.Where(r => r.LiebRole.Level >= Constants.Roles.Admin.PowerLevel).Any())
+        {
+            _availabeGroups = UserService.GetLiebRoles().Where(u => u.Type == RoleType.UserDefinedRole).ToList();
+        }
+        else
+        {
+            _availabeGroups = UserService.GetUserRoles(_user.Id).Where(u => u.Type == RoleType.UserDefinedRole).ToList();
+        }
     }
 
     async Task AddRoleClicked()

@@ -48,6 +48,7 @@ namespace Lieb.Data
                     scope.ServiceProvider
                         .GetRequiredService<RaidService>();
                 await raidService.SendReminders();
+                await raidService.RemoveMaybes();
             }
         }
 

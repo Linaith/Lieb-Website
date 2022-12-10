@@ -590,6 +590,34 @@ namespace Lieb.Data
             }
         }
 
+        public RaidRole CreateRandomSignUpRole(RaidType raidType, int spots = 10)
+        {
+            return new RaidRole()
+                {
+                    Spots = spots,
+                    Name = "Random",
+                    Description = raidType.ToString(),
+                    IsRandomSignUpRole = true
+                };
+        }
+
+        public async Task RemoveMaybes()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            List<Raid> raids = context.Raids.Include(r => r.SignUps).ToList();
+            foreach(Raid raid in raids.Where(r => r.StartTimeUTC < DateTimeOffset.UtcNow.AddMinutes(Constants.REMOVE_MAYBE_MINUTES)
+                                                && r.SignUps.Where(s => s.SignUpType == SignUpType.Maybe).Any()))
+            {
+                foreach(RaidSignUp signup in raid.SignUps)
+                {
+                    if(signup.SignUpType == SignUpType.Maybe && signup.LiebUserId.HasValue)
+                    {
+                        await SignOff(raid.RaidId, signup.LiebUserId.Value);
+                    }
+                }
+            }
+        }
+
         public async Task CleanUpRaids()
         {
             using var context = _contextFactory.CreateDbContext();
@@ -608,17 +636,6 @@ namespace Lieb.Data
                 context.DiscordRaidMessages.RemoveRange(raid.DiscordRaidMessages);
                 await context.SaveChangesAsync();
             }
-        }
-
-        public RaidRole CreateRandomSignUpRole(RaidType raidType, int spots = 10)
-        {
-            return new RaidRole()
-                {
-                    Spots = spots,
-                    Name = "Random",
-                    Description = raidType.ToString(),
-                    IsRandomSignUpRole = true
-                };
         }
     }
 }

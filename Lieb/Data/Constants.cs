@@ -6,6 +6,7 @@
         public const string ClaimType = "Role";
         public const string GW2_ACCOUNT_REGEX = "^[a-zA-z ]{3,27}\\.[0-9]{4}$";
         public static readonly int RaidEditPowerLevel = Roles.Moderator.PowerLevel;
+        public const int REMOVE_MAYBE_MINUTES = 15;
 
         public static class Roles
         {

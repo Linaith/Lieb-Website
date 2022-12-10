@@ -36,9 +36,12 @@ namespace DiscordBot.Messages
             var builder = new ComponentBuilder()
                 .WithButton("SignUp", $"{Constants.ComponentIds.SIGN_UP_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Success)
                 .WithButton("Maybe", $"{Constants.ComponentIds.MAYBE_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Secondary)
-                .WithButton("Backup", $"{Constants.ComponentIds.BACKUP_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Secondary)
-                .WithButton("Flex", $"{Constants.ComponentIds.FLEX_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Secondary)
-                .WithButton("SignOff", $"{Constants.ComponentIds.SIGN_OFF_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Danger);
+                .WithButton("Backup", $"{Constants.ComponentIds.BACKUP_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Secondary);
+                if(raid.AllowFlexRole)
+                {
+                    builder.WithButton("Flex", $"{Constants.ComponentIds.FLEX_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Secondary);
+                }
+                builder.WithButton("SignOff", $"{Constants.ComponentIds.SIGN_OFF_BUTTON}-{raid.RaidId.ToString()}", ButtonStyle.Danger);
 
             MessageComponent components = builder.Build();
             Embed raidMessage = CreateRaidMessage(raid);

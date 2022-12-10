@@ -73,14 +73,27 @@ namespace Lieb.Controllers
             Raid raid = _raidService.GetRaid(raidId);
 
             List<ApiRole> apiRoles = new List<ApiRole>();
-            foreach(RaidRole role in raid.Roles)
+            if(raid.RaidType == RaidType.Planned)
             {
+                foreach(RaidRole role in raid.Roles)
+                {
+                    apiRoles.Add(new ApiRole(){
+                        Name = role.Name,
+                        Description = role.Description,
+                        IsSignUpAllowed = _raidService.IsRoleSignUpAllowed(raidId, userId, role.RaidRoleId, SignUpType.SignedUp, false),
+                        roleId = role.RaidRoleId
+                    });
+                }
+            }
+            else
+            {
+                RaidRole role = raid.Roles.First(r => r.IsRandomSignUpRole);
                 apiRoles.Add(new ApiRole(){
-                    Name = role.Name,
-                    Description = role.Description,
-                    IsSignUpAllowed = _raidService.IsRoleSignUpAllowed(userId, role.RaidRoleId, SignUpType.SignedUp),
-                    roleId = role.RaidRoleId
-                });
+                        Name = role.Name,
+                        Description = role.Description,
+                        IsSignUpAllowed = _raidService.IsRoleSignUpAllowed(raidId, userId, role.RaidRoleId, SignUpType.SignedUp, false),
+                        roleId = role.RaidRoleId
+                    });
             }
             return apiRoles;
         }

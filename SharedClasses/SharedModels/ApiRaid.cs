@@ -15,6 +15,8 @@ namespace SharedClasses.SharedModels
 
         public int RaidId { get; set; }
 
+        public bool AllowFlexRole {get; set;}
+
         public DateTimeOffset StartTimeUTC { get; set; } = DateTime.Now;
 
         public DateTimeOffset EndTimeUTC { get; set; }

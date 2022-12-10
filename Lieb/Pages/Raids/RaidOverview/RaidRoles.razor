@@ -36,7 +36,10 @@
         }
         @foreach (ExpandableRole role in _expandableRoles.OrderBy(r => r.Role.RaidRoleId))
         {
-            <tr>
+            //leere random Rolle verstecken, wenn sie nicht dem angemeldeten Benutzer gehört
+            bool roleHidden = _raid.RaidType != RaidType.Planned && !role.Role.IsRandomSignUpRole 
+                    && !_raid.SignUps.Where(s => s.RaidRoleId == role.Role.RaidRoleId && (s.SignUpType != SignUpType.SignedOff || s.LiebUserId == _liebUserId)).Any();
+            <tr hidden="@roleHidden">
                 @{
                 <td class="tdRole" @onclick="() => ToggleRow(role)">
                     @if(@role.IsRowExpanded)
@@ -135,7 +138,7 @@
     {
         if(_raid.SignUps.Where(s => s.LiebUserId == _liebUserId).Any() && signUpType != SignUpType.Flex)
         {
-            await RaidService.ChangeSignUpType(_raid.RaidId, _liebUserId, role.RaidRoleId, signUpType);
+            await RaidService.ChangeSignUpType(_raid.RaidId, _liebUserId, role.RaidRoleId, signUpType, _raid.RaidType);
         }
         else
         {

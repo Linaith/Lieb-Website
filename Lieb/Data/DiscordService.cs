@@ -314,7 +314,8 @@ namespace Lieb.Data
                 VoiceChat = raid.VoiceChat,
                 StartTimeUTC = raid.StartTimeUTC,
                 EndTimeUTC = raid.EndTimeUTC,
-                RaidId = raid.RaidId
+                RaidId = raid.RaidId,
+                AllowFlexRole = raid.RaidType == RaidType.Planned
             };
             apiRaid.DisocrdMessages = ConvertMessages(raid.DiscordRaidMessages);
             apiRaid.Roles = new List<ApiRaid.Role>();
@@ -353,7 +354,10 @@ namespace Lieb.Data
                         }
                     }
                 }
-                apiRaid.Roles.Add(apiRole);
+                if(raid.RaidType == RaidType.Planned || role.IsRandomSignUpRole || apiRole.Users.Count > 0)
+                {
+                    apiRaid.Roles.Add(apiRole);
+                }
             }
             return apiRaid;
         }

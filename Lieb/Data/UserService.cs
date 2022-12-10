@@ -55,6 +55,7 @@ namespace Lieb.Data
                 return context.LiebUsers
                 .Include(u => u.GuildWars2Accounts)
                 .ThenInclude(a => a.EquippedBuilds)
+                .ThenInclude(b => b.GuildWars2Build)
                 .FirstOrDefault(u => u.Id == userId);
             }
             else
@@ -281,7 +282,7 @@ namespace Lieb.Data
             }
             else
             {
-                return user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Count > 0).ToList();
+                return user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Where(b => b.GuildWars2Build.UseInRandomRaid).Count() > 0).ToList();
             }
         }
 

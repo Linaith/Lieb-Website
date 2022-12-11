@@ -72,7 +72,23 @@ namespace DiscordBot.Controllers
                 var user = await _client.GetUserAsync(userId);
                 if(user != null)
                 {
-                    await user.SendMessageAsync(reminder.Message);
+                    try
+                    {
+                        await user.SendMessageAsync(reminder.Message);
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            var channel = _client.GetGuild(666953424734257182).GetChannel(744266160664477786);
+                            if (channel != null && channel is IMessageChannel)
+                            {
+                                IMessageChannel messageChannel = channel as IMessageChannel;
+                                await messageChannel.SendMessageAsync(reminder.Message);
+                            }
+                        }
+                        catch {}
+                    }
                 }
             }
         }

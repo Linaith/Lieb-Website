@@ -21,7 +21,7 @@
                     @{
                         List<DiscordChannel> channels = _discordServers.FirstOrDefault(s => s.Id == _serverId, new DiscordServer()).Channels;
                         <option value="0">No Server Logs</option>
-                        @foreach(DiscordChannel item in channels)
+                        @foreach(DiscordChannel item in channels.OrderBy(c => c.Name))
                         {
                             <option value="@item.Id">@item.Name</option>
                         }

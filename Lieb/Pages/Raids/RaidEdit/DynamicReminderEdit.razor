@@ -81,7 +81,8 @@
                         @if(reminder.DiscordServerId > 0)
                         {
                             List<DiscordChannel> channels = _discordServers.Where(s => s.Id == reminder.DiscordServerId).FirstOrDefault(new DiscordServer()).Channels;
-                            @foreach(DiscordChannel item in channels)
+                            <option value="0">Please choose a channel.</option>
+                            @foreach(DiscordChannel item in channels.OrderBy(c => c.Name))
                             {
                                 <option value="@item.Id">@item.Name</option>
                             }

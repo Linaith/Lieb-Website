@@ -66,8 +66,22 @@
         <tr>
             @if (_account != null)
             {
-                <td class="checkboxfield"><input type="checkbox" checked="@isEquipped" disabled="@(!_allowEdit)" @onchange="args => EquippedStatusChanged(build.GuildWars2BuildId, args)" /></td>
-                <td class="checkboxfield"><input type="checkbox" checked="@canTank" disabled="@(!isEquipped || !_allowEdit)" @onchange="args => TankingStatusChanged(build.GuildWars2BuildId, args)" /></td>
+                if(_allowEdit)
+                {
+                    <td class="checkboxfield"><input type="checkbox" checked="@isEquipped" disabled="@(!_allowEdit)" @onchange="args => EquippedStatusChanged(build.GuildWars2BuildId, args)" /></td>
+                    <td class="checkboxfield"><input type="checkbox" checked="@canTank" disabled="@(!isEquipped || !_allowEdit)" @onchange="args => TankingStatusChanged(build.GuildWars2BuildId, args)" /></td>
+                }
+                else
+                {
+                    <td class="checkboxfield">
+                        <input type="checkbox" checked="@isEquipped" id="@build.GuildWars2BuildId-Equipped" class="css-checkbox dark-check-green" disabled="@(!_allowEdit)"/>
+                        <label for="@build.GuildWars2BuildId-Equipped" class="css-label dark-check-green"></label>
+                    </td>
+                    <td class="checkboxfield">
+                        <input type="checkbox" checked="@canTank" id="@build.GuildWars2BuildId-Tank" class="css-checkbox dark-check-green" disabled="@(!isEquipped || !_allowEdit)"/>
+                        <label for="@build.GuildWars2BuildId-Tank" class="css-label dark-check-green"></label>
+                    </td>
+                }
             }
             <AuthorizeView Policy="@Constants.Roles.Admin.Name">
                 <Authorized>
@@ -84,15 +98,42 @@
             </AuthorizeView>
             <td>@build.Class.ToString()</td>
             <td>@build.EliteSpecialization.ToString()</td>
-            <td class="checkboxfield"><input type="checkbox" checked="@(build.Might)" disabled="disabled" /></td>
-            <td class="checkboxfield"><input type="checkbox" checked="@(build.Quickness)" disabled="disabled" /></td>
-            <td class="checkboxfield"><input type="checkbox" checked="@(build.Alacrity)" disabled="disabled" /></td>
-            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Heal)" disabled="disabled" /></td>
-            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Power)" disabled="disabled" /></td>
-            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Condition)" disabled="disabled" /></td>
-            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Hybrid)" disabled="disabled" /></td>
-            <td class="checkboxfield"><input type="checkbox" checked="@(build.DamageType == DamageType.Other)" disabled="disabled" /></td>
-            <td class="checkboxfield"><input type="checkbox" checked="@(build.UseInRandomRaid)" disabled="disabled" /></td>
+            <td class="checkboxfield">
+                <input type="checkbox" checked="@(build.Might)" id="@build.GuildWars2BuildId-Might" class="css-checkbox dark-check-green" disabled="disabled" />
+                <label for="@build.GuildWars2BuildId-Might" class="css-label dark-check-green"></label>
+            </td>
+            <td class="checkboxfield">
+                <input type="checkbox" checked="@(build.Quickness)" id="@build.GuildWars2BuildId-Quickness" class="css-checkbox dark-check-green" disabled="disabled" />
+                <label for="@build.GuildWars2BuildId-Quickness" class="css-label dark-check-green"></label>
+            </td>
+            <td class="checkboxfield">
+                <input type="checkbox" checked="@(build.Alacrity)" id="@build.GuildWars2BuildId-Alacrity" class="css-checkbox dark-check-green" disabled="disabled" />
+                <label for="@build.GuildWars2BuildId-Alacrity" class="css-label dark-check-green"></label>
+            </td>
+            <td class="checkboxfield">
+                <input type="checkbox" checked="@(build.DamageType == DamageType.Heal)" id="@build.GuildWars2BuildId-Heal" class="css-checkbox dark-check-green" disabled="disabled" />
+                <label for="@build.GuildWars2BuildId-Heal" class="css-label dark-check-green"></label>
+            </td>
+            <td class="checkboxfield">
+                <input type="checkbox" checked="@(build.DamageType == DamageType.Power)" id="@build.GuildWars2BuildId-Power" class="css-checkbox dark-check-green" disabled="disabled" />
+                <label for="@build.GuildWars2BuildId-Power" class="css-label dark-check-green"></label>
+            </td>
+            <td class="checkboxfield">
+                <input type="checkbox" checked="@(build.DamageType == DamageType.Condition)" id="@build.GuildWars2BuildId-Condition" class="css-checkbox dark-check-green" disabled="disabled" />
+                <label for="@build.GuildWars2BuildId-Condition" class="css-label dark-check-green"></label>
+            </td>
+            <td class="checkboxfield">
+                <input type="checkbox" checked="@(build.DamageType == DamageType.Hybrid)" id="@build.GuildWars2BuildId-Hybrid" class="css-checkbox dark-check-green" disabled="disabled" />
+                <label for="@build.GuildWars2BuildId-Hybrid" class="css-label dark-check-green"></label>
+            </td>
+            <td class="checkboxfield">
+                <input type="checkbox" checked="@(build.DamageType == DamageType.Other)" id="@build.GuildWars2BuildId-Other" class="css-checkbox dark-check-green" disabled="disabled" />
+                <label for="@build.GuildWars2BuildId-Other" class="css-label dark-check-green"></label>
+            </td>
+            <td class="checkboxfield">
+                <input type="checkbox" checked="@(build.UseInRandomRaid)" id="@build.GuildWars2BuildId-UseInRandomRaid" class="css-checkbox dark-check-green" disabled="disabled" />
+                <label for="@build.GuildWars2BuildId-UseInRandomRaid" class="css-label dark-check-green"></label>
+            </td>
             @if(string.IsNullOrEmpty(build.SourceLink))
             {
                 <td>@build.Source</td>

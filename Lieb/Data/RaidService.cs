@@ -65,6 +65,7 @@ namespace Lieb.Data
                     context.RaidRoles.RemoveRange(rolesToDelete);
                     context.RaidReminders.RemoveRange(remindersToDelete);
                     context.DiscordRaidMessages.RemoveRange(messagesToDelete);
+                    await _discordService.DeleteRaidMessages(messagesToDelete);
 
                     //move users back to "Random" role
                     if (raid.RaidType != RaidType.Planned)

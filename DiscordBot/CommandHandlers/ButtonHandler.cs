@@ -25,17 +25,17 @@ namespace DiscordBot.CommandHandlers
             switch(ids[0])
             {
                 case Constants.ComponentIds.SIGN_UP_BUTTON:
+                    await SignUpClicked(component, false, SharedConstants.SIGNED_UP);
+                    break;
                 case Constants.ComponentIds.MAYBE_BUTTON:
-                    RaidMessage.ButtonParameters signUpParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
-                    await _handlerFunctions.SelectRole(component, signUpParameters.RaidId, signUpParameters.ButtonType, false, component.User.Id, 0);
+                    await SignUpClicked(component, false, SharedConstants.MAYBE);
                     break;
                 case Constants.ComponentIds.BACKUP_BUTTON:
-                    RaidMessage.ButtonParameters backupParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
-                    await _handlerFunctions.SelectRole(component, backupParameters.RaidId, backupParameters.ButtonType, true, component.User.Id, 0);
+                    await SignUpClicked(component, true, SharedConstants.BACKUP);
                     break;
                 case Constants.ComponentIds.FLEX_BUTTON:
                     RaidMessage.ButtonParameters flexParameters = RaidMessage.ParseButtonId(component.Data.CustomId);
-                    if(await _httpService.IsUserSignedUp(flexParameters.RaidId, component.User.Id))
+                    if(!string.IsNullOrEmpty(await _httpService.IsUserSignedUp(flexParameters.RaidId, component.User.Id)))
                     {
                         await _handlerFunctions.SelectRole(component, flexParameters.RaidId, flexParameters.ButtonType, true, component.User.Id, 0);
                     }
@@ -64,6 +64,37 @@ namespace DiscordBot.CommandHandlers
                         await component.RespondAsync("Opting out failed, please try again later or change the setting on the website.");
                     }
                     break;
+            }
+        }
+
+        public async Task SignUpClicked(SocketMessageComponent component, bool allRoles, string signUpType)
+        {
+            RaidMessage.ButtonParameters parameters = RaidMessage.ParseButtonId(component.Data.CustomId);
+            string currentSignUp = await _httpService.IsUserSignedUp(parameters.RaidId, component.User.Id);
+            if(string.IsNullOrEmpty(currentSignUp) || currentSignUp == signUpType)
+            {
+                await _handlerFunctions.SelectRole(component, parameters.RaidId, parameters.ButtonType, allRoles, component.User.Id, 0);
+            }
+            else
+            {
+                ApiSignUp signUp = new ApiSignUp()
+                {
+                    raidId = parameters.RaidId,
+                    userId = component.User.Id
+                };
+                switch(signUpType)
+                {
+                    case SharedConstants.SIGNED_UP:
+                        await _httpService.ChangeToSignUp(signUp);
+                        break;
+                    case SharedConstants.MAYBE:
+                        await _httpService.ChangeToMaybe(signUp);
+                        break;
+                    case SharedConstants.BACKUP:
+                        await _httpService.ChangeToBackup(signUp);
+                        break;
+                }
+                await component.RespondAsync("Sign up type changed.", ephemeral: true);
             }
         }
     }

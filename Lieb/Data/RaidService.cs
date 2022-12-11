@@ -114,24 +114,41 @@ namespace Lieb.Data
             .Include(r => r.SignUps)
             .FirstOrDefault(r => r.RaidId == raidId);
             if(raid == null) return false;
-            if(raid.RaidType != RaidType.Planned)
+
+            LiebUser user = context.LiebUsers.FirstOrDefault(l => l.Id == liebUserId);
+            if(user == null) return false;
+
+            bool result = false;
+            if(raid.RaidType == RaidType.Planned)
             {
-                return await SignUpRandom(raidId, liebUserId, guildWars2AccountId, signUpType, signedUpByUserId);
+                result = await SignUpPlanned(raidId, liebUserId, guildWars2AccountId, plannedRoleId, signUpType, user.Name, signedUpByUserId);
+            }
+            else
+            {
+                result = await SignUpRandom(raidId, liebUserId, guildWars2AccountId, signUpType, user.Name, signedUpByUserId);
             }
 
+            user.LastSignUpAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+            await _discordService.PostRaidMessage(raidId);
+            return result;
+        }
+
+        private async Task<bool> SignUpPlanned(int raidId, ulong liebUserId, int guildWars2AccountId, int plannedRoleId, SignUpType signUpType, string userName, ulong signedUpByUserId = 0)
+        {
             if (!IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true))
             {
                 return false;
             }
 
-            LiebUser user = context.LiebUsers.FirstOrDefault(l => l.Id == liebUserId);
+            using var context = _contextFactory.CreateDbContext();
 
-            if(user == null) return false;
 
             List<RaidSignUp> signUps = context.RaidSignUps.Where(r => r.RaidId == raidId && r.LiebUserId == liebUserId).ToList();
             if (signUpType != SignUpType.Flex && signUps.Where(r => r.SignUpType != SignUpType.Flex).Any())
             {
-                await ChangeSignUpType(raidId, liebUserId, plannedRoleId, signUpType, raid.RaidType, false);
+                await ChangeSignUpType(raidId, liebUserId, signUpType, false);
+                await ChangeRole(raidId, liebUserId, plannedRoleId, signUpType, RaidType.Planned, false);
                 await ChangeAccount(raidId, liebUserId, guildWars2AccountId, false);
             }
             else if (!signUps.Where(r => r.RaidRoleId == plannedRoleId).Any())
@@ -139,19 +156,16 @@ namespace Lieb.Data
                 RaidSignUp signUp = new RaidSignUp(raidId, liebUserId, guildWars2AccountId, plannedRoleId, signUpType);
                 context.RaidSignUps.Add(signUp);
                 await context.SaveChangesAsync();
-                await LogSignUp(signUp, user.Name, signedUpByUserId);
+                await LogSignUp(signUp, userName, signedUpByUserId);
             }
             else
             {
                 return false;
             }
-            user.LastSignUpAt = DateTime.UtcNow;
-            await context.SaveChangesAsync();
-            await _discordService.PostRaidMessage(raidId);
             return true;
         }
 
-        public async Task<bool> SignUpRandom(int raidId, ulong liebUserId, int guildWars2AccountId, SignUpType signUpType, ulong signedUpByUserId = 0)
+        private async Task<bool> SignUpRandom(int raidId, ulong liebUserId, int guildWars2AccountId, SignUpType signUpType, string userName, ulong signedUpByUserId = 0)
         {
             using var context = _contextFactory.CreateDbContext();
             if(signUpType == SignUpType.Flex) return false;
@@ -184,8 +198,7 @@ namespace Lieb.Data
                     context.RaidSignUps.Add(signUp);
                 }
                 await context.SaveChangesAsync();
-                await LogSignUp(signUp, context.LiebUsers.FirstOrDefault(u => u.Id == liebUserId)?.Name, signedUpByUserId);
-                await _discordService.PostRaidMessage(raidId);
+                await LogSignUp(signUp, userName, signedUpByUserId);
                 return true;
             }
             return false;
@@ -258,9 +271,9 @@ namespace Lieb.Data
             }
         }
 
-        public async Task ChangeSignUpType(int raidId, ulong liebUserId, int plannedRoleId, SignUpType signUpType, RaidType raidType, bool postChanges = true)
+        public async Task ChangeRole(int raidId, ulong liebUserId, int plannedRoleId, SignUpType signUpType, RaidType raidType, bool postChanges = true)
         {
-            if (!IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true))
+            if (raidType != RaidType.Planned || !IsRoleSignUpAllowed(raidId, liebUserId, plannedRoleId, signUpType, true))
             {
                 return;
             }
@@ -281,21 +294,34 @@ namespace Lieb.Data
             //change to new role
             if (signUp != null)
             {
-                if(raidType == RaidType.Planned)
-                {
-                    signUp.RaidRoleId = plannedRoleId;
-                }
-                signUp.SignUpType = signUpType;
-                if(signUp.IsExternalUser)
-                {
-                    await LogSignUp(signUp, signUp.ExternalUserName);
-                }
-                else
+                signUp.RaidRoleId = plannedRoleId;
+                if(!signUp.IsExternalUser)
                 {
                     await LogSignUp(signUp, signUp.LiebUser.Name);
                 }
             }
             context.SaveChanges();
+            if(postChanges)
+            {
+                await _discordService.PostRaidMessage(raidId);
+            }
+        }
+
+        public async Task ChangeSignUpType(int raidId, ulong liebUserId, SignUpType signUpType, bool postChanges = true)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            RaidSignUp? signUp = context.RaidSignUps
+                                        .Include(s => s.LiebUser)
+                                        .FirstOrDefault(x => x.RaidId == raidId && x.LiebUserId == liebUserId 
+                                                        && x.SignUpType != SignUpType.Flex);
+            
+            if (signUp != null && IsRoleSignUpAllowed(raidId, liebUserId, signUp.RaidRoleId, signUpType, true))
+            {
+                signUp.SignUpType = signUpType;
+                await LogSignUp(signUp, signUp.LiebUser.Name);
+                context.SaveChanges();
+            }
             if(postChanges)
             {
                 await _discordService.PostRaidMessage(raidId);
@@ -376,7 +402,7 @@ namespace Lieb.Data
                     {
                         if (moveFlexUser)
                         {
-                            await ChangeSignUpType(raid.RaidId, userId, signUp.RaidRoleId, SignUpType.SignedUp, raid.RaidType, false);
+                            await ChangeRole(raid.RaidId, userId, signUp.RaidRoleId, SignUpType.SignedUp, raid.RaidType, false);
                         }
                         return true;
                     }

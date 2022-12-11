@@ -49,10 +49,22 @@ namespace Lieb.Controllers
 
         [HttpGet]
         [Route("[action]/{raidId}/{userId}")]
-        public bool IsUserSignedUp(int raidId, ulong userId)
+        public string IsUserSignedUp(int raidId, ulong userId)
         {
             Raid raid = _raidService.GetRaid(raidId);
-            return raid.SignUps.Where(s => s.LiebUserId == userId && s.SignUpType != SignUpType.Flex && s.SignUpType != SignUpType.SignedOff).Any();
+            RaidSignUp signUp = raid.SignUps.FirstOrDefault(s => s.LiebUserId == userId && s.SignUpType != SignUpType.Flex);
+            if(signUp == null) return string.Empty;
+
+            switch(signUp.SignUpType)
+            {
+                case SignUpType.SignedUp:
+                    return SharedConstants.SIGNED_UP;
+                case SignUpType.Maybe:
+                    return SharedConstants.MAYBE;
+                case SignUpType.Backup:
+                    return SharedConstants.BACKUP;
+            }
+            return string.Empty;
         }
 
         [HttpGet]
@@ -170,6 +182,30 @@ namespace Lieb.Controllers
             {
                 await _raidService.SignOffExternalUser(signUp.raidId, signUp.userName, signUp.signedUpByUserId);
             }
+            return true;
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<bool> ChangeSignUpTypeToSignUp(ApiSignUp signUp)
+        {
+            await _raidService.ChangeSignUpType(signUp.raidId, signUp.userId, SignUpType.SignedUp,  true);
+            return true;
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<bool> ChangeSignUpTypeToMaybe(ApiSignUp signUp)
+        {
+            await _raidService.ChangeSignUpType(signUp.raidId, signUp.userId, SignUpType.Maybe,  true);
+            return true;
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<bool> ChangeSignUpTypeToBackup(ApiSignUp signUp)
+        {
+            await _raidService.ChangeSignUpType(signUp.raidId, signUp.userId, SignUpType.Backup,  true);
             return true;
         }
 

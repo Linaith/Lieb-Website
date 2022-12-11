@@ -67,7 +67,7 @@ namespace DiscordBot.Services
             return new Tuple<bool, string>(true, string.Empty);
         }
 
-        public async Task<bool> IsUserSignedUp(int raidId, ulong userId)
+        public async Task<string> IsUserSignedUp(int raidId, ulong userId)
         {
             var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
 
@@ -75,12 +75,9 @@ namespace DiscordBot.Services
 
             if (httpResponseMessage.IsSuccessStatusCode)
             {
-                using var contentStream =
-                    await httpResponseMessage.Content.ReadAsStreamAsync();
-
-                return await JsonSerializer.DeserializeAsync<bool>(contentStream, _serializerOptions);
+                return await httpResponseMessage.Content.ReadAsStringAsync();
             }
-            return false;
+            return string.Empty;
         }
 
         public async Task<List<ApiRole>> GetRoles(int raidId, ulong userId)
@@ -122,6 +119,21 @@ namespace DiscordBot.Services
         public async Task SignOff(ApiSignUp signUp)
         {
             await SendSignUp(signUp, "DiscordBot/SignOff");
+        }
+
+        public async Task<bool> ChangeToSignUp(ApiSignUp signUp)
+        {
+            return await SendSignUp(signUp, "DiscordBot/ChangeSignUpTypeToSignUp");
+        }
+
+        public async Task<bool> ChangeToMaybe(ApiSignUp signUp)
+        {
+            return await SendSignUp(signUp, "DiscordBot/ChangeSignUpTypeToMaybe");
+        }
+
+        public async Task<bool> ChangeToBackup(ApiSignUp signUp)
+        {
+            return await SendSignUp(signUp, "DiscordBot/ChangeSignUpTypeToBackup");
         }
 
         private async Task<bool> SendSignUp(ApiSignUp signUp, string requestUri)

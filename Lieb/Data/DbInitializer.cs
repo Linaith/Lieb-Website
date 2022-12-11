@@ -151,7 +151,8 @@ namespace Lieb.Data
                 Roles = new[] { new RaidRole(){
                         Description = "WupWup",
                         Name = "Ups",
-                        Spots = 10
+                        Spots = 10,
+                        IsRandomSignUpRole = true
                     } 
                 }
             };

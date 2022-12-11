@@ -138,7 +138,11 @@
     {
         if(_raid.SignUps.Where(s => s.LiebUserId == _liebUserId).Any() && signUpType != SignUpType.Flex)
         {
-            await RaidService.ChangeSignUpType(_raid.RaidId, _liebUserId, role.RaidRoleId, signUpType, _raid.RaidType);
+            if(_raid.RaidType == RaidType.Planned)
+            {
+                await RaidService.ChangeRole(_raid.RaidId, _liebUserId, role.RaidRoleId, signUpType, _raid.RaidType, false);
+            }
+            await RaidService.ChangeSignUpType(_raid.RaidId, _liebUserId, signUpType);
         }
         else
         {

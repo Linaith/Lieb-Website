@@ -53,7 +53,6 @@ input[type=checkbox].css-checkbox + label.css-label {
     background-size: 17px;
     font-size:17px;
     vertical-align:middle;
-    cursor:pointer;
 }
 
 input[type=checkbox].css-checkbox:checked + label.css-label {

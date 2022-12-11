@@ -199,8 +199,8 @@ namespace Lieb.Data
         {
             List<GuildWars2Build> healBuilds = healer.EquippedBuilds.Where(b => b.GuildWars2Build.DamageType == DamageType.Heal && (b.GuildWars2Build.Alacrity || b.GuildWars2Build.Quickness) && b.GuildWars2Build.UseInRandomRaid).Select(b => b.GuildWars2Build).ToList();
             List<GuildWars2Build> boonBuilds = boonDps.EquippedBuilds.Where(b => b.GuildWars2Build.DamageType != DamageType.Heal && (b.GuildWars2Build.Alacrity || b.GuildWars2Build.Quickness) && b.GuildWars2Build.UseInRandomRaid).Select(b => b.GuildWars2Build).ToList();
-            healBuilds.OrderBy(u => _random.Next()).ToList();
-            boonBuilds.OrderBy(u => _random.Next()).ToList();
+            healBuilds = healBuilds.OrderBy(u => _random.Next()).ToList();
+            boonBuilds = boonBuilds.OrderBy(u => _random.Next()).ToList();
 
             foreach(GuildWars2Build healBuild in healBuilds)
             {

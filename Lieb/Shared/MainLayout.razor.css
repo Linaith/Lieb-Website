@@ -20,6 +20,7 @@ main {
 
 ::deep .nav-link {
     color: lightskyblue;
+    width: fit-content;
 }
 
 ::deep input {

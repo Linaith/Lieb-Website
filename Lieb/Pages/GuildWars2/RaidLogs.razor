@@ -34,7 +34,7 @@
 @foreach(string logFolder in _availabeLogs)
 {
     string path = $"{LOGS}/{_selectedLogFolder}/{logFolder}/index.html";
-    <NavLink class="nav-link" href="@path" target="blank" style="width:5px;"> @logFolder </NavLink>
+    <NavLink class="nav-link" href="@path" target="blank"> @logFolder </NavLink>
 }
 
 

@@ -26,7 +26,11 @@
     </select>
     <label style="margin-left: 10px; margin-right: 4px;">Alacrity:</label><input type="checkbox" checked="@_filterAlac" @onchange="args => AlacStatusChanged(args)" />
     <label style="margin-left: 10px; margin-right: 4px;">Quickness:</label><input type="checkbox" checked="@_filterQuick" @onchange="args => QuickStatusChanged(args)" />
-    <label style="margin-left: 10px; margin-right: 4px;">Might:</label><input type="checkbox" checked="@_filterMight" @onchange="args => MightStatusChanged(args)" />      
+    <label style="margin-left: 10px; margin-right: 4px;">Might:</label><input type="checkbox" checked="@_filterMight" @onchange="args => MightStatusChanged(args)" />   
+    @if (_account != null)
+    {
+        <label style="margin-left: 10px; margin-right: 4px;">Equipped:</label><input type="checkbox" checked="@_filterEquipped" @onchange="args => EquippedStatusChanged(args)" />   
+    }   
 </label>
 <table  class="roletable">
     <tr>
@@ -161,6 +165,7 @@
     private bool _filterAlac = false;
     private bool _filterQuick = false;
     private bool _filterMight = false;
+    private bool _filterEquipped = false;
     private DamageType? _filterDamageType;
 
     protected override async Task OnInitializedAsync()
@@ -233,6 +238,12 @@
         ApplyFilter();
     }
 
+    private void EquippedStatusChanged(ChangeEventArgs args)
+    {
+        _filterEquipped = bool.Parse(args.Value.ToString());
+        ApplyFilter();
+    }
+
     private void ApplyFilter()
     {
         _buildsToShow = _builds;
@@ -255,6 +266,10 @@
         if(_filterDamageType != null)
         {
             _buildsToShow = _buildsToShow.Where(b => b.DamageType == _filterDamageType).ToList();
+        }
+        if(_filterEquipped && _account != null)
+        {
+            _buildsToShow = _buildsToShow.Where(b => _account.EquippedBuilds.Where(e => e.GuildWars2BuildId == b.GuildWars2BuildId).Any()).ToList();
         }
     }
 }

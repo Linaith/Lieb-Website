@@ -40,7 +40,7 @@ namespace Lieb.Controllers
         [Route("[action]/{raidId}/{userId}/{ignoreRole}")]
         public ActionResult IsSignUpAllowed(int raidId, ulong userId, bool ignoreRole)
         {
-            if(!_raidService.IsRaidSignUpAllowed(userId, raidId, out string errorMessage, ignoreRole))
+            if(!_raidService.IsRaidSignUpAllowed(userId, raidId, out string errorMessage, ignoreRole, true))
             {
                 return Problem(errorMessage);
             }

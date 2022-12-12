@@ -52,7 +52,7 @@
         <table>
             <tr>
                 <th>Main Account</th>
-                <th>Edit</th>
+                <th style="text-align: center;">Edit</th>
             </tr>
             <InputRadioGroup @bind-Value="_user.MainGW2Account">
                 @foreach(GuildWars2Account account in _user.GuildWars2Accounts)
@@ -64,7 +64,7 @@
                         <td>
                         <div class="nav-item px-3">
                             @{string navLink = $"gw2accountedit/{@account.GuildWars2AccountId}";}
-                            <NavLink class="nav-link" href="@navLink">Edit</NavLink>
+                            <NavLink class="nav-link" href="@navLink">Edit Account and Builds</NavLink>
                         </div>
                         </td>
                     </tr>

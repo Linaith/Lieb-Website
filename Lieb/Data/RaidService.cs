@@ -439,7 +439,7 @@ namespace Lieb.Data
             return false;
         }
 
-        public bool IsRaidSignUpAllowed(ulong liebUserId, int raidId, out string errorMessage, bool ignoreRole = false)
+        public bool IsRaidSignUpAllowed(ulong liebUserId, int raidId, out string errorMessage, bool ignoreRole = false, bool discordErrorMessage = false)
         {
             errorMessage = string.Empty;
             using var context = _contextFactory.CreateDbContext();
@@ -473,7 +473,10 @@ namespace Lieb.Data
 
             if (raid.RaidType != RaidType.Planned && !user.GuildWars2Accounts.Where(a => a.EquippedBuilds.Where(b => b.GuildWars2Build.UseInRandomRaid).Count() > 0).Any())
             {
-                errorMessage = "No equipped Guild Wars 2 build found.";
+                if(discordErrorMessage)
+                    errorMessage = "No equipped Guild Wars 2 build found. Please add your builds at https://lieb.games";
+                else
+                    errorMessage = "No equipped Guild Wars 2 build found.";
                 return false;
             }
 

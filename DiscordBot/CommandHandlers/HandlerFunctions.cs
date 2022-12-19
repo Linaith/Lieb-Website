@@ -64,13 +64,22 @@ namespace DiscordBot.CommandHandlers
                     if(guild != null)
                     {
                         SocketGuildUser user = guild.GetUser(userId);
+                        if(user == null)
+                        {
+                            await guild.DownloadUsersAsync();
+                            user = guild.GetUser(userId);
+                        }
                         if(user != null)
                         {
                             await user.ModifyAsync(p => p.Nickname = nickname);
                         }
                     }
                 }
-                catch {}
+                catch(Exception e) 
+                {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
+                }
             }
         }
 

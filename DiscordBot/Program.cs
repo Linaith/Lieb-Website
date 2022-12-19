@@ -18,12 +18,16 @@ namespace DiscordBot
 
         public async Task MainAsync(string[] args)
         {
-            var dicordConfig = new DiscordSocketConfig();
+            var discordConfig = new DiscordSocketConfig()
+            {
+                AlwaysDownloadUsers = true,
+                GatewayIntents = GatewayIntents.GuildMembers
+            };
 
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddSingleton(dicordConfig);
+            builder.Services.AddSingleton(discordConfig);
             builder.Services.AddSingleton<DiscordSocketClient>();
             builder.Services.AddSingleton<CommandService>();
             builder.Services.AddSingleton<CommandHandler>();

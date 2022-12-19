@@ -21,7 +21,7 @@ namespace DiscordBot
             var discordConfig = new DiscordSocketConfig()
             {
                 AlwaysDownloadUsers = true,
-                GatewayIntents = GatewayIntents.GuildMembers
+                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers
             };
 
             var builder = WebApplication.CreateBuilder(args);

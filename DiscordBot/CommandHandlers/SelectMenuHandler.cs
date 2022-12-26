@@ -1,10 +1,7 @@
-using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
-using System.Reflection;
+using DiscordBot.Messages;
 using DiscordBot.Services;
 using SharedClasses.SharedModels;
-using DiscordBot.Messages;
 
 namespace DiscordBot.CommandHandlers
 {
@@ -33,6 +30,10 @@ namespace DiscordBot.CommandHandlers
                     ExternalRoleSelectionMessage.Parameters externalRoleParameters = ExternalRoleSelectionMessage.ParseId(component.Data.CustomId);
                     await component.RespondWithModalAsync(ExternalUserNameModal.buildMessage(externalRoleParameters.RaidId, int.Parse(component.Data.Values.First())));
                     break;
+                case Constants.ComponentIds.REMOVE_USER_DROP_DOWN:
+                    RemoveUserMessage.Parameters removeUserParameters = RemoveUserMessage.ParseId(component.Data.CustomId);
+                    await RemoveUser(component, removeUserParameters);
+                    break;
                 case Constants.ComponentIds.ACCOUNT_SELECT_DROP_DOWN:
                     AccountSelectionMessage.Parameters accountParameters = AccountSelectionMessage.ParseId(component.Data.CustomId);
                     int accountId = int.Parse(component.Data.Values.First());
@@ -54,6 +55,25 @@ namespace DiscordBot.CommandHandlers
                     }
                     break;
             }
+        }
+
+        private async Task RemoveUser(SocketMessageComponent component, RemoveUserMessage.Parameters removeUserParameters)
+        {
+            ApiSignUp signOff = new ApiSignUp()
+            {
+                raidId = removeUserParameters.RaidId,
+                signedUpByUserId = removeUserParameters.SignedUpByUserId
+            };
+            if (ulong.TryParse(component.Data.Values.First(), out ulong userId))
+            {
+                signOff.userId = userId;
+            }
+            else
+            {
+                signOff.userName = component.Data.Values.First();
+            }
+            await _httpService.SignOff(signOff);
+            await _handlerFunctions.UpdateOrRespond(component, $"signed off {component.Data.Values.First()}", null, true);
         }
     }
 }

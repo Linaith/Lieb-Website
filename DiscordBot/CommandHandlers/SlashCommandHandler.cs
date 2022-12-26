@@ -94,6 +94,10 @@ namespace DiscordBot.CommandHandlers
                     await _httpService.SignOff(signOffExternal);
                     await command.RespondAsync($"signed off {userName}", ephemeral:true);
                     break;
+                case Constants.SlashCommands.REMOVE_USER_DROPDOWN_COMMAND:
+                    ApiRaid raid = await _httpService.GetRaid(raidId);
+                    await command.RespondAsync("Which user do you want to sign off?", components: RemoveUserMessage.buildMessage(raid, command.User.Id), ephemeral: true);
+                    break;
             }
         }
 

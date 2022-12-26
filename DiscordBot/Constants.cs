@@ -15,6 +15,7 @@
             public const string ROLE_SELECT_DROP_DOWN = "roleSelectDropDown";
             public const string ROLE_SELECT_EXTERNAL_DROP_DOWN = "roleSelectExternalDropDown";
             public const string ACCOUNT_SELECT_DROP_DOWN = "accountSelectDropDown";
+            public const string REMOVE_USER_DROP_DOWN = "removeUserDropDown";
 
             public const string NAME_TEXT_BOX = "nameTextbox";
             public const string ACCOUNT_TEXT_BOX = "accountTextBox";
@@ -33,6 +34,7 @@
             public const string REMOVE_USER_COMMAND = "remove";
             public const string ADD_EXTERNAL_USER_COMMAND = "add-external";
             public const string REMOVE_EXTERNAL_USER_COMMAND = "remove-external";
+            public const string REMOVE_USER_DROPDOWN_COMMAND = "remove-dropdown";
 
             public class OptionNames
             {

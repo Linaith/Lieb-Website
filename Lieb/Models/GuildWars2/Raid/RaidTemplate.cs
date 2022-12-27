@@ -30,6 +30,10 @@ namespace Lieb.Models.GuildWars2.Raid
             TimeZone = template.TimeZone;
             Interval = template.Interval;
             CreateDaysBefore = template.CreateDaysBefore;
+            foreach(RaidReminder reminder in Reminders)
+            {
+                reminder.Sent = true;
+            }
         }
     }
 }

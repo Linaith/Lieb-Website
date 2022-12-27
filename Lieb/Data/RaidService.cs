@@ -601,21 +601,24 @@ namespace Lieb.Data
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
             foreach(RaidReminder reminder in reminders.Where(r => r.ReminderTimeUTC < utcNow))
             {
-                Raid raid = context.Raids
+                Raid? raid = context.Raids
                     .Include(r => r.SignUps)
                     .Include(r => r.Reminders)
-                    .First(r => r.Reminders.Where(re => re.RaidReminderId == reminder.RaidReminderId).Any());
-                switch(reminder.Type)
+                    .FirstOrDefault(r => r.Reminders.Where(re => re.RaidReminderId == reminder.RaidReminderId).Any());
+                if (raid != null)
                 {
-                    case RaidReminder.ReminderType.User:
-                        await _discordService.SendUserReminder(reminder, raid);
-                        break;
-                    case RaidReminder.ReminderType.Channel:
-                        await _discordService.SendChannelReminder(reminder, raid.Title);
-                        break;
-                    case RaidReminder.ReminderType.Group:
-                        await _discordService.SendGroupReminder(reminder, raid);
-                        break;
+                    switch (reminder.Type)
+                    {
+                        case RaidReminder.ReminderType.User:
+                            await _discordService.SendUserReminder(reminder, raid);
+                            break;
+                        case RaidReminder.ReminderType.Channel:
+                            await _discordService.SendChannelReminder(reminder, raid.Title);
+                            break;
+                        case RaidReminder.ReminderType.Group:
+                            await _discordService.SendGroupReminder(reminder, raid);
+                            break;
+                    }
                 }
             }
         }

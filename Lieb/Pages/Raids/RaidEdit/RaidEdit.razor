@@ -117,6 +117,26 @@
 
     <p>
         <label>
+            Minimal required users:
+            <InputNumber @bind-Value="_raid.MinUsers" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Minimal user deadline date:
+            <InputDate @bind-Value="_minUserDeadlineDate" />
+        </label>
+    </p>
+
+    <p>
+        <label>
+            Minimal user deadline time:
+            <input type="time" @bind="_minUserDeadlineTime" />
+        </label>
+    </p>
+
+    <p>
+        <label>
             Organizer:
             <InputText @bind-Value="_raid.Organizer" />
         </label>
@@ -194,6 +214,8 @@
     private DateTimeOffset _endTime;
     private DateTimeOffset _freeForAllDate = DateTime.Now.Date;
     private DateTimeOffset _freeForAllTime;
+    private DateTimeOffset _minUserDeadlineDate = DateTime.Now.Date;
+    private DateTimeOffset _minUserDeadlineTime;
 
     private List<RaidRole> _rolesToDelete = new List<RaidRole>();
     private List<RaidReminder> _remindersToDelete = new List<RaidReminder>();
@@ -240,6 +262,8 @@
                 _raidDate = _startTime.Date;
                 _freeForAllTime = await TimeZoneService.GetLocalDateTime(_raid.FreeForAllTimeUTC);
                 _freeForAllDate = _freeForAllTime.Date;
+                _minUserDeadlineTime = await TimeZoneService.GetLocalDateTime(_raid.MinUserDeadLineUTC);
+                _minUserDeadlineDate = _minUserDeadlineTime.Date;
                 foreach(RaidReminder reminder in _raid.Reminders)
                 {
                     if(reminder.TimeType == RaidReminder.ReminderTimeType.Static)
@@ -337,6 +361,7 @@
             _raid.EndTimeUTC = await TimeZoneService.GetUTCDateTime(_raidDate.Date.AddDays(1) + _endTime.TimeOfDay);
         }
         _raid.FreeForAllTimeUTC = await TimeZoneService.GetUTCDateTime(_freeForAllDate.Date + _freeForAllTime.TimeOfDay);
+        _raid.MinUserDeadLineUTC = await TimeZoneService.GetUTCDateTime(_minUserDeadlineDate.Date + _minUserDeadlineTime.TimeOfDay);
 
         if (!_raid.RaidOwnerId.HasValue)
         {

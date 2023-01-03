@@ -49,6 +49,8 @@ namespace Lieb.Data
                         .GetRequiredService<RaidService>();
                 await raidService.SendReminders();
                 await raidService.RemoveMaybes();
+                await raidService.CheckMinUsers();
+                await raidService.CheckMinUserPollResult();
             }
         }
 

@@ -2,6 +2,7 @@
 using Lieb.Models;
 using Lieb.Models.GuildWars2;
 using Lieb.Models.GuildWars2.Raid;
+using Lieb.Models.Poll;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -26,6 +27,9 @@ namespace Lieb.Data
         public DbSet<RaidSignUp> RaidSignUps { get; set; }
         public DbSet<DiscordRaidMessage> DiscordRaidMessages { get; set; }
         public DbSet<DiscordSettings> DiscordSettings { get; set; }
+        public DbSet<Poll> Polls { get; set; }
+        public DbSet<PollOption> PollOptions { get; set; }
+        public DbSet<PollAnswer> PollAnswers { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -43,6 +47,9 @@ namespace Lieb.Data
             modelBuilder.Entity<RaidSignUp>().ToTable("RaidSignUp");
             modelBuilder.Entity<DiscordRaidMessage>().ToTable("DiscordRaidMessage");
             modelBuilder.Entity<DiscordSettings>().ToTable("DiscordSettings");
+            modelBuilder.Entity<Poll>().ToTable("Poll");
+            modelBuilder.Entity<PollOption>().ToTable("PollOption");
+            modelBuilder.Entity<PollAnswer>().ToTable("PollAnswer");
         }
     }
 }

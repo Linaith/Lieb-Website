@@ -14,6 +14,10 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public DateTimeOffset FreeForAllTimeUTC { get; set; }
 
+        public DateTimeOffset MinUserDeadLineUTC { get; set; }
+
+        public int? MinUserPollId { get; set; }
+
         public ICollection<RaidSignUp> SignUps { get; set; } = new HashSet<RaidSignUp>();
 
         public Raid() { }
@@ -24,6 +28,7 @@ namespace Lieb.Models.GuildWars2.Raid
             StartTimeUTC = TimeZoneInfo.ConvertTimeToUtc(template.StartTime, timeZone);
             EndTimeUTC = TimeZoneInfo.ConvertTimeToUtc(template.EndTime, timeZone);
             FreeForAllTimeUTC = TimeZoneInfo.ConvertTimeToUtc(template.FreeForAllTime, timeZone);
+            MinUserDeadLineUTC = TimeZoneInfo.ConvertTimeToUtc(template.MinUserDeadLine, timeZone);
         }
 
     }

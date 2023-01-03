@@ -14,6 +14,8 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public DateTime FreeForAllTime { get; set; }
 
+        public DateTime MinUserDeadLine { get; set; }
+
         public string TimeZone { get; set; } = String.Empty;
 
         public int Interval { get; set; }

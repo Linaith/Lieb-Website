@@ -306,8 +306,15 @@ namespace Lieb.Data
 
         public static ApiRaid ConvertRaid(Raid raid)
         {
+            string title = raid.Title;
+            if (raid.SignUps.Count < raid.MinUsers
+                && raid.MinUserDeadLineUTC.UtcDateTime > DateTimeOffset.UtcNow)
+            {
+                title = $"The raid was canceled because of not enough sign ups.\n\n{raid.Title}";
+            }
+
             ApiRaid apiRaid = new ApiRaid(){
-                Title = raid.Title,
+                Title = title,
                 Description = raid.Description,
                 Guild = raid.Guild,
                 Organizer = raid.Organizer,

@@ -1,6 +1,7 @@
 ﻿using Lieb.Models;
 using Lieb.Models.GuildWars2;
 using Lieb.Models.GuildWars2.Raid;
+using Lieb.Models.Poll;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -9,11 +10,13 @@ namespace Lieb.Data
     {
         private readonly IDbContextFactory<LiebContext> _contextFactory;
         private readonly DiscordService _discordService;
+        private readonly PollService _pollService;
 
-        public RaidService(IDbContextFactory<LiebContext> contextFactory, DiscordService discordService)
+        public RaidService(IDbContextFactory<LiebContext> contextFactory, DiscordService discordService, PollService pollService)
         {
             _contextFactory = contextFactory;
             _discordService = discordService;
+            _pollService = pollService;
         }
 
         public List<Raid> GetRaids()
@@ -444,6 +447,7 @@ namespace Lieb.Data
             errorMessage = string.Empty;
             using var context = _contextFactory.CreateDbContext();
             Raid? raid = context.Raids
+                .Include(r => r.SignUps)
                 .AsNoTracking()
                 .FirstOrDefault(r => r.RaidId == raidId);
             if(raid == null)
@@ -451,6 +455,14 @@ namespace Lieb.Data
                 errorMessage = "Raid not found.";
                 return false;
             }
+
+            if (raid.SignUps.Count < raid.MinUsers
+                && raid.MinUserDeadLineUTC.UtcDateTime > DateTimeOffset.UtcNow)
+            {
+                errorMessage = $"The raid was canceled because of not enough sign ups.";
+                return false;
+            }
+
             LiebUser? user = context.LiebUsers
                 .Include(u => u.RoleAssignments)
                 .ThenInclude(a => a.LiebRole)
@@ -668,6 +680,50 @@ namespace Lieb.Data
                 context.RaidReminders.RemoveRange(raid.Reminders);
                 context.DiscordRaidMessages.RemoveRange(raid.DiscordRaidMessages);
                 await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task CheckMinUsers()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            List<Raid> raids = context.Raids
+                                .Include(r => r.SignUps)
+                                .Where(r => r.SignUps.Count < r.MinUsers && r.MinUserPollId == null).ToList();
+            foreach (Raid raid in raids.Where(r => r.MinUserDeadLineUTC < DateTimeOffset.UtcNow && r.StartTimeUTC > DateTimeOffset.UtcNow))
+            {
+                raid.MinUserPollId = await _pollService.CreatePoll(
+                                        "The raid has not the required users, do you want to raid anyway?", 
+                                        new List<string>() {Constants.Polls.YES, Constants.Polls.NO }, raid.RaidId);
+                await context.SaveChangesAsync();
+                await _discordService.PostRaidMessage(raid.RaidId);
+            }
+        }
+
+        public async Task CheckMinUserPollResult()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            List<Raid> raids = context.Raids
+                                .Include(r => r.SignUps)
+                                .Where(r => r.SignUps.Count < r.MinUsers && r.MinUserPollId != null).ToList();
+            foreach (Raid raid in raids.Where(r => r.MinUserDeadLineUTC < DateTimeOffset.UtcNow && r.StartTimeUTC > DateTimeOffset.UtcNow))
+            {
+                Poll poll = _pollService.GetPoll(raid.MinUserPollId.Value);
+
+                if (poll.Answers.Count == 0) continue;
+                if (poll.Answers.Where(a => a.PollOptionId == null).Any()) continue;
+
+                int noOptionId = poll.Options.First(o => o.Name == Constants.Polls.NO).PollOptionId;
+                if(poll.Answers.Where(a => a.PollOptionId == noOptionId).Any())
+                {
+                    await _discordService.SendMessageToRaidUsers("The raid is canceled.", raid);
+                }
+                else
+                {
+                    raid.MinUsers = 0;
+                    await context.SaveChangesAsync();
+                    await _discordService.SendMessageToRaidUsers("The raid will take place. Signing up is allowed again.", raid);
+                    await _discordService.PostRaidMessage(raid.RaidId);
+                }
             }
         }
     }

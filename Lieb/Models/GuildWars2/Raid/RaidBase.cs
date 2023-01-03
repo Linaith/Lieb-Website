@@ -52,7 +52,8 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public ulong? RaidOwnerId { get; set; }
 
-        //role name, number of spots
+        public int MinUsers { get; set; } = 0;
+
         public ICollection<RaidRole> Roles { get; set; } = new HashSet<RaidRole>();
 
         public ICollection<RaidReminder> Reminders { get; set; } = new List<RaidReminder>();
@@ -73,6 +74,7 @@ namespace Lieb.Models.GuildWars2.Raid
             this.MoveFlexUsers = template.MoveFlexUsers;
             this.RaidOwnerId = template.RaidOwnerId;
             this.EventType = template.EventType;
+            this.MinUsers = template.MinUsers;
 
             foreach (RaidRole role in template.Roles)
             {

@@ -8,6 +8,12 @@
         public static readonly int RaidEditPowerLevel = Roles.Moderator.PowerLevel;
         public const int REMOVE_MAYBE_MINUTES = 15;
 
+        public static class Polls
+        {
+            public const string YES = "yes";
+            public const string NO = "no";
+        }
+
         public static class Roles
         {
             public static readonly RoleConstant User = new RoleConstant("user", 20);

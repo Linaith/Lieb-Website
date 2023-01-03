@@ -110,7 +110,7 @@ namespace Lieb.Data
                 signUp.RaidRole = randomRole;
             }
 
-            int noGroups = (int)Math.Ceiling((double)(raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() / 5));
+            int noGroups = (int)Math.Ceiling(raid.SignUps.Where(s => s.SignUpType == SignUpType.SignedUp).Count() / 5.0);
 
             HashSet<GuildWars2Account> signedUpAccounts = raid.SignUps.Where(s => s.GuildWars2Account != null && s.GuildWars2Account.EquippedBuilds.Where(b => b.GuildWars2Build.UseInRandomRaid).Count() > 0
                                                                         && s.SignUpType == SignUpType.SignedUp)

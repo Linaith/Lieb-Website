@@ -16,7 +16,17 @@ namespace DiscordBot.Messages
             foreach(ApiRole role in roles)
             {
                 if(role.IsSignUpAllowed)
-                signUpSelect.AddOption(role.Name, role.roleId.ToString(), role.Description);
+                {
+                    if(!string.IsNullOrEmpty(role.Description))
+                    {
+                        string description = role.Description.Length <= 100 ? role.Description : role.Description.Substring(0, 100);
+                        signUpSelect.AddOption(role.Name, role.roleId.ToString(), description);
+                    }
+                    else
+                    {
+                        signUpSelect.AddOption(role.Name, role.roleId.ToString(), role.Name);
+                    }
+                }
             }
 
             var builder = new ComponentBuilder()

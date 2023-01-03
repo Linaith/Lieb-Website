@@ -24,6 +24,7 @@ builder.Services.AddScoped<GuildWars2BuildService>();
 builder.Services.AddScoped<RaidRandomizerService>();
 builder.Services.AddScoped<TimeZoneService>();
 builder.Services.AddScoped<DiscordService>();
+builder.Services.AddScoped<PollService>();
 builder.Services.AddHostedService<TimerService>();
 
 builder.Services.AddAuthentication(opt =>

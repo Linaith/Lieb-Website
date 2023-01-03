@@ -166,6 +166,10 @@ namespace Lieb.Data
             {
                 return false;
             }
+            foreach(Poll poll in context.Polls.Where(p => p.RaidId == raidId && !p.Answers.Where(a => a.UserId == liebUserId).Any()))
+            {
+                await _pollService.AddUser(poll.PollId, liebUserId);
+            }
             return true;
         }
 
@@ -202,6 +206,10 @@ namespace Lieb.Data
                     context.RaidSignUps.Add(signUp);
                 }
                 await context.SaveChangesAsync();
+                foreach(Poll poll in context.Polls.Where(p => p.RaidId == raidId && !p.Answers.Where(a => a.UserId == liebUserId).Any()))
+                {
+                    await _pollService.AddUser(poll.PollId, liebUserId);
+                }
                 await LogSignUp(signUp, userName, signedUpByUserId);
                 return true;
             }
@@ -240,6 +248,10 @@ namespace Lieb.Data
                 await LogSignUp(signUp, signUp.LiebUser.Name, signedOffByUserId);
             }
             await context.SaveChangesAsync();
+            foreach(Poll poll in context.Polls.Where(p => p.RaidId == raidId && !p.Answers.Where(a => a.UserId == liebUserId).Any()))
+            {
+                await _pollService.RemoveUser(poll.PollId, liebUserId);
+            }
             await _discordService.PostRaidMessage(raidId);
         }
 

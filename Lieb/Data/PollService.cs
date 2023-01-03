@@ -109,5 +109,37 @@ namespace Lieb.Data
             PollAnswer answer = poll.Answers.First(a => a.UserId == userId);
             answer.PollOptionId = pollOptionId;
         }
+
+        public async Task AddUser(int pollId, ulong userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            Poll? poll = context.Polls
+                            .Include(p => p.Answers)
+                            .FirstOrDefault(p => p.PollId == pollId && p.Answers.Where(a => a.UserId == userId).Any());
+
+            if (poll == null) return;
+
+            poll.Answers.Add(new PollAnswer()
+            {
+                UserId = userId
+            });
+            await context.SaveChangesAsync();
+        }
+
+        public async Task RemoveUser(int pollId, ulong userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            Poll? poll = context.Polls
+                            .Include(p => p.Answers)
+                            .FirstOrDefault(p => p.PollId == pollId && p.Answers.Where(a => a.UserId == userId).Any());
+
+            if (poll == null) return;
+
+            PollAnswer answer = poll.Answers.First(a => a.UserId == userId);
+            context.Remove(answer);
+            await context.SaveChangesAsync();
+            poll.Answers.Remove(answer);
+            await context.SaveChangesAsync();
+        }
     }
 }

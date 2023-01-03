@@ -24,7 +24,9 @@ DiscordBot/token.txt
 DiscordBot/debugtoken.txt
 Lieb/discordAppSecret.txt
 publish.sh
+publishStaging.sh
 getDatabase.sh
+copyDatabaseToStaging.sh
 TODO.txt
 
 # Build results

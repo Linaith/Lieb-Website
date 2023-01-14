@@ -105,7 +105,8 @@ namespace Lieb.Models.GuildWars2.Raid
                     Sent = false,
                     Type = reminder.Type,
                     TimeType = reminder.TimeType,
-                    RoleId = reminder.RoleId
+                    RoleId = reminder.RoleId,
+                    RoleType = reminder.RoleType
                 });
             }
             foreach (DiscordRaidMessage message in template.DiscordRaidMessages)

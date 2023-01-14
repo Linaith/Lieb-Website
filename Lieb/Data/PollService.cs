@@ -74,6 +74,7 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             context.Polls.Add(poll);
             await context.SaveChangesAsync();
+            await _discordService.SendPoll(poll);
             return poll.PollId;
         }
 
@@ -102,11 +103,18 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             Poll? poll = context.Polls
                             .Include(p => p.Answers)
+                            .Include(p => p.Options)
                             .FirstOrDefault(p => p.PollId == pollId && p.Answers.Where(a => a.UserId == userId).Any());
 
             if (poll == null) return;
 
             PollAnswer pollAnswer = poll.Answers.First(a => a.UserId == userId);
+            if(string.IsNullOrEmpty(answer) && pollOptionId > 0)
+            {
+                PollOption option = poll.Options.FirstOrDefault(o => o.PollOptionId == pollOptionId);
+                answer = option != null ? option.Name : string.Empty;
+            }
+
             pollAnswer.Answer = answer;
             pollAnswer.PollOptionId = pollOptionId;
             await context.SaveChangesAsync();
@@ -126,6 +134,7 @@ namespace Lieb.Data
                 UserId = userId
             });
             await context.SaveChangesAsync();
+            await _discordService.SendPoll(poll, new List<ulong>(){userId});
         }
 
         public async Task RemoveUser(int pollId, ulong userId)

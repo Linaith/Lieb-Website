@@ -269,5 +269,19 @@ namespace DiscordBot.Services
             }
             return false;
         }
+
+        public async Task AnswerPoll(ApiPollAnswer answer)
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HTTP_CLIENT_NAME);
+
+            var raidItemJson = new StringContent(
+                JsonSerializer.Serialize(answer),
+                Encoding.UTF8,
+                Application.Json);
+
+            var httpResponseMessage = await httpClient.PostAsync("DiscordBot/AnswerPoll", raidItemJson);
+
+            httpResponseMessage.EnsureSuccessStatusCode();
+        }
     }
 }

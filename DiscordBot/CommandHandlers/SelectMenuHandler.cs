@@ -54,6 +54,18 @@ namespace DiscordBot.CommandHandlers
                         });
                     }
                     break;
+                case Constants.ComponentIds.POLL_DROP_DOWN:
+                    PollMessage.Parameters pollParameters = PollMessage.ParseId(component.Data.CustomId);
+                    ApiPollAnswer answer = new ApiPollAnswer()
+                    {
+                        Answer = string.Empty,
+                        OptionId = int.Parse(component.Data.Values.First()),
+                        PollId = pollParameters.PollId,
+                        UserId = component.User.Id
+                    };
+                    await _httpService.AnswerPoll(answer);
+                    await component.RespondAsync("Answer sent.", ephemeral: true);
+                    break;
             }
         }
 

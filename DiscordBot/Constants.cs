@@ -22,6 +22,13 @@
             public const string CREATE_ACCOUNT_MODAL = "createAccountModal";
 
             public const string SIGN_UP_EXTERNAL_MODAL = "signUpExternalModal";
+
+
+            public const string POLL_DROP_DOWN = "pollDropDown";
+            public const string POLL_ANSWER_BUTTON = "pollAnswerButton";
+            public const string POLL_CUSTOM_ANSWER_BUTTON = "pollCustomAnswerButton";
+            public const string POLL_CUSTOM_ANSWER_MODAL = "pollCustomAnswerModal";
+            public const string POLL_CUSTOM_ANSWER_TEXT_BOX = "pollCustomAnswerTextBox";
         }
 
         public class SlashCommands

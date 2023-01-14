@@ -171,11 +171,11 @@ namespace Lieb.Data
             context.RaidSignUps.AddRange(signUps);
             context.SaveChanges();
 
-            GuildWars2Build healTempest = new GuildWars2Build() { BuildName = "HealTempest", Class = GuildWars2Class.Elementalist, EliteSpecialization = EliteSpecialization.Tempest,  Might = true, Alacrity = true, DamageType = DamageType.Heal };
-            GuildWars2Build condiScourge = new GuildWars2Build() { BuildName = "CondiScourge", Class = GuildWars2Class.Necromancer, EliteSpecialization = EliteSpecialization.Scourge, DamageType = DamageType.Condition };
-            GuildWars2Build quickBrand = new GuildWars2Build() { BuildName = "QuickBrand", Class = GuildWars2Class.Guard, EliteSpecialization = EliteSpecialization.Firebrand,  Quickness = true, DamageType = DamageType.Condition };
-            GuildWars2Build alacregate = new GuildWars2Build() { BuildName = "Alacregate", Class = GuildWars2Class.Revenant, EliteSpecialization = EliteSpecialization.Renegade, Alacrity = true, DamageType = DamageType.Power };
-            GuildWars2Build chrono = new GuildWars2Build() { BuildName = "Chrono", Class = GuildWars2Class.Mesmer, EliteSpecialization = EliteSpecialization.Chronomancer, Alacrity = true, Quickness = true, DamageType = DamageType.Power };
+            GuildWars2Build healTempest = new GuildWars2Build() { BuildName = "HealTempest", Class = GuildWars2Class.Elementalist, EliteSpecialization = EliteSpecialization.Tempest,  Might = true, Alacrity = true, DamageType = DamageType.Heal, UseInRandomRaid = true };
+            GuildWars2Build condiScourge = new GuildWars2Build() { BuildName = "CondiScourge", Class = GuildWars2Class.Necromancer, EliteSpecialization = EliteSpecialization.Scourge, DamageType = DamageType.Condition, UseInRandomRaid = true  };
+            GuildWars2Build quickBrand = new GuildWars2Build() { BuildName = "QuickBrand", Class = GuildWars2Class.Guard, EliteSpecialization = EliteSpecialization.Firebrand,  Quickness = true, DamageType = DamageType.Condition, UseInRandomRaid = true  };
+            GuildWars2Build alacregate = new GuildWars2Build() { BuildName = "Alacregate", Class = GuildWars2Class.Revenant, EliteSpecialization = EliteSpecialization.Renegade, Alacrity = true, DamageType = DamageType.Power, UseInRandomRaid = true  };
+            GuildWars2Build chrono = new GuildWars2Build() { BuildName = "Chrono", Class = GuildWars2Class.Mesmer, EliteSpecialization = EliteSpecialization.Chronomancer, Alacrity = true, Quickness = true, DamageType = DamageType.Power, UseInRandomRaid = true  };
             GuildWars2Build daredevil = new GuildWars2Build() { BuildName = "Daredevil", Class = GuildWars2Class.Thief, EliteSpecialization = EliteSpecialization.DareDevil };
             context.GuildWars2Builds.AddRange(new List<GuildWars2Build>(){healTempest, condiScourge, quickBrand, alacregate, chrono, daredevil });
             context.SaveChanges();

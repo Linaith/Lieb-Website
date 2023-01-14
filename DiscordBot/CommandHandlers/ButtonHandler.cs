@@ -64,6 +64,22 @@ namespace DiscordBot.CommandHandlers
                         await component.RespondAsync("Opting out failed, please try again later or change the setting on the website.");
                     }
                     break;
+                case Constants.ComponentIds.POLL_ANSWER_BUTTON:
+                    PollMessage.Parameters pollAnswerParameters = PollMessage.ParseId(component.Data.CustomId);
+                    ApiPollAnswer answer = new ApiPollAnswer()
+                    {
+                        Answer = string.Empty,
+                        OptionId = pollAnswerParameters.OptionId,
+                        PollId = pollAnswerParameters.PollId,
+                        UserId = component.User.Id
+                    };
+                    await _httpService.AnswerPoll(answer);
+                    await component.RespondAsync("Answer sent.", ephemeral: true);
+                    break;
+                case Constants.ComponentIds.POLL_CUSTOM_ANSWER_BUTTON:
+                    PollMessage.Parameters pollCustomParameters = PollMessage.ParseId(component.Data.CustomId);
+                    await component.RespondWithModalAsync(PollCustomModal.buildMessage(pollCustomParameters.PollId, component.Message.Content));
+                    break;
             }
         }
 

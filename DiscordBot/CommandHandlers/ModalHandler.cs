@@ -63,6 +63,19 @@ namespace DiscordBot.CommandHandlers
                         await modal.RespondAsync($"signing up failed", ephemeral: true);
                     }
                     break;
+                case Constants.ComponentIds.POLL_CUSTOM_ANSWER_MODAL:
+                    PollCustomModal.Parameters pollParameters = PollCustomModal.ParseId(modal.Data.CustomId);
+                    string modalAnswer = components.First(x => x.CustomId == Constants.ComponentIds.POLL_CUSTOM_ANSWER_TEXT_BOX).Value;
+                    ApiPollAnswer answer = new ApiPollAnswer()
+                    {
+                        Answer = modalAnswer,
+                        OptionId = 0,
+                        PollId = pollParameters.PollId,
+                        UserId = modal.User.Id
+                    };
+                    await _httpService.AnswerPoll(answer);
+                    await modal.RespondAsync("Answer sent.", ephemeral: true);
+                    break;
             }
         }
     }

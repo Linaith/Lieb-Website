@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text;
 using Lieb.Models.GuildWars2.Raid;
 using Lieb.Models;
+using Lieb.Models.Poll;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lieb.Data
@@ -418,6 +419,43 @@ namespace Lieb.Data
                 var httpResponseMessage = await httpClient.GetAsync($"raid/SendReminderOptOutMessage/{userId}");
 
                 httpResponseMessage.EnsureSuccessStatusCode();
+            }
+            catch {}
+        }
+
+        public async Task SendPoll(Poll poll, List<ulong>? userIds = null)
+        {
+            try
+            {
+                var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientName);
+                
+                if(userIds == null)
+                {
+                    userIds = poll.Answers.Select(a => a.UserId).ToList();
+                }
+
+                ApiPoll apiPoll = new ApiPoll()
+                {
+                    AllowCustomAnswer = poll.AllowCustomAnswer,
+                    PollId = poll.PollId,
+                    Question = poll.Question,
+                    UserIds = userIds,
+                    Options = poll.Options.ToDictionary(o => o.PollOptionId, o => o.Name)
+                };                
+
+                var messageItemJson = new StringContent(
+                    JsonSerializer.Serialize(apiPoll),
+                    Encoding.UTF8,
+                    Application.Json);
+
+                if(poll.AnswerType == AnswerType.Dropdown)
+                {
+                    var httpResponseMessage = await httpClient.PostAsync("raid/SendDropdownPoll", messageItemJson);
+                }
+                else
+                {
+                    var httpResponseMessage = await httpClient.PostAsync("raid/SendButtonPoll", messageItemJson);
+                }
             }
             catch {}
         }

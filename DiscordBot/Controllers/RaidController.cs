@@ -118,5 +118,38 @@ namespace DiscordBot.Controllers
         {
             await ReminderSubscriptionMessage.sendMessage(_client, userId);
         }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<List<ulong>> SendDropdownPoll(ApiPoll poll)
+        {
+            return await SendPoll(poll, true);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<List<ulong>> SendButtonPoll(ApiPoll poll)
+        {
+            return await SendPoll(poll, false);
+        }
+
+        private async Task<List<ulong>> SendPoll(ApiPoll poll, bool isDropdown)
+        {
+            List<ulong> sent = new List<ulong>();
+            foreach(ulong userId in poll.UserIds)
+            {
+                var user = await _client.GetUserAsync(userId);
+                if(user != null)
+                {
+                    try
+                    {
+                        await user.SendMessageAsync(poll.Question, components: PollMessage.buildMessage(poll, isDropdown));
+                        sent.Add(user.Id);
+                    }
+                    catch {}
+                }
+            }
+            return sent;
+        }
     }
 }

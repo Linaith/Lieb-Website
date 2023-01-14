@@ -17,15 +17,17 @@ namespace Lieb.Controllers
     {
         RaidService _raidService;
         UserService _userService;
+        PollService _pollService;
         GuildWars2AccountService _gw2AccountService;
         DiscordService _discordService;
 
-        public DiscordBotController(RaidService raidService, UserService userService, GuildWars2AccountService gw2AccountService, DiscordService discordService)
+        public DiscordBotController(RaidService raidService, UserService userService, GuildWars2AccountService gw2AccountService, DiscordService discordService, PollService pollService)
         {
             _raidService = raidService;
             _userService = userService;
             _gw2AccountService = gw2AccountService;
             _discordService = discordService;
+            _pollService = pollService;
         }
 
         [HttpGet]
@@ -305,6 +307,13 @@ namespace Lieb.Controllers
         public async Task<ActionResult> ReminderOptOut(ulong userId)
         {
             return Ok(await _userService.ReminderOptOut(userId));
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task AnswerPoll(ApiPollAnswer answer)
+        {
+            await _pollService.UpdateAnswer(answer.PollId, answer.OptionId, answer.Answer, answer.UserId);
         }
     }
 }

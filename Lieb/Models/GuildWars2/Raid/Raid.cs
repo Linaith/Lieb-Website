@@ -20,6 +20,8 @@ namespace Lieb.Models.GuildWars2.Raid
 
         public ICollection<RaidSignUp> SignUps { get; set; } = new HashSet<RaidSignUp>();
 
+        public bool HasEnoughUsers {get{ return SignUps.Where(s => s.SignUpType != SignUpType.SignedOff && s.SignUpType != SignUpType.Flex).Count() >= this.MinUsers;}}
+
         public Raid() { }
 
         public Raid(RaidTemplate template) : base(template, template.TimeZone, true)

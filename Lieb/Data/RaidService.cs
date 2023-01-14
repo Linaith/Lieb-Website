@@ -468,8 +468,7 @@ namespace Lieb.Data
                 return false;
             }
 
-            if (raid.SignUps.Count < raid.MinUsers
-                && raid.MinUserDeadLineUTC < DateTimeOffset.UtcNow)
+            if (!raid.HasEnoughUsers && raid.MinUserDeadLineUTC < DateTimeOffset.UtcNow)
             {
                 errorMessage = $"The raid was canceled because of not enough sign ups.";
                 return false;
@@ -700,8 +699,8 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             List<Raid> raids = context.Raids
                                 .Include(r => r.SignUps)
-                                .Where(r => r.SignUps.Count < r.MinUsers && r.MinUserPollId == null).ToList();
-            foreach (Raid raid in raids.Where(r => r.MinUserDeadLineUTC < DateTimeOffset.UtcNow && r.StartTimeUTC > DateTimeOffset.UtcNow))
+                                .Where(r => r.MinUserPollId == null).ToList();
+            foreach (Raid raid in raids.Where(r => !r.HasEnoughUsers && r.MinUserDeadLineUTC < DateTimeOffset.UtcNow && r.StartTimeUTC > DateTimeOffset.UtcNow))
             {
                 raid.MinUserPollId = await _pollService.CreatePoll(
                                         "The raid has not the required users, do you want to raid anyway?", 
@@ -716,8 +715,8 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             List<Raid> raids = context.Raids
                                 .Include(r => r.SignUps)
-                                .Where(r => r.SignUps.Count < r.MinUsers && r.MinUserPollId != null).ToList();
-            foreach (Raid raid in raids.Where(r => r.MinUserDeadLineUTC < DateTimeOffset.UtcNow && r.StartTimeUTC > DateTimeOffset.UtcNow))
+                                .Where(r => r.MinUserPollId != null).ToList();
+            foreach (Raid raid in raids.Where(r => !r.HasEnoughUsers && r.MinUserDeadLineUTC < DateTimeOffset.UtcNow && r.StartTimeUTC > DateTimeOffset.UtcNow))
             {
                 Poll poll = _pollService.GetPoll(raid.MinUserPollId.Value);
 

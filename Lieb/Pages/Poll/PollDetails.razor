@@ -1,0 +1,51 @@
+@using System.Security.Claims
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.Poll
+@using Lieb.Models.GuildWars2.Raid
+@inject UserService UserService
+@inject RaidService RaidService
+@inject TimeZoneService TimeZoneService
+@inject RaidRandomizerService RaidRandomizerService
+@inject NavigationManager NavigationManager
+
+<body>
+
+<div @onclick="() => _isCollapsed = !_isCollapsed">
+
+    <h5>@_poll.Question</h5>
+    @if(_raid != null)
+    {
+        <p>@_raid.Title - @_raid.StartTimeUTC.DateTime.ToLongDateString()</p>
+    }
+</div>
+
+    @if (!_isCollapsed)
+    {
+        @foreach(var answer in _poll.Answers.GroupBy(a => a.Answer))
+        {
+            <p>@answer.Key - @answer.Count() </p>
+        }
+    }
+</body>
+
+@code {
+    [Parameter]
+    public Poll _poll { get; set; }
+
+    [Parameter]
+    public LiebUser? _user { get; set; }
+
+    public Raid _raid { get; set; }
+
+    bool _isCollapsed = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(_poll.RaidId.HasValue)
+        {
+            _raid = RaidService.GetRaid(_poll.RaidId.Value);
+        }
+    }
+
+}

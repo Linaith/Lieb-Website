@@ -1,0 +1,12 @@
+body {
+    background-color: rgb(38 38 38);
+    border-radius: 25px;
+    padding: 25px;
+    /*width: 900px;*/
+    width: stretch;
+    color: lightgrey;
+}
+
+h5 {
+    color: lightgrey;
+}

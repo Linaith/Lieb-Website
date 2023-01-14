@@ -15,6 +15,15 @@ namespace Lieb.Data
             _discordService = discordService;
         }
 
+        public List<Poll> GetPolls()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.Polls
+                            .Include(p => p.Options)
+                            .Include(p => p.Answers)
+                            .ToList();
+        }
+
         public Poll GetPoll(int pollId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -39,22 +48,12 @@ namespace Lieb.Data
 
         public async Task<int> CreatePoll(string question, List<string> options, int raidId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            Raid? raid = context.Raids
-                            .Include(r => r.SignUps)
-                            .FirstOrDefault(r => r.RaidId == raidId);
-
-            if (raid == null) return 0;
-            List<ulong> users = raid.SignUps.Where(s => s.LiebUserId != null).Select(s => (ulong)s.LiebUserId).ToList();
-            return await CreatePoll(question, options, users, raidId);
-        }
-
-        public async Task<int> CreatePoll(string question, List<string> options, List<ulong> users, int? raidId = null)
-        {
             Poll poll = new Poll()
             {
                 Question = question,
-                RaidId = raidId
+                RaidId = raidId,
+                AllowCustomAnswer = false,
+                AnswerType = AnswerType.Buttons
             };
             foreach(string option in options)
             {
@@ -63,6 +62,25 @@ namespace Lieb.Data
                     Name = option
                 });
             }
+            return await CreatePoll(poll, raidId);
+        }
+
+        public async Task<int> CreatePoll(Poll poll, int raidId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            Raid? raid = context.Raids
+                            .Include(r => r.SignUps)
+                            .FirstOrDefault(r => r.RaidId == raidId);
+
+            if (raid == null) return 0;
+            List<ulong> users = raid.SignUps.Where(s => s.LiebUserId != null).Select(s => (ulong)s.LiebUserId).ToList();
+            return await CreatePoll(poll, users, raidId);
+        }
+
+        public async Task<int> CreatePoll(Poll poll, List<ulong> users, int? raidId = null)
+        {
+            poll.RaidId = raidId;
+
             foreach(ulong user in users)
             {
                 poll.Answers.Add(new PollAnswer()

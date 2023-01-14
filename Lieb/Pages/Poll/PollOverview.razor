@@ -1,0 +1,47 @@
+@page "/polloverview"
+@using Lieb.Data
+@using System.Security.Claims
+@using Lieb.Models
+@using Lieb.Models.Poll
+@using Lieb.Models.GuildWars2.Raid
+@inject PollService PollService
+@inject UserService UserService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<h3>Event Overview</h3>
+
+
+<AuthorizeView Policy="@Constants.Roles.RaidLead.Name">
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="pollcreate">
+            <span class="oi oi-plus" aria-hidden="true"></span> Add Event
+        </NavLink>
+    </div>
+    <br />
+    @foreach (var poll in _polls.OrderByDescending(p => p.PollId)) 
+    {
+        <br />
+        <PollDetails _poll=@poll _user=@_user/>
+    }
+</AuthorizeView>
+
+@code 
+{
+    private List<Poll> _polls;
+
+    private LiebUser? _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity.IsAuthenticated)
+        {
+            ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            _user = UserService.GetLiebUser(discordId);
+        }
+
+        _polls = PollService.GetPolls();
+    }
+}

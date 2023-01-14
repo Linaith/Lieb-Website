@@ -1,0 +1,179 @@
+@page "/pollcreate"
+@using Lieb.Data
+@using Lieb.Models
+@using Lieb.Models.Poll
+@using Lieb.Models.GuildWars2.Raid
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using SharedClasses.SharedModels
+@inject RaidService RaidService
+@inject UserService UserService
+@inject PollService PollService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JsRuntime
+
+
+<h3>Create Poll</h3>
+
+<AuthorizeView Policy="@Constants.Roles.RaidLead.Name" Context="authorizationContext">
+<EditForm Model="@_poll" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <p>
+        <label>
+            Question:
+            <InputText @bind-Value="_poll.Question" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Answer Type:
+            <InputSelect @bind-Value="_poll.AnswerType">
+                <option value="@AnswerType.Buttons">Buttons</option>
+                <option value="@AnswerType.Dropdown">Dropdown</option>
+            </InputSelect>
+        </label>
+    </p>
+
+    <p>
+        <label>
+            Poll Type:
+            <InputSelect @bind-Value="_pollType">
+                <option value="@POLL_TYPE_RAID">Raid</option>
+                <option value="@POLL_TYPE_GROUP">Group</option>
+            </InputSelect>
+        </label>
+    </p>
+
+    @if(_pollType == POLL_TYPE_RAID)
+    {
+    <p>
+        <label>
+            Raid:
+            <InputSelect @bind-Value="_chosenRaid">
+                @foreach (Raid raid in _raids.OrderByDescending(r => r.StartTimeUTC))
+                {
+                    string name = $"{raid.Title} - {raid.StartTimeUTC.DateTime.ToLongDateString()}";
+                    <option value="@raid.RaidId">@name</option>
+                }
+            </InputSelect>
+        </label>
+    </p>
+    }
+    else if(_pollType == POLL_TYPE_GROUP)
+    {
+        <p>
+        <label>
+            Raid:
+            <InputSelect @bind-Value="_chosenRole">
+                @foreach (LiebRole group in _availabeGroups)
+                {
+                    <option value="@group.LiebRoleId">@group.RoleName</option>
+                }
+            </InputSelect>
+        </label>
+        </p>
+    }   
+
+    <p>
+        <label>
+            <InputCheckbox @bind-Value="_poll.AllowCustomAnswer" />
+            Allow custom answers
+        </label>
+    </p>
+
+    <p>
+        <label>
+            Options:
+        </label>
+        <button type=button @onclick="() => AddOptionClicked()">Add option</button>
+        <table>
+            <tr>
+                <th>Option</th>
+            </tr>
+            @foreach(PollOption option in _poll.Options)
+            {
+                <tr>
+                    <td><InputText @bind-Value="option.Name" /></td>
+                    <td><button type=button @onclick="() => DeleteOptionClicked(option)">Delete</button></td>
+                </tr>
+            }
+        </table> 
+    </p>
+    
+    
+    <ValidationSummary />
+    <label class="validation-message" >@_errorMessage</label>
+    <button type="submit">Submit</button>
+
+</EditForm>
+</AuthorizeView>
+
+@code {
+
+    public Poll _poll = new Poll();
+    private LiebUser _user;
+
+    private string _errorMessage = string.Empty;
+
+    private List<Raid> _raids = new List<Raid>();
+    private List<LiebRole> _availabeGroups = new List<LiebRole>();
+
+    private const string POLL_TYPE_RAID = "raid";
+    private const string POLL_TYPE_GROUP = "group";
+    private string _pollType = POLL_TYPE_RAID;
+
+    private int _chosenRaid;
+    private int _chosenRole;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState != null)
+        {
+            ulong discordId = ulong.Parse(authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            _user = UserService.GetLiebUser(discordId);
+        }
+        if(_user == null)
+        {
+            NavigationManager.NavigateTo("");
+        }
+
+        _raids = RaidService.GetRaids();
+        _chosenRaid = _raids.OrderByDescending(r => r.StartTimeUTC).First().RaidId;
+        if(_user.RoleAssignments.Where(r => r.LiebRole.Level >= Constants.Roles.Admin.PowerLevel).Any())
+        {
+            _availabeGroups = UserService.GetLiebRoles().Where(u => u.Type == RoleType.UserDefinedRole).ToList();
+        }
+        else
+        {
+            _availabeGroups = UserService.GetUserRoles(_user.Id).Where(u => u.Type == RoleType.UserDefinedRole).ToList();
+        }
+        _chosenRole = _availabeGroups.First().LiebRoleId;
+    }
+
+    async Task AddOptionClicked()
+    {
+        _poll.Options.Add(new PollOption());
+    }
+
+
+    async Task DeleteOptionClicked(PollOption option)
+    {
+        _poll.Options.Remove(option);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if(_pollType == POLL_TYPE_RAID)
+        {
+            await PollService.CreatePoll(_poll, _chosenRaid);
+        }
+        else if(_pollType == POLL_TYPE_GROUP)
+        {
+            await PollService.CreatePoll(_poll, UserService.GetGroupMembers(_chosenRole).Select(u => u.Id).ToList());
+        }
+
+        NavigationManager.NavigateTo("raidoverview");
+    }
+}

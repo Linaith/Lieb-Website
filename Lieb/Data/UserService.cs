@@ -357,5 +357,15 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
             return true;
         }
+
+        public List<LiebUser> GetGroupMembers(int roleId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.LiebUsers
+                .Include(u => u.RoleAssignments)
+                .ThenInclude(r => r.LiebRole)
+                .Where(u => u.RoleAssignments.Where(r => r.LiebRole.LiebRoleId == roleId).Any())
+                .ToList();
+        }
     }
 }

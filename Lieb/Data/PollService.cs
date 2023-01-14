@@ -97,7 +97,7 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateAnswer(int pollId, int pollOptionId, ulong userId)
+        public async Task UpdateAnswer(int pollId, int pollOptionId, string answer, ulong userId)
         {
             using var context = _contextFactory.CreateDbContext();
             Poll? poll = context.Polls
@@ -106,8 +106,10 @@ namespace Lieb.Data
 
             if (poll == null) return;
 
-            PollAnswer answer = poll.Answers.First(a => a.UserId == userId);
-            answer.PollOptionId = pollOptionId;
+            PollAnswer pollAnswer = poll.Answers.First(a => a.UserId == userId);
+            pollAnswer.Answer = answer;
+            pollAnswer.PollOptionId = pollOptionId;
+            await context.SaveChangesAsync();
         }
 
         public async Task AddUser(int pollId, ulong userId)

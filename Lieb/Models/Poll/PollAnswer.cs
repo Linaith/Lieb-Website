@@ -6,6 +6,8 @@
 
         public int? PollOptionId { get; set; }
 
+        public string Answer { get; set; } = string.Empty;
+
         public ulong UserId { get; set; }
     }
 }

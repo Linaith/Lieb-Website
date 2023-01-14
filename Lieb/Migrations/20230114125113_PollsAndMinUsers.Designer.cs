@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lieb.Migrations
 {
     [DbContext(typeof(LiebContext))]
-    [Migration("20230103181756_PollsAndMinUsers")]
+    [Migration("20230114125113_PollsAndMinUsers")]
     partial class PollsAndMinUsers
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -503,6 +503,12 @@ namespace Lieb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("AllowCustomAnswer")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AnswerType")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Question")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -520,6 +526,10 @@ namespace Lieb.Migrations
                     b.Property<int>("PollAnswerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("PollId")
                         .HasColumnType("INTEGER");

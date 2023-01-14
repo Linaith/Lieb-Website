@@ -469,7 +469,7 @@ namespace Lieb.Data
             }
 
             if (raid.SignUps.Count < raid.MinUsers
-                && raid.MinUserDeadLineUTC.UtcDateTime > DateTimeOffset.UtcNow)
+                && raid.MinUserDeadLineUTC < DateTimeOffset.UtcNow)
             {
                 errorMessage = $"The raid was canceled because of not enough sign ups.";
                 return false;
@@ -722,10 +722,9 @@ namespace Lieb.Data
                 Poll poll = _pollService.GetPoll(raid.MinUserPollId.Value);
 
                 if (poll.Answers.Count == 0) continue;
-                if (poll.Answers.Where(a => a.PollOptionId == null).Any()) continue;
+                if (poll.Answers.Where(a => string.IsNullOrEmpty(a.Answer)).Any()) continue;
 
-                int noOptionId = poll.Options.First(o => o.Name == Constants.Polls.NO).PollOptionId;
-                if(poll.Answers.Where(a => a.PollOptionId == noOptionId).Any())
+                if(poll.Answers.Where(a => a.Answer == Constants.Polls.NO).Any())
                 {
                     await _discordService.SendMessageToRaidUsers("The raid is canceled.", raid);
                 }

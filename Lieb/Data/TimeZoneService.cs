@@ -13,14 +13,16 @@ namespace Lieb.Data
 
         public async ValueTask<DateTimeOffset> GetLocalDateTime(DateTimeOffset dateTime)
         {
-                int offsetInMinutes = await _jsRuntime.InvokeAsync<int>("GetTimezoneValue", dateTime);
-                TimeSpan userOffset = TimeSpan.FromMinutes(-offsetInMinutes);
+            if(dateTime == DateTimeOffset.MinValue) dateTime = DateTimeOffset.UtcNow;
+            int offsetInMinutes = await _jsRuntime.InvokeAsync<int>("GetTimezoneValue", dateTime);
+            TimeSpan userOffset = TimeSpan.FromMinutes(-offsetInMinutes);
 
             return dateTime.ToOffset(userOffset);
         }
 
         public async ValueTask<DateTimeOffset> GetUTCDateTime(DateTimeOffset dateTime)
         {
+            if(dateTime == DateTimeOffset.MinValue) return DateTimeOffset.UtcNow;
             int offsetInMinutes = await _jsRuntime.InvokeAsync<int>("GetTimezoneValue", dateTime);
             TimeSpan userOffset = TimeSpan.FromMinutes(-offsetInMinutes);
 

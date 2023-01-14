@@ -50,6 +50,8 @@ namespace Lieb.Migrations
                     PollId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Question = table.Column<string>(type: "TEXT", nullable: false),
+                    AnswerType = table.Column<int>(type: "INTEGER", nullable: false),
+                    AllowCustomAnswer = table.Column<bool>(type: "INTEGER", nullable: false),
                     RaidId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
@@ -64,6 +66,7 @@ namespace Lieb.Migrations
                     PollAnswerId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     PollOptionId = table.Column<int>(type: "INTEGER", nullable: true),
+                    Answer = table.Column<string>(type: "TEXT", nullable: false),
                     UserId = table.Column<ulong>(type: "INTEGER", nullable: false),
                     PollId = table.Column<int>(type: "INTEGER", nullable: true)
                 },

@@ -501,6 +501,12 @@ namespace Lieb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("AllowCustomAnswer")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AnswerType")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Question")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -518,6 +524,10 @@ namespace Lieb.Migrations
                     b.Property<int>("PollAnswerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("PollId")
                         .HasColumnType("INTEGER");

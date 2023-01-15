@@ -73,11 +73,11 @@ namespace Lieb.Data
                             .FirstOrDefault(r => r.RaidId == raidId);
 
             if (raid == null) return 0;
-            List<ulong> users = raid.SignUps.Where(s => s.LiebUserId != null).Select(s => (ulong)s.LiebUserId).ToList();
+            HashSet<ulong> users = raid.SignUps.Where(s => s.LiebUserId != null).Select(s => (ulong)s.LiebUserId).ToHashSet();
             return await CreatePoll(poll, users, raidId);
         }
 
-        public async Task<int> CreatePoll(Poll poll, List<ulong> users, int? raidId = null)
+        public async Task<int> CreatePoll(Poll poll, HashSet<ulong> users, int? raidId = null)
         {
             poll.RaidId = raidId;
 

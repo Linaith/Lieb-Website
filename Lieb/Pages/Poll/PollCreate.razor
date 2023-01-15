@@ -193,7 +193,7 @@
         }
         else if(_pollType == POLL_TYPE_GROUP)
         {
-            await PollService.CreatePoll(_poll, UserService.GetGroupMembers(_chosenRole).Select(u => u.Id).ToList());
+            await PollService.CreatePoll(_poll, UserService.GetGroupMembers(_chosenRole).Select(u => u.Id).ToHashSet());
         }
 
         NavigationManager.NavigateTo("polloverview");

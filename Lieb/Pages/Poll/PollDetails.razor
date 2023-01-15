@@ -10,23 +10,24 @@
 @inject NavigationManager NavigationManager
 
 <body>
+    <div @onclick="() => _isCollapsed = !_isCollapsed">
 
-<div @onclick="() => _isCollapsed = !_isCollapsed">
-
-    <h5>@_poll.Question</h5>
-    @if(_raid != null)
-    {
-        <p>@_raid.Title - @_raid.StartTimeUTC.DateTime.ToLongDateString()</p>
-    }
-</div>
-
-    @if (!_isCollapsed)
-    {
-        @foreach(var answer in _poll.Answers.GroupBy(a => a.Answer))
+        <h5>@_poll.Question</h5>
+        @if(_raid != null)
         {
-            <p>@answer.Key - @answer.Count() </p>
+            <p>@_raid.Title - @_raid.StartTimeUTC.DateTime.ToLongDateString()</p>
         }
-    }
+
+        @if (!_isCollapsed)
+        {
+            @foreach(var answer in Answers)
+            {
+                <p>@answer.Key - @answer.Value </p>
+            }
+        }
+        <br/>
+        <p>Not Answered - @_poll.Answers.Where(a => string.IsNullOrWhiteSpace(a.Answer)).Count() </p>
+    </div>
 </body>
 
 @code {
@@ -36,15 +37,31 @@
     [Parameter]
     public LiebUser? _user { get; set; }
 
-    public Raid _raid { get; set; }
+    private Raid _raid { get; set; }
 
-    bool _isCollapsed = true;
+    private bool _isCollapsed = true;
+
+    private Dictionary<string, int> Answers = new Dictionary<string, int>();
 
     protected override async Task OnParametersSetAsync()
     {
         if(_poll.RaidId.HasValue)
         {
             _raid = RaidService.GetRaid(_poll.RaidId.Value);
+        }
+        foreach(PollOption option in _poll.Options)
+        {
+            if(!Answers.ContainsKey(option.Name))
+                Answers.Add(option.Name, 0);
+        }
+        foreach(PollAnswer answer in _poll.Answers)
+        {
+            if(!string.IsNullOrWhiteSpace(answer.Answer))
+            {
+                if(!Answers.ContainsKey(answer.Answer))
+                    Answers.Add(answer.Answer, 0);
+                Answers[answer.Answer] ++;
+            }
         }
     }
 

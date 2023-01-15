@@ -1,4 +1,6 @@
-﻿namespace Lieb.Models.Poll
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Lieb.Models.Poll
 {
     public enum AnswerType
     {
@@ -8,6 +10,9 @@
     public class Poll
     {
         public int PollId { get; set; }
+
+        [Required]
+        [StringLength(200, ErrorMessage = "Question too long (200 character limit).")]
         public string Question { get; set; }
         public ICollection<PollOption> Options { get; set; } = new List<PollOption>();
         public ICollection<PollAnswer> Answers { get; set; } = new List<PollAnswer>();

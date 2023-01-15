@@ -40,7 +40,10 @@
             Poll Type:
             <InputSelect @bind-Value="_pollType">
                 <option value="@POLL_TYPE_RAID">Raid</option>
-                <option value="@POLL_TYPE_GROUP">Group</option>
+                @if(_availabeGroups.Count > 0)
+                {
+                    <option value="@POLL_TYPE_GROUP">Group</option>
+                }
             </InputSelect>
         </label>
     </p>
@@ -149,7 +152,11 @@
         {
             _availabeGroups = UserService.GetUserRoles(_user.Id).Where(u => u.Type == RoleType.UserDefinedRole).ToList();
         }
-        _chosenRole = _availabeGroups.First().LiebRoleId;
+        _poll.AnswerType = AnswerType.Dropdown;
+        if(_availabeGroups.Count > 0)
+        {
+            _chosenRole = _availabeGroups.First().LiebRoleId;
+        }
     }
 
     async Task AddOptionClicked()
@@ -165,6 +172,21 @@
 
     private async Task HandleValidSubmit()
     {
+        if(_poll.Options.Count < 2)
+        {
+            _errorMessage = "At least 2 options are needed for a Poll.";
+            return;
+        }
+
+        foreach(PollOption option in _poll.Options)
+        {
+            if(string.IsNullOrWhiteSpace(option.Name))
+            {
+                _errorMessage = "Options must not be empty.";
+                return;
+            }
+        }
+
         if(_pollType == POLL_TYPE_RAID)
         {
             await PollService.CreatePoll(_poll, _chosenRaid);
@@ -174,6 +196,6 @@
             await PollService.CreatePoll(_poll, UserService.GetGroupMembers(_chosenRole).Select(u => u.Id).ToList());
         }
 
-        NavigationManager.NavigateTo("raidoverview");
+        NavigationManager.NavigateTo("polloverview");
     }
 }

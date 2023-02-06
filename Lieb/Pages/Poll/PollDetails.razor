@@ -22,11 +22,28 @@
         {
             @foreach(var answer in Answers)
             {
-                <p>@answer.Key - @answer.Value </p>
+                <p class="nametooltip">
+                    @answer.Key - @answer.Value 
+                    <span class="tooltiptext">
+                        @foreach(PollAnswer pAnswer in _poll.Answers.Where(a => a.Answer == answer.Key))
+                        {
+                            <p>@UserService.GetLiebUser(pAnswer.UserId).Name</p>
+                        }
+                    </span>
+                </p> 
+                <br/>
             }
         }
         <br/>
-        <p>Not Answered - @_poll.Answers.Where(a => string.IsNullOrWhiteSpace(a.Answer)).Count() </p>
+        <p class="nametooltip">
+            Not Answered - @_poll.Answers.Where(a => string.IsNullOrWhiteSpace(a.Answer)).Count()
+            <span class="tooltiptext">
+                @foreach(PollAnswer pAnswer in _poll.Answers.Where(a => string.IsNullOrWhiteSpace(a.Answer)))
+                {
+                    <p>@UserService.GetLiebUser(pAnswer.UserId).Name</p>
+                }
+            </span>
+        </p> 
     </div>
 </body>
 

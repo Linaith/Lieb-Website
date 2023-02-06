@@ -73,7 +73,7 @@ namespace Lieb.Data
                             .FirstOrDefault(r => r.RaidId == raidId);
 
             if (raid == null) return 0;
-            HashSet<ulong> users = raid.SignUps.Where(s => s.LiebUserId != null).Select(s => (ulong)s.LiebUserId).ToHashSet();
+            HashSet<ulong> users = raid.SignUps.Where(s => s.LiebUserId != null && s.IsMessageSignUp).Select(s => (ulong)s.LiebUserId).ToHashSet();
             return await CreatePoll(poll, users, raidId);
         }
 

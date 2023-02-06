@@ -168,7 +168,7 @@ namespace Lieb.Data
             HashSet<ulong> userIds = new HashSet<ulong>();
             foreach(RaidSignUp signUp in raid.SignUps)
             {
-                if(signUp.LiebUserId.HasValue)
+                if(signUp.LiebUserId.HasValue && signUp.IsMessageSignUp)
                 {
                     userIds.Add(signUp.LiebUserId.Value);
                 }

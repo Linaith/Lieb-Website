@@ -93,6 +93,7 @@ namespace Lieb.Data
             template.StartTime = template.StartTime.AddDays(template.Interval);
             template.EndTime = template.EndTime.AddDays(template.Interval);
             template.FreeForAllTime = template.FreeForAllTime.AddDays(template.Interval);
+            template.MinUserDeadLine = template.MinUserDeadLine.AddDays(template.Interval);
             foreach(RaidReminder reminder in template.Reminders)
             {
                 reminder.ReminderTimeUTC = reminder.ReminderTimeUTC.AddDays(template.Interval);

@@ -28,6 +28,7 @@ namespace Lieb.Models.GuildWars2.Raid
         public LiebUser? LiebUser { get; set; }
         public GuildWars2Account? GuildWars2Account { get; set; }
         public RaidRole RaidRole { get; set; }
+        public bool IsMessageSignUp {get { return SignUpType != SignUpType.SignedOff && SignUpType != SignUpType.Flex;}}
 
         public RaidSignUp(int raidId, ulong userId, int gw2AccountId, int roleId, SignUpType signUpType)
         {

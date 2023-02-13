@@ -5,9 +5,11 @@
 @using Lieb.Models.GuildWars2.Raid
 @inject UserService UserService
 @inject RaidService RaidService
+@inject PollService PollService
 @inject TimeZoneService TimeZoneService
 @inject RaidRandomizerService RaidRandomizerService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
 
 <body>
     <div @onclick="() => _isCollapsed = !_isCollapsed">
@@ -44,6 +46,8 @@
                 }
             </span>
         </p> 
+        <br/>
+        <button type="delete" @onclick="() => DeletePollClicked()">Delete Poll</button>
     </div>
 </body>
 
@@ -82,4 +86,13 @@
         }
     }
 
+    async Task DeletePollClicked()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete the poll?");
+        if (confirmed)
+        {
+            await PollService.DeletePoll(_poll.PollId);
+            NavigationManager.NavigateTo("polloverview", forceLoad: true);
+        }
+    }
 }

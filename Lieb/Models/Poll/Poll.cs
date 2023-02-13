@@ -19,6 +19,7 @@ namespace Lieb.Models.Poll
         public AnswerType AnswerType {get; set;}
         public bool AllowCustomAnswer {get; set;} = false;
         public int? RaidId { get; set; }
-
+        public DateTimeOffset CreatedAt {get; set;} = DateTimeOffset.UtcNow;
+        public bool IsAutoPoll {get; set;} = false;
     }
 }

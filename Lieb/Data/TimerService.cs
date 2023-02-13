@@ -73,6 +73,10 @@ namespace Lieb.Data
                     scope.ServiceProvider
                         .GetRequiredService<UserService>();
                 await userService.DeleteInactiveUsers();
+                var pollService =
+                    scope.ServiceProvider
+                        .GetRequiredService<PollService>();
+                await pollService.DeleteAutoPolls();
             }
         }
 

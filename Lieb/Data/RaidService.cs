@@ -704,7 +704,7 @@ namespace Lieb.Data
             {
                 raid.MinUserPollId = await _pollService.CreatePoll(
                                         "The raid has not the required users, do you want to raid anyway?", 
-                                        new List<string>() {Constants.Polls.YES, Constants.Polls.NO }, raid.RaidId);
+                                        new List<string>() {Constants.Polls.YES, Constants.Polls.NO }, raid.RaidId, true);
                 await context.SaveChangesAsync();
                 await _discordService.PostRaidMessage(raid.RaidId);
             }

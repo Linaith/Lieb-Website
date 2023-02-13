@@ -46,7 +46,7 @@ namespace Lieb.Data
                             .Where(p => p.RaidId == raidId).ToList();
         }
 
-        public async Task<int> CreatePoll(string question, List<string> options, int raidId)
+        public async Task<int> CreatePoll(string question, List<string> options, int raidId, bool isAutoPoll = false)
         {
             Poll poll = new Poll()
             {
@@ -62,10 +62,10 @@ namespace Lieb.Data
                     Name = option
                 });
             }
-            return await CreatePoll(poll, raidId);
+            return await CreatePoll(poll, raidId, isAutoPoll);
         }
 
-        public async Task<int> CreatePoll(Poll poll, int raidId)
+        public async Task<int> CreatePoll(Poll poll, int raidId, bool isAutoPoll = false)
         {
             using var context = _contextFactory.CreateDbContext();
             Raid? raid = context.Raids
@@ -74,12 +74,13 @@ namespace Lieb.Data
 
             if (raid == null) return 0;
             HashSet<ulong> users = raid.SignUps.Where(s => s.LiebUserId != null && s.IsMessageSignUp).Select(s => (ulong)s.LiebUserId).ToHashSet();
-            return await CreatePoll(poll, users, raidId);
+            return await CreatePoll(poll, users, raidId, isAutoPoll);
         }
 
-        public async Task<int> CreatePoll(Poll poll, HashSet<ulong> users, int? raidId = null)
+        public async Task<int> CreatePoll(Poll poll, HashSet<ulong> users, int? raidId = null, bool isAutoPoll = false)
         {
             poll.RaidId = raidId;
+            poll.IsAutoPoll = isAutoPoll;
 
             foreach(ulong user in users)
             {
@@ -169,6 +170,20 @@ namespace Lieb.Data
             await context.SaveChangesAsync();
             poll.Answers.Remove(answer);
             await context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAutoPolls()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            List<Poll> polls = context.Polls.ToList();
+
+            foreach(Poll poll in polls)
+            {
+                if((poll.IsAutoPoll && poll.CreatedAt < DateTime.UtcNow.AddDays(-7)))
+                {
+                    await DeletePoll(poll.PollId);
+                }
+            }
         }
     }
 }

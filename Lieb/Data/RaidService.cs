@@ -721,19 +721,24 @@ namespace Lieb.Data
                 Poll poll = _pollService.GetPoll(raid.MinUserPollId.Value);
 
                 if (poll.Answers.Count == 0) continue;
-                if (poll.Answers.Where(a => string.IsNullOrEmpty(a.Answer)).Any()) continue;
 
-                if(poll.Answers.Where(a => a.Answer == Constants.Polls.NO).Any())
+                //continue if not everything is answered and the poll is not older than 1 day
+                if (poll.Answers.Where(a => string.IsNullOrEmpty(a.Answer)).Any()
+                        && poll.CreatedAt > DateTimeOffset.UtcNow.AddDays(-1)) continue;
+
+                //sign off users that answered "No"
+                HashSet<ulong> signedOffUsers = poll.Answers.Where(a => a.Answer == Constants.Polls.NO || string.IsNullOrEmpty(a.Answer)).Select(a => a.UserId).ToHashSet();
+                foreach(ulong user in signedOffUsers)
                 {
-                    await _discordService.SendMessageToRaidUsers("The raid is canceled.", raid);
+                    await SignOff(raid.RaidId, user);
                 }
-                else
-                {
-                    raid.MinUsers = 0;
-                    await context.SaveChangesAsync();
-                    await _discordService.SendMessageToRaidUsers("The raid will take place. Signing up is allowed again.", raid);
-                    await _discordService.PostRaidMessage(raid.RaidId);
-                }
+                await _discordService.SendMessageToUsers("You have been signed off.", raid.Title, signedOffUsers);
+
+                //reopen the raid
+                raid.MinUsers = 0;
+                await context.SaveChangesAsync();
+                await _discordService.SendMessageToRaidUsers("People who have voted \"No\" have been signed off. Signing up is allowed again.", raid);
+                await _discordService.PostRaidMessage(raid.RaidId);
             }
         }
     }

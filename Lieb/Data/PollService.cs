@@ -145,7 +145,7 @@ namespace Lieb.Data
             using var context = _contextFactory.CreateDbContext();
             Poll? poll = context.Polls
                             .Include(p => p.Answers)
-                            .FirstOrDefault(p => p.PollId == pollId && p.Answers.Where(a => a.UserId == userId).Any());
+                            .FirstOrDefault(p => p.PollId == pollId && !p.Answers.Where(a => a.UserId == userId).Any());
 
             if (poll == null) return;
 

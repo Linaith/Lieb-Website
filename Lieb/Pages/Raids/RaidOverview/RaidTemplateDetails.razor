@@ -16,14 +16,28 @@
     <label style="white-space: pre-line">@_template.Description</label>
 
     <span class="timesblock">
-        <div class="times">
-            <h5>Date</h5>
-            <p>@_template.StartTime.ToLongDateString()</p>
-        </div>
-        <div class="times">
-            <h5>Time</h5>
-            <p>from: @_template.StartTime.ToShortTimeString()  to: @_template.EndTime.ToShortTimeString()</p>
-        </div>
+        @if(_template.EndTime - _template.StartTime > new TimeSpan(24,0,0))
+        {
+            <span class="times">
+                <h5>From</h5>
+                <p>@_template.StartTime.ToLongDateString()  @_template.StartTime.ToShortTimeString()</p>
+            </span>
+            <span class="times">
+                <h5>To</h5>
+                <p>@_template.EndTime.ToLongDateString()  @_template.EndTime.ToShortTimeString()</p>
+            </span>
+        }
+        else
+        {
+            <div class="times">
+                <h5>Date</h5>
+                <p>@_template.StartTime.ToLongDateString()</p>
+            </div>
+            <div class="times">
+                <h5>Time</h5>
+                <p>from: @_template.StartTime.ToShortTimeString()  to: @_template.EndTime.ToShortTimeString()</p>
+            </div>
+        }
         <div class="times">
             <h5>TimeZone</h5>
             <p>@_template.TimeZone</p>

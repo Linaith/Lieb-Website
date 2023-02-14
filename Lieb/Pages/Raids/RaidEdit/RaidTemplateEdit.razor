@@ -71,10 +71,35 @@
     
     <p>
         <label>
-            Date:
-            <InputDate @bind-Value="_raidDate" />
+            <InputCheckbox @bind-Value="_isMultiDay" />
+            Multi day raid
         </label>
     </p>
+    
+    @if(_isMultiDay)
+    {
+        <p>
+            <label>
+                Start date:
+                <InputDate @bind-Value="_raidDate" />
+            </label>
+        </p>
+        <p>
+            <label>
+                End date:
+                <InputDate @bind-Value="_endDate" />
+            </label>
+        </p>
+    }
+    else
+    {
+        <p>
+            <label>
+                Date:
+                <InputDate @bind-Value="_raidDate" />
+            </label>
+        </p>
+    }
 
     <p>
         <label>
@@ -237,7 +262,9 @@
     private string _errorMessage = string.Empty;
 
     private int _randomSpots = 10;
+    private bool _isMultiDay = false;
     private DateTimeOffset _raidDate = DateTime.Now.Date;
+    private DateTimeOffset _endDate = DateTime.Now.Date;
     private DateTimeOffset _startTime;
     private DateTimeOffset _endTime;
     private DateTimeOffset _freeForAllDate = DateTime.Now.Date;
@@ -294,10 +321,12 @@
                 _startTime = _template.StartTime;
                 _endTime = _template.EndTime;
                 _raidDate = _startTime.Date;
+                _endDate = _endTime.Date;
                 _freeForAllTime = _template.FreeForAllTime;
                 _freeForAllDate = _freeForAllTime.Date;
                 _minUserDeadlineTime = _template.MinUserDeadLine;
                 _minUserDeadlineDate = _minUserDeadlineTime.Date;
+                _isMultiDay = _endTime - _startTime > new TimeSpan(24,0,0);
                 foreach(RaidReminder reminder in _template.Reminders)
                 {
                     if(reminder.TimeType == RaidReminder.ReminderTimeType.Static)
@@ -378,10 +407,20 @@
             return;
         }
 
+        if(_isMultiDay && _endDate <= _raidDate)
+        {
+            _errorMessage = "The end date has to be after the start date.";
+            return;
+        }
+
         _template.TimeZone = await TimeZoneService.GetUserTimeZone();
 
         _template.StartTime =_raidDate.Date + _startTime.TimeOfDay;
-        if(_startTime.TimeOfDay <= _endTime.TimeOfDay)
+        if(_isMultiDay)
+        {
+            _template.EndTime = _endDate.Date + _endTime.TimeOfDay;
+        }
+        else if(_startTime.TimeOfDay <= _endTime.TimeOfDay)
         {
             _template.EndTime = _raidDate.Date + _endTime.TimeOfDay;
         }

@@ -41,14 +41,28 @@
 
 
     <span class="timesblock">
-        <span class="times">
-            <h5>Date</h5>
-            <p>@_startTime.DateTime.ToLongDateString()</p>
-        </span>
-        <span class="times">
-            <h5>Time</h5>
-            <p>from: @_startTime.DateTime.ToShortTimeString()  to: @_endTime.DateTime.ToShortTimeString()</p>
-        </span>
+        @if(_endTime - _startTime > new TimeSpan(24,0,0))
+        {
+            <span class="times">
+                <h5>From</h5>
+                <p>@_startTime.DateTime.ToLongDateString()  @_startTime.DateTime.ToShortTimeString()</p>
+            </span>
+            <span class="times">
+                <h5>To</h5>
+                <p>@_endTime.DateTime.ToLongDateString()  @_endTime.DateTime.ToShortTimeString()</p>
+            </span>
+        }
+        else
+        {
+            <span class="times">
+                <h5>Date</h5>
+                <p>@_startTime.DateTime.ToLongDateString()</p>
+            </span>
+            <span class="times">
+                <h5>Time</h5>
+                <p>from: @_startTime.DateTime.ToShortTimeString()  to: @_endTime.DateTime.ToShortTimeString()</p>
+            </span>
+        }
         <span class="times">
             <h5>Type</h5>
             <p>@_raid.EventType</p>

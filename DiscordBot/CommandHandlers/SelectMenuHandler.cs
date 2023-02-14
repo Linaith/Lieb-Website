@@ -1,3 +1,4 @@
+using Discord;
 using Discord.WebSocket;
 using DiscordBot.Messages;
 using DiscordBot.Services;
@@ -64,7 +65,8 @@ namespace DiscordBot.CommandHandlers
                         UserId = component.User.Id
                     };
                     await _httpService.AnswerPoll(answer);
-                    await component.RespondAsync("Answer sent.", ephemeral: true);
+                    SelectMenuComponent selectMenu = (SelectMenuComponent)component.Message.Components.First().Components.First(c => c.CustomId == component.Data.CustomId);
+                    await component.RespondAsync($"Answer \"{selectMenu.Options.First(s => s.Value == component.Data.Values.First()).Label}\" sent.", ephemeral: true);
                     break;
             }
         }

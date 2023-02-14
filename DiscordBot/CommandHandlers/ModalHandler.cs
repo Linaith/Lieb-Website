@@ -74,7 +74,7 @@ namespace DiscordBot.CommandHandlers
                         UserId = modal.User.Id
                     };
                     await _httpService.AnswerPoll(answer);
-                    await modal.RespondAsync("Answer sent.", ephemeral: true);
+                    await modal.RespondAsync($"Answer \"{modalAnswer}\" sent.", ephemeral: true);
                     break;
             }
         }

@@ -74,7 +74,8 @@ namespace DiscordBot.CommandHandlers
                         UserId = component.User.Id
                     };
                     await _httpService.AnswerPoll(answer);
-                    await component.RespondAsync("Answer sent.", ephemeral: true);
+                    ButtonComponent usedButton = (ButtonComponent)component.Message.Components.First().Components.First(c => c.CustomId == component.Data.CustomId);
+                    await component.RespondAsync($"Answer \"{usedButton.Label}\" sent.", ephemeral: true);
                     break;
                 case Constants.ComponentIds.POLL_CUSTOM_ANSWER_BUTTON:
                     PollMessage.Parameters pollCustomParameters = PollMessage.ParseId(component.Data.CustomId);

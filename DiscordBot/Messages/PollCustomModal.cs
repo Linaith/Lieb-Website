@@ -11,7 +11,7 @@ namespace DiscordBot.Messages
         public static Modal buildMessage(int pollId, string question)
         {
             var mb = new ModalBuilder()
-                .WithTitle(question)
+                .WithTitle("Answer")
                 .WithCustomId($"{Constants.ComponentIds.POLL_CUSTOM_ANSWER_MODAL}-{pollId}")
                 .AddTextInput("Answer", Constants.ComponentIds.POLL_CUSTOM_ANSWER_TEXT_BOX, placeholder: "Yes", required: true);
 

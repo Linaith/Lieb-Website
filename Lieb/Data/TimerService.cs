@@ -52,6 +52,9 @@ namespace Lieb.Data
                 await raidService.CheckMinUsers();
                 await raidService.CheckMinUserPollResult();
             }
+            //somehow this reduces memory usage from 510MB to 210MB...
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         private async void CleanUpRaids(object? state)
@@ -84,6 +87,7 @@ namespace Lieb.Data
         {
             _minuteTimer?.Change(Timeout.Infinite, 0);
             _fiveMinuteTimer?.Change(Timeout.Infinite, 0);
+            _dailyTimer?.Change(Timeout.Infinite, 0);
 
             return Task.CompletedTask;
         }
@@ -92,6 +96,7 @@ namespace Lieb.Data
         {
             _minuteTimer?.Dispose();
             _fiveMinuteTimer?.Dispose();
+            _dailyTimer?.Dispose();
         }
     }
 }
